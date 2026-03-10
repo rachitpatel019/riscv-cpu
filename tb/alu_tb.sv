@@ -1,22 +1,26 @@
-// TODO: enumerize control signals
-
-`timescale 10ns/10ns
+`timescale 1ns/1ps
 
 module alu_tb;
-    logic [31:0] A;
-    logic [31:0] B;
-    logic [3:0]  control;
-    logic [31:0] result;
+    import alu_package::*;
 
+    // DUT Signals
+    logic [31:0] A;                 // operand 1
+    logic [31:0] B;                 // operand 2
+    alu_operations control;         // operation
+    logic [31:0] result;            // result
+
+    // Instantiate DUT
     alu dut (.*);
 
+    // Counters
     int test_count = 0;
     int fail_count = 0;
 
+    // Test Task
     task run_test(
         input logic [31:0] a,
         input logic [31:0] b,
-        input logic [3:0] ctrl,
+        input alu_operations ctrl,
         input logic [31:0] expected
     );
     begin
@@ -26,21 +30,89 @@ module alu_tb;
         #1;
 
         test_count++;
+
         if (result !== expected) begin
             fail_count++;
-            $display("FAIL: A=%h B=%h CTRL=%b | Expected=%h Got=%h", a, b, ctrl, expected, result);
+            $display("[%0t] FAIL: OP=%s A=%h B=%h | Expected=%h Got=%h", $time, ctrl.name(), a, b, expected, result);
         end
-        else
-            $display("[%0t] PASS: A=%h B=%h CTRL=%b Result=%h", $time, a, b, ctrl, result);
+        else begin
+            $display("[%0t] PASS: OP=%s A=%h B=%h Result=%h", $time, ctrl.name(), a, b, result);
+        end
     end
     endtask
 
-    initial
-        begin
-            #1;
-            run_test(10, 5, 4'b0000, 15);
-            run_test(10, 3, 4'b0001, 7);
-            $display("Tests run: %0d, Failures: %0d", test_count, fail_count);
-            $finish;
-        end
+    // Test Cases
+    initial begin
+        #1;
+
+        // ADD
+        run_test(32'd10, 32'd5, ADD, 32'd15);
+        run_test(32'd0, 32'd0, ADD, 32'd0);
+        run_test(-32'd5, 32'd10, ADD, 32'd5);
+        run_test(32'h7FFFFFFF, 32'd1, ADD, 32'h80000000);
+        run_test(32'hFFFFFFFF, 32'd1, ADD, 32'h00000000);
+
+        // SUBTRACT
+        run_test(32'd10, 32'd5, SUBTRACT, 32'd5);
+        run_test(32'd5, 32'd10, SUBTRACT, -32'd5);
+        run_test(-32'd10, -32'd5, SUBTRACT, -32'd5);
+        run_test(32'd0, 32'd1, SUBTRACT, -32'd1);
+        run_test(32'h80000000, 32'd1, SUBTRACT, 32'h7FFFFFFF);
+
+        // AND
+        run_test(32'hF0F0F0F0, 32'h0F0F0F0F, AND, 32'h00000000);
+        run_test(32'hFFFFFFFF, 32'h00000000, AND, 32'h00000000);
+        run_test(32'hAAAAAAAA, 32'h55555555, AND, 32'h00000000);
+        run_test(32'hFFFFFFFF, 32'hFFFFFFFF, AND, 32'hFFFFFFFF);
+
+        // OR
+        run_test(32'hF0F0F0F0, 32'h0F0F0F0F, OR, 32'hFFFFFFFF);
+        run_test(32'hAAAAAAAA, 32'h55555555, OR, 32'hFFFFFFFF);
+        run_test(32'h00000000, 32'h00000000, OR, 32'h00000000);
+
+        // XOR
+        run_test(32'hAAAAAAAA, 32'h55555555, XOR, 32'hFFFFFFFF);
+        run_test(32'hFFFFFFFF, 32'hFFFFFFFF, XOR, 32'h00000000);
+        run_test(32'h12345678, 32'hFFFFFFFF, XOR, 32'hEDCBA987);
+
+        // UNSIGNED LESS THAN
+        run_test(32'd5, 32'd10, ULT, 32'd1);
+        run_test(32'd10, 32'd5, ULT, 32'd0);
+        run_test(32'hFFFFFFFF, 32'd0, ULT, 32'd0);
+        run_test(32'd0, 32'hFFFFFFFF, ULT, 32'd1);
+
+        // SIGNED LESS THAN
+        run_test(-32'd5, 32'd3, SLT, 32'd1);
+        run_test(32'd5, -32'd3, SLT, 32'd0);
+        run_test(-32'd10, -32'd5, SLT, 32'd1);
+        run_test(32'h80000000, 32'd0, SLT, 32'd1);
+        run_test(32'd0, 32'h80000000, SLT, 32'd0);
+
+        // SHIFT LEFT LOGICAL
+        run_test(32'd1, 32'd1, SLL, 32'd2);
+        run_test(32'd1, 32'd31, SLL, 32'h80000000);
+        run_test(32'hFFFFFFFF, 32'd4, SLL, 32'hFFFFFFF0);
+        run_test(32'd1, 32'd32, SLL, 32'd1);
+
+        // SHIFT RIGHT LOGICAL
+        run_test(32'h80000000, 32'd1, SRL, 32'h40000000);
+        run_test(32'hFFFFFFFF, 32'd4, SRL, 32'h0FFFFFFF);
+        run_test(32'd1, 32'd31, SRL, 32'd0);
+
+        // SHIFT RIGHT ARITHMETIC
+        run_test(-32'd1, 32'd1, SRA, 32'hFFFFFFFF);
+        run_test(32'h80000000, 32'd1, SRA, 32'hC0000000);
+        run_test(-32'd16, 32'd2, SRA, -32'd4);
+        run_test(32'd16, 32'd2, SRA, 32'd4);
+
+        // Summary
+        $display("======================================");
+        if (fail_count == 0)
+            $display("ALL TESTS PASSED (%0d tests)", test_count);
+        else
+            $display("FAILED: %0d / %0d tests", fail_count, test_count);
+        $display("======================================");
+
+        $finish;
+    end
 endmodule
