@@ -12,7 +12,7 @@ module regfile(
     input logic write_enable // update registers only when needed
 );
 
-logic [31:0] registers [32] = '{default: '0}; // creates 32 32-bit registers 
+logic [31:0] registers [31:0] = '{default: '0}; // creates 32 32-bit registers 
 
 // Read logic
 always_comb begin // change output immediately on input change
