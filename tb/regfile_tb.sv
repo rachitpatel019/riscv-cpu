@@ -93,8 +93,6 @@ begin
     else begin
         $display("[%0t] PASS", $time);
     end
-
-    write_enable = 1'b0;
 end
 endtask
 
