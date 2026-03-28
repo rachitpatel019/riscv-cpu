@@ -11,7 +11,7 @@ always_comb begin // change output immediately on input change
     // perform operation based on control variable
     case (control)
         ALU_ADD : result = A + B;
-        ALU_SUBTRACT : result = A + (~B + 1'b1);
+        ALU_SUB : result = A + (~B + 1'b1);
         ALU_AND : result = A & B;
         ALU_OR : result = A | B;
         ALU_XOR : result = A ^ B;

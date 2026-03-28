@@ -23,7 +23,7 @@ task test_fetch(
     input logic [31:0] expectedInstr
 );
 begin
-        // Connect stimulus to port
+    // Connect stimulus to port
     reset = Reset;
     @(posedge clk);
 

@@ -1,11 +1,11 @@
 module decode(
-    input  logic clk,
-    input  logic [31:0] instruction,
+    input logic clk,
+    input logic [31:0] instruction,
 
     // Write-back interface
-    input  logic reg_write_wb,
-    input  logic [4:0]  rd_wb,
-    input  logic [31:0] write_data_wb,
+    input logic reg_write_wb,
+    input logic [4:0]  rd_wb,
+    input logic [31:0] write_data_wb,
 
     // Outputs to execute stage
     output logic [31:0] rs1_data,
