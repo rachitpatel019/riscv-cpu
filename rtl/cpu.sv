@@ -16,10 +16,11 @@ fetch fetch_inst (
 
 // DECODE
 logic [31:0] rs1_data, rs2_data, imm;
-logic [4:0]  rd;
+logic [4:0]  rs1, rs2, rd;
 
 // Control signals
 logic alu_src, mem_read, mem_write, mem_to_reg, reg_write;
+logic branch, jump;
 logic [3:0] alu_op;
 logic [31:0] write_data;
 
@@ -35,7 +36,9 @@ decode decode_inst (
     // Outputs
     .rs1_data(rs1_data),
     .rs2_data(rs2_data),
-    .imm(imm),
+    .immediate(imm),
+    .rs1(rs1),
+    .rs2(rs2),
     .rd(rd),
 
     .alu_src(alu_src),
@@ -43,7 +46,9 @@ decode decode_inst (
     .mem_read(mem_read),
     .mem_write(mem_write),
     .mem_to_reg(mem_to_reg),
-    .reg_write(reg_write)
+    .reg_write(reg_write),
+    .branch(branch),
+    .jump(jump)
 );
 
 // EXECUTE
