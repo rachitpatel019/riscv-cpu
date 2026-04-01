@@ -5,14 +5,11 @@ module pc(
     output logic [31:0] current_address
 );
 
-logic [31:0] address = 32'b0; // stores the address of the current instruction
-
 always_ff @(posedge clk) begin
     if (reset)
-        address <= 32'b0;
+        current_address <= 32'b0;
     else
-        address <= next_address; // updated the address of the current instruction every positive clock edge
-    assign current_address = address;
+        current_address <= next_address;
 end
     
 endmodule

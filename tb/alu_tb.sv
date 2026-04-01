@@ -106,14 +106,8 @@ initial begin
     run_test(-32'd16, 32'd2, ALU_SRA, -32'd4);
     run_test(32'd16, 32'd2, ALU_SRA, 32'd4);
 
-    // Summary
-    $display("======================================");
-    if (fail_count == 0)
-        $display("ALL TESTS PASSED (%0d tests)", test_count);
-    else
-        $display("FAILED: %0d / %0d tests", fail_count, test_count);
-    $display("======================================");
-
+    // Testing report
+    $display("Tests run: %0d, Failures: %0d", test_count, fail_count);
     $finish;
 end
 
