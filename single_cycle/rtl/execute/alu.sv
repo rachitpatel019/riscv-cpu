@@ -20,6 +20,7 @@ always_comb begin // change output immediately on input change
         ALU_SLL : result = A << B[4:0]; // SHIFT LEFT LOGICAL (only last 5 bits of B are used to evaluate the shift amount)
         ALU_SRL : result = A >> B[4:0]; // SHIFT RIGHT LOGICAL (only last 5 bits of B are used to evaluate the shift amount)
         ALU_SRA : result = $signed(A) >>> B[4:0]; // SHIFT RIGHT ARITHMETIC (only last 5 bits of B are used to evaluate the shift amount)
+        ALU_PASS : result = B;
         default : result = 0;
     endcase
 end

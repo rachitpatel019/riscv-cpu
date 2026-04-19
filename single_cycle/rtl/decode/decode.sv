@@ -1,6 +1,7 @@
 module decode(
     input logic clk,
     input logic [31:0] instruction,
+    input logic [31:0] pc,             // NEW: PC input from Fetch stage
 
     // Write-back interface
     input logic reg_write_wb,
@@ -14,16 +15,21 @@ module decode(
     output logic [4:0]  rs1,
     output logic [4:0]  rs2,
     output logic [4:0]  rd,
+    output logic [31:0] pc_out,        // NEW: Route PC to Execute stage
 
     // Control signals
     output logic [3:0] alu_op,
-    output logic alu_src,
+    output logic alu_src_a,            // UPDATED: Replaced alu_src
+    output logic alu_src_b,            // NEW: Second ALU source control
     output logic reg_write,
     output logic mem_read,
     output logic mem_write,
-    output logic mem_to_reg,
+    output logic [1:0] mem_size,       // NEW: Size of memory access (B, H, W)
+    output logic mem_unsigned,         // NEW: Unsigned memory load flag
+    output logic [1:0] wb_sel,         // UPDATED: Replaced mem_to_reg for 3-way writeback
     output logic branch,
-    output logic jump
+    output logic jump,
+    output logic [2:0] branch_type     // NEW: Branch condition type
 );
 
 import decoder_package::*;
@@ -32,6 +38,9 @@ import decoder_package::*;
 assign rs1 = instruction[19:15];
 assign rs2 = instruction[24:20];
 assign rd  = instruction[11:7];
+
+// Pass PC through to the Execute stage
+assign pc_out = pc;
 
 // Register File
 regfile rf (
@@ -57,14 +66,23 @@ imm_gen ig (
 control ctrl (
     .instruction(instruction),
 
+    // Execution control
     .alu_op(alu_op),
-    .alu_src(alu_src),
+    .alu_src_a(alu_src_a),
+    .alu_src_b(alu_src_b),
+    
+    // Memory and Writeback control
     .reg_write(reg_write),
     .mem_read(mem_read),
     .mem_write(mem_write),
-    .mem_to_reg(mem_to_reg),
+    .mem_size(mem_size),
+    .mem_unsigned(mem_unsigned),
+    .wb_sel(wb_sel),
+    
+    // Control flow
     .branch(branch),
-    .jump(jump)
+    .jump(jump),
+    .branch_type(branch_type)
 );
 
 endmodule
