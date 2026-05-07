@@ -14,8 +14,8 @@ logic pc_sel;
 fetch fetch_inst (
     .clk(clk),
     .reset(reset),
-    .pc_target(pc_target), // NEW: Target address from Execute
-    .pc_sel(pc_sel),       // NEW: Branch/Jump flag from Execute
+    .pc_target(pc_target),
+    .pc_sel(pc_sel),
     .pc(pc),
     .instruction(instruction)
 );

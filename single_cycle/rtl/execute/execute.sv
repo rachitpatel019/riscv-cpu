@@ -41,6 +41,8 @@ always_comb begin
         pc_target = {alu_result[31:1], 1'b0};
     else if (branch & condition_met)
         pc_target = pc + imm;
+	 else
+        pc_target = 32'b0;
 end
 
 // ALU instance

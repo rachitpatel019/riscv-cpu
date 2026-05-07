@@ -133,6 +133,7 @@ always_comb begin
                     case (f7)
                         F7_ADD_SRL: alu_op = ALU_ADD;
                         F7_SUB_SRA: alu_op = ALU_SUB;
+                        default:    alu_op = ALU_ADD; // Add default
                     endcase
                 F3_SLL: alu_op = ALU_SLL;
                 F3_SLT: alu_op = ALU_SLT;
@@ -142,6 +143,7 @@ always_comb begin
                     case (f7)
                         F7_ADD_SRL: alu_op = ALU_SRL;
                         F7_SUB_SRA: alu_op = ALU_SRA;
+                        default:    alu_op = ALU_SRL; // Add default
                     endcase
                 F3_OR: alu_op = ALU_OR;
                 F3_AND: alu_op = ALU_AND;
