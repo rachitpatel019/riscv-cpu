@@ -1,0 +1,1 @@
+cd "C:/Rachit/RISC-V CPU/riscv-cpu/5_stage_pipeline/sim"

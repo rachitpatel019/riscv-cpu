@@ -1,0 +1,136 @@
+m255
+K4
+z2
+!s11f vlog 2020.1 2020.02, Feb 28 2020
+13
+!s112 1.1
+!i10d 8192
+!i10e 25
+!i10f 100
+cModel Technology
+Z0 dC:/Rachit/RISC-V CPU/riscv-cpu/5_stage_pipeline/sim
+vfetch
+Z1 DXx6 sv_std 3 std 0 22 VYECXdT12H8WgbUP_5Y6:3
+!s110 1778192670
+!i10b 1
+!s100 6;4CJ@I5hb88MQ4PbD_Af2
+Z2 !s11b Dg1SIo80bB@j0V0VzS_@n1
+I]VGFVz3D`VL]hBzZXjbiJ1
+Z3 VDg1SIo80bB@j0V0VzS_@n1
+S1
+R0
+w1778186963
+8C:/Rachit/RISC-V CPU/riscv-cpu/5_stage_pipeline/rtl/fetch/fetch.sv
+FC:/Rachit/RISC-V CPU/riscv-cpu/5_stage_pipeline/rtl/fetch/fetch.sv
+!i122 3
+L0 6 28
+Z4 OV;L;2020.1;71
+r1
+!s85 0
+31
+!s108 1778192670.000000
+!s107 C:/Rachit/RISC-V CPU/riscv-cpu/5_stage_pipeline/rtl/fetch/fetch.sv|
+!s90 -reportprogress|300|-work|work|C:/Rachit/RISC-V CPU/riscv-cpu/5_stage_pipeline/rtl/fetch/fetch.sv|
+!i113 1
+Z5 o-work work
+Z6 tCvgOpt 0
+vfetch_tb
+R1
+!s110 1778193250
+!i10b 1
+!s100 XZjCflk@o[V82UV5?C`U>1
+R2
+I>a3dYDJZkQckQ5=4DG?Rd2
+R3
+S1
+R0
+w1778193150
+8C:/Rachit/RISC-V CPU/riscv-cpu/5_stage_pipeline/tb/fetch_tb.sv
+FC:/Rachit/RISC-V CPU/riscv-cpu/5_stage_pipeline/tb/fetch_tb.sv
+!i122 6
+L0 3 69
+R4
+r1
+!s85 0
+31
+!s108 1778193250.000000
+!s107 C:/Rachit/RISC-V CPU/riscv-cpu/5_stage_pipeline/tb/fetch_tb.sv|
+!s90 -reportprogress|300|-work|work|C:/Rachit/RISC-V CPU/riscv-cpu/5_stage_pipeline/tb/fetch_tb.sv|
+!i113 1
+R5
+R6
+vinstr_mem
+R1
+!s110 1778193307
+!i10b 1
+!s100 Ze]1<gmAaHc[`]X>`6zA01
+R2
+Inj>^TQeKAQ6An9PUiCi7]2
+R3
+S1
+R0
+w1778193286
+8C:/Rachit/RISC-V CPU/riscv-cpu/5_stage_pipeline/rtl/fetch/instr_mem.sv
+FC:/Rachit/RISC-V CPU/riscv-cpu/5_stage_pipeline/rtl/fetch/instr_mem.sv
+!i122 7
+L0 4 23
+R4
+r1
+!s85 0
+31
+!s108 1778193307.000000
+!s107 C:/Rachit/RISC-V CPU/riscv-cpu/5_stage_pipeline/rtl/fetch/instr_mem.sv|
+!s90 -reportprogress|300|-work|work|C:/Rachit/RISC-V CPU/riscv-cpu/5_stage_pipeline/rtl/fetch/instr_mem.sv|
+!i113 1
+R5
+R6
+vpc
+R1
+!s110 1778192663
+!i10b 1
+!s100 FmJk1DbQzoHDLC[C4=oK]3
+R2
+Io:h];3d<^JZjT_Q5XDbd;3
+R3
+S1
+R0
+w1778183078
+8C:/Rachit/RISC-V CPU/riscv-cpu/5_stage_pipeline/rtl/fetch/pc.sv
+FC:/Rachit/RISC-V CPU/riscv-cpu/5_stage_pipeline/rtl/fetch/pc.sv
+!i122 0
+L0 3 16
+R4
+r1
+!s85 0
+31
+!s108 1778192663.000000
+!s107 C:/Rachit/RISC-V CPU/riscv-cpu/5_stage_pipeline/rtl/fetch/pc.sv|
+!s90 -reportprogress|300|-work|work|C:/Rachit/RISC-V CPU/riscv-cpu/5_stage_pipeline/rtl/fetch/pc.sv|
+!i113 1
+R5
+R6
+vpc_update
+R1
+!s110 1778192666
+!i10b 1
+!s100 zP7H]=2<5b=<Wdkn50XUg2
+R2
+IG=?Z_;8ddeGo;F;BWOLOl0
+R3
+S1
+R0
+w1778186395
+8C:/Rachit/RISC-V CPU/riscv-cpu/5_stage_pipeline/rtl/fetch/pc_update.sv
+FC:/Rachit/RISC-V CPU/riscv-cpu/5_stage_pipeline/rtl/fetch/pc_update.sv
+!i122 1
+L0 4 9
+R4
+r1
+!s85 0
+31
+!s108 1778192666.000000
+!s107 C:/Rachit/RISC-V CPU/riscv-cpu/5_stage_pipeline/rtl/fetch/pc_update.sv|
+!s90 -reportprogress|300|-work|work|C:/Rachit/RISC-V CPU/riscv-cpu/5_stage_pipeline/rtl/fetch/pc_update.sv|
+!i113 1
+R5
+R6

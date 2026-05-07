@@ -1,0 +1,28 @@
+# --- U-Type & I-Type Math ---
+0:  lui x1, 1            # x1 = 4096 (Test Load Upper Immediate)
+4:  auipc x2, 1          # x2 = 4 + 4096 = 4100 (Test PC-Relative Addition)
+8:  addi x3, x0, 15      # x3 = 15
+
+# --- R-Type Math ---
+12: add x4, x3, x3       # x4 = 30
+16: sub x5, x4, x3       # x5 = 15
+
+# --- Word Memory (S-Type & I-Type) ---
+20: sw x4, 0(x0)         # mem[0] = 30
+24: lw x6, 0(x0)         # x6 = 30
+
+# --- Sub-Word Memory & Extension ---
+28: addi x7, x0, -5      # x7 = -5 (0xFFFFFFFB)
+32: sw x7, 4(x0)         # mem[4] = -5 
+36: lb x8, 4(x0)         # x8 = -5 (Test Byte Sign-Extension)
+40: lbu x9, 4(x0)        # x9 = 251 (Test Byte Zero-Extension of 0xFB)
+
+# --- Control Flow (Branches) ---
+44: beq x3, x5, 8        # 15 == 15, so Jump forward 8 bytes (to 52)
+48: addi x10, x0, 99     # TRAP: This should be skipped!
+
+# --- Control Flow (Jumps & Linking) ---
+52: jal x11, 8           # x11 = 56 (Return Addr), Jump to 60
+56: addi x10, x0, 99     # TRAP: This should be skipped!
+60: jalr x12, x11, 8     # x12 = 64 (Return Addr), Jump to x11 + 8 = 64
+64: addi x13, x0, 1      # x13 = 1 (Test Finished Flag)
