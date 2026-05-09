@@ -9,12 +9,38 @@ z2
 !i10f 100
 cModel Technology
 Z0 dC:/Rachit/RISC-V CPU/riscv-cpu/5_stage_pipeline/sim
-Xalu_package
+valu
 Z1 DXx6 sv_std 3 std 0 22 VYECXdT12H8WgbUP_5Y6:3
-Z2 !s110 1778251091
+Z2 DXx4 work 11 alu_package 0 22 eWO;4=cHW?B><Sl^WAZ390
+!s110 1778297072
+!i10b 1
+!s100 [3=mJF00hEeR:I5eNT_VS2
+Z3 !s11b Dg1SIo80bB@j0V0VzS_@n1
+IoYP0@hogdFRA^`>chzmQV3
+Z4 VDg1SIo80bB@j0V0VzS_@n1
+S1
+R0
+w1778278970
+8C:/Rachit/RISC-V CPU/riscv-cpu/5_stage_pipeline/rtl/3_execute/alu.sv
+FC:/Rachit/RISC-V CPU/riscv-cpu/5_stage_pipeline/rtl/3_execute/alu.sv
+!i122 17
+L0 3 28
+Z5 OV;L;2020.1;71
+r1
+!s85 0
+31
+Z6 !s108 1778297072.000000
+!s107 C:/Rachit/RISC-V CPU/riscv-cpu/5_stage_pipeline/rtl/3_execute/alu.sv|
+!s90 -reportprogress|300|-work|work|C:/Rachit/RISC-V CPU/riscv-cpu/5_stage_pipeline/rtl/3_execute/alu.sv|
+!i113 1
+Z7 o-work work
+Z8 tCvgOpt 0
+Xalu_package
+R1
+Z9 !s110 1778251091
 !i10b 1
 !s100 aF96IcTc9b]6ZHYM4eg[J0
-Z3 !s11b Dg1SIo80bB@j0V0VzS_@n1
+R3
 IeWO;4=cHW?B><Sl^WAZ390
 VeWO;4=cHW?B><Sl^WAZ390
 S1
@@ -23,27 +49,27 @@ w1774575688
 8C:/Rachit/RISC-V CPU/riscv-cpu/5_stage_pipeline/packages/alu_pkg.sv
 FC:/Rachit/RISC-V CPU/riscv-cpu/5_stage_pipeline/packages/alu_pkg.sv
 !i122 8
-Z4 L0 1 0
-Z5 OV;L;2020.1;71
+Z10 L0 1 0
+R5
 r1
 !s85 0
 31
-Z6 !s108 1778251091.000000
+Z11 !s108 1778251091.000000
 !s107 C:/Rachit/RISC-V CPU/riscv-cpu/5_stage_pipeline/packages/alu_pkg.sv|
 !s90 -reportprogress|300|-work|work|C:/Rachit/RISC-V CPU/riscv-cpu/5_stage_pipeline/packages/alu_pkg.sv|
 !i113 1
-Z7 o-work work
-Z8 tCvgOpt 0
+R7
+R8
 vcontrol
 R1
-Z9 DXx4 work 15 decoder_package 0 22 gAgWRg=o_[YhbUaZ;AfN:1
-Z10 DXx4 work 11 alu_package 0 22 eWO;4=cHW?B><Sl^WAZ390
-Z11 !s110 1778251099
+Z12 DXx4 work 15 decoder_package 0 22 gAgWRg=o_[YhbUaZ;AfN:1
+R2
+Z13 !s110 1778251099
 !i10b 1
 !s100 2:cja;koo96=2b`8LLQ550
 R3
 IUYZ@LlQ^6<1FYAbAahI_I2
-Z12 VDg1SIo80bB@j0V0VzS_@n1
+R4
 S1
 R0
 w1778202921
@@ -55,7 +81,7 @@ R5
 r1
 !s85 0
 31
-Z13 !s108 1778251099.000000
+Z14 !s108 1778251099.000000
 !s107 C:/Rachit/RISC-V CPU/riscv-cpu/5_stage_pipeline/rtl/2_decode/control.sv|
 !s90 -reportprogress|300|-work|work|C:/Rachit/RISC-V CPU/riscv-cpu/5_stage_pipeline/rtl/2_decode/control.sv|
 !i113 1
@@ -63,13 +89,13 @@ R7
 R8
 vdecode
 R1
-R9
-R11
+R12
+R13
 !i10b 1
 !s100 eiADZkk[4Vk?jceMPlc[i2
 R3
 I0ma5>:<XT[igPRXI9MXbT1
-R12
+R4
 S1
 R0
 w1778203541
@@ -81,7 +107,7 @@ R5
 r1
 !s85 0
 31
-R13
+R14
 !s107 C:/Rachit/RISC-V CPU/riscv-cpu/5_stage_pipeline/rtl/2_decode/decode.sv|
 !s90 -reportprogress|300|-work|work|C:/Rachit/RISC-V CPU/riscv-cpu/5_stage_pipeline/rtl/2_decode/decode.sv|
 !i113 1
@@ -89,14 +115,14 @@ R7
 R8
 vdecode_tb
 R1
-R9
-R10
+R12
+R2
 !s110 1778256286
 !i10b 1
 !s100 TS4>LAT_Z8Fhe9M:90Wi:3
 R3
 I1<XGh2O3mfSfYRY>?oT_53
-R12
+R4
 S1
 R0
 w1778256278
@@ -116,7 +142,7 @@ R7
 R8
 Xdecoder_package
 R1
-R2
+R9
 !i10b 1
 !s100 1A?ofSQEL0g;g^^AGgHe]3
 R3
@@ -128,14 +154,64 @@ w1774576287
 8C:/Rachit/RISC-V CPU/riscv-cpu/5_stage_pipeline/packages/decoder_pkg.sv
 FC:/Rachit/RISC-V CPU/riscv-cpu/5_stage_pipeline/packages/decoder_pkg.sv
 !i122 9
+R10
+R5
+r1
+!s85 0
+31
+R11
+!s107 C:/Rachit/RISC-V CPU/riscv-cpu/5_stage_pipeline/packages/decoder_pkg.sv|
+!s90 -reportprogress|300|-work|work|C:/Rachit/RISC-V CPU/riscv-cpu/5_stage_pipeline/packages/decoder_pkg.sv|
+!i113 1
+R7
+R8
+vexecute
+R1
+!s110 1778297073
+!i10b 1
+!s100 58B;TkY9dlB5cbQA0JdO<3
+R3
+I5gVH;UMR0eD9`3Nl;hgKo2
 R4
+S1
+R0
+w1778279063
+8C:/Rachit/RISC-V CPU/riscv-cpu/5_stage_pipeline/rtl/3_execute/execute.sv
+FC:/Rachit/RISC-V CPU/riscv-cpu/5_stage_pipeline/rtl/3_execute/execute.sv
+!i122 18
+L0 7 55
 R5
 r1
 !s85 0
 31
 R6
-!s107 C:/Rachit/RISC-V CPU/riscv-cpu/5_stage_pipeline/packages/decoder_pkg.sv|
-!s90 -reportprogress|300|-work|work|C:/Rachit/RISC-V CPU/riscv-cpu/5_stage_pipeline/packages/decoder_pkg.sv|
+!s107 C:/Rachit/RISC-V CPU/riscv-cpu/5_stage_pipeline/rtl/3_execute/execute.sv|
+!s90 -reportprogress|300|-work|work|C:/Rachit/RISC-V CPU/riscv-cpu/5_stage_pipeline/rtl/3_execute/execute.sv|
+!i113 1
+R7
+R8
+vexecute_tb
+R1
+!s110 1778298135
+!i10b 1
+!s100 mAI`Le<>Zg75zhi1P]0C52
+R3
+Ibz5CB5IN`TzeHM13VajaX3
+R4
+S1
+R0
+w1778298130
+8C:/Rachit/RISC-V CPU/riscv-cpu/5_stage_pipeline/tb/execute_tb.sv
+FC:/Rachit/RISC-V CPU/riscv-cpu/5_stage_pipeline/tb/execute_tb.sv
+!i122 20
+L0 3 171
+R5
+r1
+!s85 0
+31
+!s108 1778298135.000000
+!s107 C:/Rachit/RISC-V CPU/riscv-cpu/5_stage_pipeline/tb/execute_tb.sv|
+!s90 -reportprogress|300|-work|work|C:/Rachit/RISC-V CPU/riscv-cpu/5_stage_pipeline/tb/execute_tb.sv|
 !i113 1
 R7
 R8
@@ -146,7 +222,7 @@ R1
 !s100 6;4CJ@I5hb88MQ4PbD_Af2
 R3
 I]VGFVz3D`VL]hBzZXjbiJ1
-R12
+R4
 S1
 R0
 w1778186963
@@ -171,7 +247,7 @@ R1
 !s100 XZjCflk@o[V82UV5?C`U>1
 R3
 I>a3dYDJZkQckQ5=4DG?Rd2
-R12
+R4
 S1
 R0
 w1778193150
@@ -191,13 +267,13 @@ R7
 R8
 vimm_gen
 R1
-R9
-R11
+R12
+R13
 !i10b 1
 !s100 zOY[ZzMJeflM6Y9z;SmZ52
 R3
 IdH?XIkMFk<P@Zc[>n:5@=1
-R12
+R4
 S1
 R0
 w1778202515
@@ -209,7 +285,7 @@ R5
 r1
 !s85 0
 31
-R13
+R14
 !s107 C:/Rachit/RISC-V CPU/riscv-cpu/5_stage_pipeline/rtl/2_decode/imm_gen.sv|
 !s90 -reportprogress|300|-work|work|C:/Rachit/RISC-V CPU/riscv-cpu/5_stage_pipeline/rtl/2_decode/imm_gen.sv|
 !i113 1
@@ -222,7 +298,7 @@ R1
 !s100 Ze]1<gmAaHc[`]X>`6zA01
 R3
 Inj>^TQeKAQ6An9PUiCi7]2
-R12
+R4
 S1
 R0
 w1778193286
@@ -247,7 +323,7 @@ R1
 !s100 FmJk1DbQzoHDLC[C4=oK]3
 R3
 Io:h];3d<^JZjT_Q5XDbd;3
-R12
+R4
 S1
 R0
 w1778183078
@@ -272,7 +348,7 @@ R1
 !s100 zP7H]=2<5b=<Wdkn50XUg2
 R3
 IG=?Z_;8ddeGo;F;BWOLOl0
-R12
+R4
 S1
 R0
 w1778186395
@@ -292,12 +368,12 @@ R7
 R8
 vregfile
 R1
-R11
+R13
 !i10b 1
 !s100 Lca1T[?T=>ngX>_NcSLd_0
 R3
 I]mY@1X^BHNDFc455TFLAV1
-R12
+R4
 S1
 R0
 w1778202843
@@ -309,7 +385,7 @@ R5
 r1
 !s85 0
 31
-R13
+R14
 !s107 C:/Rachit/RISC-V CPU/riscv-cpu/5_stage_pipeline/rtl/2_decode/regfile.sv|
 !s90 -reportprogress|300|-work|work|C:/Rachit/RISC-V CPU/riscv-cpu/5_stage_pipeline/rtl/2_decode/regfile.sv|
 !i113 1
