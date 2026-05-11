@@ -1,4 +1,4 @@
-/* Decode stage of the 5-stage RISC-V pipeline.
+/* Execute stage of the 5-stage RISC-V pipeline.
     This stage performs the following functions:
     1. Selects the operands for the ALU based on control signals.
     2. Evaluates branch conditions.
