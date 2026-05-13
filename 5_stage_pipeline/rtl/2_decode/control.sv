@@ -4,6 +4,7 @@ module control(
     input logic [31:0] instruction,
     
     // Execution control
+    output logic uses_rs2,     // For hazard handling: indicates if rs2 is used (R-type, S-type, B-type)
     output logic [3:0] alu_op,
     output logic alu_src_a,         // 0: rs1_data, 1: pc
     output logic alu_src_b,         // 0: rs2_data, 1: immediate
@@ -42,6 +43,7 @@ assign branch_type = f3;        // Tells execute stage which branch condition to
 // Main Control (opcode only)
 always_comb begin
     // Default values
+    uses_rs2 = 0;
     alu_src_a = 0;
     alu_src_b = 0;
     reg_write = 0;
@@ -55,6 +57,7 @@ always_comb begin
 
         // R-type
         OP_R: begin
+            uses_rs2 = 1;
             reg_write = 1;
         end
 
@@ -74,12 +77,14 @@ always_comb begin
 
         // Stores
         OP_S: begin
+            uses_rs2 = 1;
             alu_src_b = 1;
             mem_write = 1;
         end
 
         // Branches
         OP_B: begin
+            uses_rs2 = 1;
             branch = 1;
             // alu_src_a and b remain 0 to compare rs1 and rs2 in the ALU
         end

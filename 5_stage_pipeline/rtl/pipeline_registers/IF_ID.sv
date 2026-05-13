@@ -5,6 +5,7 @@ TODO: Add control signals for stalling and flushing the pipeline in case of haza
 module IF_ID (
     input logic clk,
     input logic reset,
+    input logic stall,
     
     input logic [31:0] pc_in,
     input logic [31:0] instruction_in,
@@ -22,8 +23,14 @@ always_ff @(posedge clk) begin
         instruction <= 32'b0;
     end
     else begin
-        pc <= pc_in;
-        instruction <= instruction_in;
+        if (stall) begin
+            pc <= pc;
+            instruction <= instruction;
+        end
+        else begin
+            pc <= pc_in;
+            instruction <= instruction_in;
+        end
     end    
 end
 

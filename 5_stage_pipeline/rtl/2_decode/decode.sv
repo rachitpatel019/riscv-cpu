@@ -23,6 +23,7 @@ module decode(
     output logic [31:0] pc_out,
 
     // Control signals
+    output logic uses_rs2,
     output logic [3:0] alu_op,
     output logic alu_src_a,
     output logic alu_src_b,
@@ -69,6 +70,7 @@ control ctrl (
     .instruction(instruction),
 
     // Execution control
+    .uses_rs2(uses_rs2),
     .alu_op(alu_op),
     .alu_src_a(alu_src_a),
     .alu_src_b(alu_src_b),

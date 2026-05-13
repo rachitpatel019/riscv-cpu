@@ -5,6 +5,7 @@ TODO: Add control signals for stalling and flushing the pipeline in case of haza
 module ID_EX (
     input logic clk,
     input logic reset,
+    input logic stall,
 
     // Outputs to execute stage
     input logic [31:0] rs1_data_in,
@@ -77,7 +78,7 @@ logic jump;
 logic [2:0] branch_type;
 
 always_ff @(posedge clk) begin
-    if (reset) begin
+    if (reset || stall) begin
         // Outputs to execute stage
         rs1_data <= 32'b0;
         rs2_data <= 32'b0;
