@@ -8,13 +8,25 @@ module memory (
     input logic mem_write,
     input logic [1:0] mem_size,
     input logic mem_unsigned,
+    input logic [4:0] rs1,
+    input logic [4:0] rs2,
+    input logic [4:0] rd,
+    input logic reg_write,
 
     output logic [31:0] read_data,
-    output logic [31:0] alu_result_output
+    output logic [31:0] alu_result_output,
+    output logic [4:0] rs1_out,
+    output logic [4:0] rs2_out,
+    output logic [4:0] rd_out,
+    output logic reg_write_out
 );
 
 // Pass-through
 assign alu_result_output = alu_result;
+assign rs1_out = rs1;
+assign rs2_out = rs2;
+assign rd_out = rd;
+assign reg_write_out = reg_write;
 
 // Data memory instance
 data_mem dmem (

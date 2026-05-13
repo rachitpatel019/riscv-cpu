@@ -1,6 +1,6 @@
 /* Execute stage of the 5-stage RISC-V pipeline.
     This stage performs the following functions:
-    1. Selects the operands for the ALU based on control signals.
+    1. Selects the operands for the ALU based on control signals and forwarding signals.
     2. Evaluates branch conditions.
     3. Computes the target address for branches and jumps. */
 
@@ -12,21 +12,37 @@ module execute (
     input logic alu_src_a,
     input logic alu_src_b,
     input logic [3:0] alu_op,
+    input logic [4:0] rs1,
+    input logic [4:0] rs2,
+    input logic [4:0] rd;
+    input logic reg_write,
     input logic branch,
     input logic jump,
     input logic [2:0] branch_type,
+    input logic forward_a,
+    input logic forward_b,
+    input logic [31:0] forward_a_data,
+    input logic [31:0] forward_b_data,
 
     output logic [31:0] alu_result,
     output logic [31:0] pc_target,
-    output logic pc_sel
+    output logic pc_sel,
+    output logic [4:0] rd_out,
+    output logic reg_write_out
 );
+
+// Pass through register locations for use in forwarding unit
+assign rs1_out = rs1;
+assign rs2_out = rs2;
+assign rd_out = rd;
+assign reg_write_out = reg_write;
 
 logic [31:0] operand_a;
 logic [31:0] operand_b;
 
 // Select operands
-assign operand_a = alu_src_a ? pc : rs1_data;
-assign operand_b = alu_src_b ? imm : rs2_data;
+assign operand_a = alu_src_a ? pc : (forward_a ? forward_a_data : rs1_data);
+assign operand_b = alu_src_b ? imm : (forward_b ? forward_b_data : rs2_data);
 
 logic condition_met;
 
