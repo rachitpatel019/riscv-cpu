@@ -14,7 +14,7 @@ module execute (
     input logic [3:0] alu_op,
     input logic [4:0] rs1,
     input logic [4:0] rs2,
-    input logic [4:0] rd;
+    input logic [4:0] rd,
     input logic reg_write,
     input logic branch,
     input logic jump,
@@ -25,8 +25,8 @@ module execute (
     input logic [31:0] forward_b_data,
 
     output logic [31:0] alu_result,
-    output logic [31:0] pc_target,
     output logic pc_sel,
+    output logic [31:0] pc_target,
     output logic [4:0] rd_out,
     output logic reg_write_out
 );
@@ -44,28 +44,18 @@ logic [31:0] operand_b;
 assign operand_a = alu_src_a ? pc : (forward_a ? forward_a_data : rs1_data);
 assign operand_b = alu_src_b ? imm : (forward_b ? forward_b_data : rs2_data);
 
-logic condition_met;
-
-always_comb begin
-    case (branch_type)
-        3'b000: condition_met = rs1_data == rs2_data;
-        3'b001: condition_met = rs1_data != rs2_data;
-        3'b100: condition_met = $signed(rs1_data) < $signed(rs2_data);
-        3'b101: condition_met = $signed(rs1_data) >= $signed(rs2_data);
-        3'b110: condition_met = rs1_data < rs2_data;
-        3'b111: condition_met = rs1_data >= rs2_data;
-        default: condition_met = 0;
-    endcase
-
-    pc_sel = jump | (branch & condition_met);
-
-    if (jump)
-        pc_target = {alu_result[31:1], 1'b0};
-    else if (branch & condition_met)
-        pc_target = pc + imm;
-	else
-        pc_target = 32'b0;
-end
+pc_target_calculator pc_calc (
+    .pc(pc),
+    .operand_a(operand_a),
+    .operand_b(operand_b),
+    .branch(branch),
+    .jump(jump),
+    .branch_type(branch_type),
+    .imm(imm),
+    .alu_result(alu_result),
+    .pc_sel(pc_sel),
+    .pc_target(pc_target)
+);
 
 alu alu_inst (
     .A(operand_a),

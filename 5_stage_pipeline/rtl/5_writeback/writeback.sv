@@ -6,7 +6,7 @@ module writeback(
     input logic [31:0] mem_data,
     input logic [1:0] wb_sel,
 
-    output logic [31:0] write_data,
+    output logic [31:0] write_data
 );
 
 always_comb begin

@@ -6,6 +6,9 @@ TODO: Output the next program counter value to support branch and jump instructi
 module fetch(
     input logic clk,
     input logic reset,
+    input logic stall,
+    input logic pc_sel,
+    input logic [31:0] pc_target,
 
     output logic [31:0] pc,
     output logic [31:0] instruction
@@ -20,7 +23,10 @@ instr_mem imem(
 
 pc_update pc_upd(
     .current_address(pc),
-    .next_address(next_address)
+    .next_address(next_address),
+    .stall(stall),
+    .pc_sel(pc_sel),
+    .pc_target(pc_target)
 );
 
 pc pc_reg(

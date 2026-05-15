@@ -18,26 +18,20 @@ module EX_MEM (
     output logic reg_write_out
 );
 
-logic [31:0] alu_result;
-logic [31:0] pc_target;
-logic pc_sel;
-logic [4:0] rd;
-logic reg_write;
-
 always_ff @(posedge clk) begin
     if (reset) begin
-        alu_result <= 32'b0;
-        pc_target <= 32'b0;
-        pc_sel <= 1'b0;
-        rd <= 5'b0;
-        reg_write <= 1'b0;
+        alu_result_out <= 32'b0;
+        pc_target_out <= 32'b0;
+        pc_sel_out <= 1'b0;
+        rd_out <= 5'b0;
+        reg_write_out <= 1'b0;
     end
     else begin
-        alu_result <= alu_result_in;
-        pc_target <= pc_target_in;
-        pc_sel <= pc_sel_in;
-        rd <= rd_in;
-        reg_write <= reg_write_in;
+        alu_result_out <= alu_result_in;
+        pc_target_out <= pc_target_in;
+        pc_sel_out <= pc_sel_in;
+        rd_out <= rd_in;
+        reg_write_out <= reg_write_in;
     end    
 end
 

@@ -4,10 +4,12 @@ TODO: Extend module to handle branch and jump instructions for more complex PC u
 module pc_update(
     input  logic [31:0] current_address,
     input logic stall,
+    input logic pc_sel,
+    input logic [31:0] pc_target,
 
     output logic [31:0] next_address
 );
 
-assign next_address = stall ? current_address : current_address + 32'd4;
+assign next_address = stall ? current_address : (pc_sel ? pc_target : current_address + 32'd4);
 
 endmodule

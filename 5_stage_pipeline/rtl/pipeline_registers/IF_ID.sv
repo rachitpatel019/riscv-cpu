@@ -6,6 +6,7 @@ module IF_ID (
     input logic clk,
     input logic reset,
     input logic stall,
+    input logic flush,
     
     input logic [31:0] pc_in,
     input logic [31:0] instruction_in,
@@ -14,22 +15,19 @@ module IF_ID (
     output logic [31:0] instruction_out
 );
 
-logic [31:0] pc;
-logic [31:0] instruction;
-
 always_ff @(posedge clk) begin
-    if (reset) begin
-        pc <= 32'b0;
-        instruction <= 32'b0;
+    if (reset ||flush) begin
+        pc_out <= 32'b0;
+        instruction_out <= 32'h00000013; // NOP instruction (ADDI x0, x0, 0)
     end
     else begin
         if (stall) begin
-            pc <= pc;
-            instruction <= instruction;
+            pc_out <= pc_out;
+            instruction_out <= instruction_out;
         end
         else begin
-            pc <= pc_in;
-            instruction <= instruction_in;
+            pc_out <= pc_in;
+            instruction_out <= instruction_in;
         end
     end    
 end

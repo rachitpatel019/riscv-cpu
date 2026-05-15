@@ -6,6 +6,7 @@ module ID_EX (
     input logic clk,
     input logic reset,
     input logic stall,
+    input logic flush,
 
     // Outputs to execute stage
     input logic [31:0] rs1_data_in,
@@ -54,77 +55,54 @@ module ID_EX (
     output logic [2:0] branch_type_out
 );
 
-// Outputs to execute stage
-logic [31:0] rs1_data;
-logic [31:0] rs2_data;
-logic [31:0] immediate;
-logic [4:0]  rs1;
-logic [4:0]  rs2;
-logic [4:0]  rd;
-logic [31:0] pc;
-
-// Control signals
-logic [3:0] alu_op;
-logic alu_src_a;
-logic alu_src_b;
-logic reg_write;
-logic mem_read;
-logic mem_write;
-logic [1:0] mem_size;
-logic mem_unsigned;
-logic [1:0] wb_sel;
-logic branch;
-logic jump;
-logic [2:0] branch_type;
-
 always_ff @(posedge clk) begin
-    if (reset || stall) begin
+    if (reset || flush || stall) begin
         // Outputs to execute stage
-        rs1_data <= 32'b0;
-        rs2_data <= 32'b0;
-        immediate <= 32'b0;
-        rs1 <= 5'b0;
-        rs2 <= 5'b0;
-        rd <= 5'b0;
-        pc <= 32'b0;
+        rs1_data_out <= 32'b0;
+        rs2_data_out <= 32'b0;
+        immediate_out <= 32'b0;
+        rs1_out <= 5'b0;
+        rs2_out <= 5'b0;
+        rd_out <= 5'b0;
+        pc_out <= 32'b0;
 
         // Control signals
-        alu_op <= 4'b0;
-        alu_src_a <= 1'b0;
-        alu_src_b <= 1'b0;
-        reg_write <= 1'b0;
-        mem_read <= 1'b0;
-        mem_write <= 1'b0;
-        mem_size <= 2'b0;
-        mem_unsigned <= 1'b0;
-        wb_sel <= 2'b0;
-        branch <= 1'b0;
-        jump <= 1'b0;
-        branch_type <= 3'b0;
+        alu_op_out <= 4'b0;
+        alu_src_a_out <= 1'b0;
+        alu_src_b_out <= 1'b0;
+        reg_write_out <= 1'b0;
+        mem_read_out <= 1'b0;
+        mem_write_out <= 1'b0;
+        mem_size_out <= 2'b0;
+        mem_unsigned_out <= 1'b0;
+        wb_sel_out <= 2'b0;
+        branch_out <= 1'b0;
+        jump_out <= 1'b0;
+        branch_type_out <= 3'b0;
     end
     else begin
         // Outputs to execute stage
-        rs1_data <= rs1_data_in;
-        rs2_data <= rs2_data_in;
-        immediate <= immediate_in;
-        rs1 <= rs1_in,
-        rs2 <= rs2_in;
-        rd <= rd_in;
-        pc <= pc_in;
+        rs1_data_out <= rs1_data_in;
+        rs2_data_out <= rs2_data_in;
+        immediate_out <= immediate_in;
+        rs1_out <= rs1_in;
+        rs2_out <= rs2_in;
+        rd_out <= rd_in;
+        pc_out <= pc_in;
 
         // Control signals
-        alu_op <= alu_op_in;
-        alu_src_a <= alu_src_a_in,
-        alu_src_b <= alu_src_b_in;
-        reg_write <= reg_write_in;
-        mem_read <= mem_read_in;
-        mem_write <= mem_write_in;
-        mem_size <= mem_size_in;
-        mem_unsigned <= mem_unsigned_in;
-        wb_sel <= wb_sel_in;
-        branch <= branch_in,
-        jump <= jump_in;
-        branch_type <= branch_type_in;
+        alu_op_out <= alu_op_in;
+        alu_src_a_out <= alu_src_a_in;
+        alu_src_b_out <= alu_src_b_in;
+        reg_write_out <= reg_write_in;
+        mem_read_out <= mem_read_in;
+        mem_write_out <= mem_write_in;
+        mem_size_out <= mem_size_in;
+        mem_unsigned_out <= mem_unsigned_in;
+        wb_sel_out <= wb_sel_in;
+        branch_out <= branch_in;
+        jump_out <= jump_in;
+        branch_type_out <= branch_type_in;
     end    
 end
 
