@@ -47,13 +47,22 @@ module core (
     logic [1:0]  E_wb_sel;
     logic E_branch, E_jump;
     logic [2:0]  E_branch_type;
+    logic E_uses_rs2;
     logic [31:0] E_alu_result;
     logic E_pc_sel;
     logic [31:0] E_pc_target;
     logic [4:0]  E_rd_out;
+    logic [4:0]  E_rs1_out, E_rs2_out;
     logic E_reg_write_out;
 
     // --- Memory Stage Wires ---
+    logic [31:0] M_rs2_data;
+    logic [4:0]  M_rs1, M_rs2;
+    logic [1:0]  M_mem_size;
+    logic M_mem_unsigned;
+    logic M_mem_read, M_mem_write;
+    logic [1:0]  M_wb_sel;
+    logic [31:0] M_pc;
     logic [31:0] M_alu_result;
     logic [31:0] M_pc_target;
     logic M_pc_sel;
@@ -69,6 +78,8 @@ module core (
     logic [31:0] W_alu_result;
     logic [4:0]  W_rd;
     logic W_reg_write;
+    logic [1:0]  W_wb_sel;
+    logic [31:0] W_pc;
     logic [31:0] W_write_data;
 
     // ==========================================
@@ -160,6 +171,7 @@ module core (
         .branch_in(D_branch),
         .jump_in(D_jump),
         .branch_type_in(D_branch_type),
+        .uses_rs2_in(D_uses_rs2),
         
         .rs1_data_out(E_rs1_data),
         .rs2_data_out(E_rs2_data),
@@ -179,7 +191,8 @@ module core (
         .wb_sel_out(E_wb_sel),
         .branch_out(E_branch),
         .jump_out(E_jump),
-        .branch_type_out(E_branch_type)
+        .branch_type_out(E_branch_type),
+        .uses_rs2_out(E_uses_rs2)
     );
 
     // 3. Execute Stage
@@ -206,7 +219,9 @@ module core (
         .pc_sel(E_pc_sel),
         .pc_target(E_pc_target),
         .rd_out(E_rd_out),
-        .reg_write_out(E_reg_write_out)
+        .reg_write_out(E_reg_write_out),
+        .rs1_out(E_rs1_out),
+        .rs2_out(E_rs2_out)
     );
 
     // EX/MEM Pipeline Register
@@ -216,29 +231,45 @@ module core (
         .alu_result_in(E_alu_result),
         .pc_target_in(E_pc_target),
         .pc_sel_in(E_pc_sel),
+        .rs2_data_in(E_rs2_data),
+        .rs1_in(E_rs1_out),
+        .rs2_in(E_rs2_out),
         .rd_in(E_rd_out),
         .reg_write_in(E_reg_write_out),
+        .mem_read_in(E_mem_read),
+        .mem_write_in(E_mem_write),
+        .mem_size_in(E_mem_size),
+        .mem_unsigned_in(E_mem_unsigned),
+        .wb_sel_in(E_wb_sel),
+        .pc_in(E_pc),
         
         .alu_result_out(M_alu_result),
         .pc_target_out(M_pc_target),
         .pc_sel_out(M_pc_sel),
+        .rs2_data_out(M_rs2_data),
+        .rs1_out(M_rs1),
+        .rs2_out(M_rs2),
         .rd_out(M_rd),
-        .reg_write_out(M_reg_write)
+        .reg_write_out(M_reg_write),
+        .mem_read_out(M_mem_read),
+        .mem_write_out(M_mem_write),
+        .mem_size_out(M_mem_size),
+        .mem_unsigned_out(M_mem_unsigned),
+        .wb_sel_out(M_wb_sel),
+        .pc_out(M_pc)
     );
 
     // 4. Memory Stage
-    // Note: mem_read, mem_write, mem_size, mem_unsigned, and rs2_data are bypassed 
-    // directly from the EX stage here since they are missing from the EX_MEM register.
     memory memory_inst (
         .clk(clk),
         .alu_result(M_alu_result),
-        .rs2_data(E_rs2_data),
-        .mem_read(E_mem_read),
-        .mem_write(E_mem_write),
-        .mem_size(E_mem_size),
-        .mem_unsigned(E_mem_unsigned),
-        .rs1(E_rs1),
-        .rs2(E_rs2),
+        .rs2_data(M_rs2_data),
+        .mem_read(M_mem_read),
+        .mem_write(M_mem_write),
+        .mem_size(M_mem_size),
+        .mem_unsigned(M_mem_unsigned),
+        .rs1(M_rs1),
+        .rs2(M_rs2),
         .rd(M_rd),
         .reg_write(M_reg_write),
         
@@ -258,20 +289,23 @@ module core (
         .alu_result_output_in(M_alu_result_out),
         .rd_in(M_rd_out),
         .reg_write_in(M_reg_write_out),
+        .wb_sel_in(M_wb_sel),
+        .pc_in(M_pc),
         
         .read_data_out(W_read_data),
         .alu_result_output_out(W_alu_result),
         .rd_out(W_rd),
-        .reg_write_out(W_reg_write)
+        .reg_write_out(W_reg_write),
+        .wb_sel_out(W_wb_sel),
+        .pc_out(W_pc)
     );
 
     // 5. Writeback Stage
-    // Note: pc and wb_sel are bypassed from EX directly since MEM_WB lacks those fields.
     writeback writeback_inst (
-        .pc(E_pc),
+        .pc(W_pc),
         .alu_result(W_alu_result),
         .mem_data(W_read_data),
-        .wb_sel(E_wb_sel), 
+        .wb_sel(W_wb_sel), 
         .write_data(W_write_data)
     );
 
@@ -282,7 +316,7 @@ module core (
     forwarding_unit fwd_unit (
         .rs1_ex(E_rs1),
         .rs2_ex(E_rs2),
-        .uses_rs2(D_uses_rs2), // ID_EX lacks uses_rs2, substituting decode output directly
+        .uses_rs2(E_uses_rs2),
         .rd_mem(M_rd),
         .reg_write_mem(M_reg_write),
         .alu_result_mem(M_alu_result),

@@ -30,6 +30,7 @@ module ID_EX (
     input logic branch_in,
     input logic jump_in,
     input logic [2:0] branch_type_in,
+    input logic uses_rs2_in,
 
     // Outputs to execute stage
     output logic [31:0] rs1_data_out,
@@ -39,6 +40,7 @@ module ID_EX (
     output logic [4:0]  rs2_out,
     output logic [4:0]  rd_out,
     output logic [31:0] pc_out,
+    output logic uses_rs2_out,
 
     // Control signals
     output logic [3:0] alu_op_out,
@@ -103,6 +105,7 @@ always_ff @(posedge clk) begin
         branch_out <= branch_in;
         jump_out <= jump_in;
         branch_type_out <= branch_type_in;
+        uses_rs2_out <= uses_rs2_in;
     end    
 end
 

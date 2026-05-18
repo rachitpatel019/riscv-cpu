@@ -2,3 +2,4 @@
 /single_cycle/sim/sim_address.txt
 /5_stage_pipeline/sim/work
 /5_stage_pipeline/sim/sim_address.txt
+/5_stage_pipeline/sim/fpga.txt

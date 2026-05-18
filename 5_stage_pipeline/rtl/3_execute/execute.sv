@@ -28,7 +28,9 @@ module execute (
     output logic pc_sel,
     output logic [31:0] pc_target,
     output logic [4:0] rd_out,
-    output logic reg_write_out
+    output logic reg_write_out,
+    output logic [4:0] rs1_out,
+    output logic [4:0] rs2_out
 );
 
 // Pass through register locations for use in forwarding unit
