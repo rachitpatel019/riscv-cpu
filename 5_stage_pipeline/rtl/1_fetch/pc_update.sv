@@ -10,6 +10,6 @@ module pc_update(
     output logic [31:0] next_address
 );
 
-assign next_address = stall ? current_address : (pc_sel ? pc_target : current_address + 32'd4);
+assign next_address = pc_sel ? pc_target : (stall ? current_address : current_address + 32'd4);
 
 endmodule

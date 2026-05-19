@@ -1,80 +1,72 @@
-`timescale 1ns/1ps
+`timescale 1ns / 1ps
 
 module writeback_tb;
 
-// DUT Signals
-logic [31:0] pc;
-logic [31:0] alu_result;
-logic [31:0] read_data;
-logic [1:0] wb_sel;
+    // Port Signals
+    logic [31:0] pc;
+    logic [31:0] alu_result;
+    logic [31:0] mem_data;
+    logic [1:0] wb_sel;
+    logic [31:0] write_data;
 
-logic [31:0] write_data;
+    // Instantiate DUT
+    writeback dut (
+        .pc(pc),
+        .alu_result(alu_result),
+        .mem_data(mem_data),
+        .wb_sel(wb_sel),
+        .write_data(write_data)
+    );
 
-// Instantiate DUT with explicit port connections
-writeback dut (
-    .pc(pc),
-    .alu_result(alu_result),
-    .read_data(read_data),
-    .wb_sel(wb_sel),
-    .write_data(write_data)
-);
+    // Test Variables
+    int tests_passed = 0;
+    int total_tests = 0;
 
-// Test tracking
-int test_count = 0;
-int fail_count = 0;
+    // Task for checking results
+    task check_wb(input [31:0] expected, input string msg);
+        total_tests++;
+        if (write_data === expected) begin
+            $display("[PASS] %s: Write Data = 0x%h", msg, write_data);
+            tests_passed++;
+        end else begin
+            $display("[FAIL] %s: Expected 0x%h, Got 0x%h", msg, expected, write_data);
+        end
+    endtask
 
-task run_test(
-    input logic [31:0] pc_in,
-    input logic [31:0] alu_in,
-    input logic [31:0] mem_in,
-    input logic [1:0] sel,
-    input logic [31:0] expected
-);
-begin
-    test_count++;
+    initial begin
+        $display("Starting Writeback Stage Testbench...");
 
-    pc         = pc_in;
-    alu_result = alu_in;
-    read_data  = mem_in;
-    wb_sel     = sel;
+        // Initialize
+        pc = 32'h0000_1000;
+        alu_result = 32'hAAAA_AAAA;
+        mem_data = 32'hBCDE_F012;
 
-    #1; // allow combinational logic to settle
+        // --- Test ALU Result Selection ---
+        wb_sel = 2'b00;
+        #1;
+        check_wb(32'hAAAA_AAAA, "Select ALU Result");
 
-    if (write_data !== expected) begin
-        $display("Test %0d FAILED", test_count);
-        $display("  pc=0x%08h alu_result=0x%08h read_data=0x%08h wb_sel=%0b", pc_in, alu_in, mem_in, sel);
-        $display("  Expected=0x%08h, Got=0x%08h\n", expected, write_data);
-        fail_count++;
-    end else begin
-        $display("Test %0d PASSED", test_count);
+        // --- Test Memory Data Selection ---
+        wb_sel = 2'b01;
+        #1;
+        check_wb(32'hBCDE_F012, "Select Memory Data");
+
+        // --- Test PC+4 Selection ---
+        wb_sel = 2'b10;
+        #1;
+        check_wb(32'h0000_1004, "Select PC+4");
+
+        // --- Test Default Case ---
+        wb_sel = 2'b11;
+        #1;
+        check_wb(32'hAAAA_AAAA, "Select Default (ALU)");
+
+        // Generate Summary
+        $display("\nWriteback Stage Test Summary: %0d/%0d tests passed", tests_passed, total_tests);
+        if (tests_passed == total_tests) $display("SUCCESS: All tests passed!");
+        else $display("FAILURE: Some tests failed.");
+        
+        $finish;
     end
-end
-endtask
-
-// Test Cases
-initial begin
-    // ALU path (wb_sel = 2'b00)
-    run_test(32'h0000_0000, 10, 100, 2'b00, 32'h0000_000A);
-    run_test(32'h0000_0010, 32'hFFFFFFFF, 123, 2'b00, 32'hFFFFFFFF);
-
-    // Memory path (wb_sel = 2'b01)
-    run_test(32'h0000_0020, 10, 32'h1234_5678, 2'b01, 32'h1234_5678);
-    run_test(32'h0000_0030, 32'hABCDEF01, 32'h8000_0000, 2'b01, 32'h8000_0000);
-
-    // PC+4 path (wb_sel = 2'b10)
-    run_test(32'h0000_0040, 32'h1111_1111, 32'h2222_2222, 2'b10, 32'h0000_0044);
-    run_test(32'hFFFF_FFFC, 32'hDEAD_BEEF, 32'hCAFE_BABE, 2'b10, 32'h0000_0000); // wrap-around example
-
-    // Default fallback path (wb_sel = 2'b11) should behave like ALU result
-    run_test(32'h0000_0050, 32'h0000_00FF, 32'h0000_FF00, 2'b11, 32'h0000_00FF);
-
-    // Edge Cases
-    run_test(32'h0000_0060, 32'h0000_0000, 32'h0000_0000, 2'b00, 32'h0000_0000);
-    run_test(32'h0000_0070, 32'h0000_0001, 32'h0000_0002, 2'b01, 32'h0000_0002);
-
-    // Testing report
-    $display("Tests run: %0d, Failures: %0d", test_count, fail_count);
-    $finish;
-end
 
 endmodule

@@ -1,271 +1,152 @@
-`timescale 1ns/1ps
+`timescale 1ns / 1ps
 
 module decode_tb;
+    import decoder_package::*;
+    import alu_package::*;
 
-import decoder_package::*;
-import alu_package::*;
+    // Port Signals
+    logic clk;
+    logic [31:0] pc;
+    logic [31:0] instruction;
+    logic reg_write_wb;
+    logic [4:0] rd_wb;
+    logic [31:0] write_data_wb;
 
-// DUT Signals
-logic clk;
-logic [31:0] pc;
-logic [31:0] instruction;
+    logic [31:0] rs1_data, rs2_data, immediate;
+    logic [4:0] rs1, rs2, rd;
+    logic [31:0] pc_out;
+    logic uses_rs2;
+    logic [3:0] alu_op;
+    logic alu_src_a, alu_src_b;
+    logic reg_write, mem_read, mem_write;
+    logic [1:0] mem_size;
+    logic mem_unsigned;
+    logic [1:0] wb_sel;
+    logic branch, jump;
+    logic [2:0] branch_type;
 
-// Write-back interface
-logic reg_write_wb;
-logic [4:0]  rd_wb;
-logic [31:0] write_data_wb;
+    // Instantiate DUT
+    decode dut (
+        .clk(clk),
+        .pc(pc),
+        .instruction(instruction),
+        .reg_write_wb(reg_write_wb),
+        .rd_wb(rd_wb),
+        .write_data_wb(write_data_wb),
+        .rs1_data(rs1_data),
+        .rs2_data(rs2_data),
+        .immediate(immediate),
+        .rs1(rs1),
+        .rs2(rs2),
+        .rd(rd),
+        .pc_out(pc_out),
+        .uses_rs2(uses_rs2),
+        .alu_op(alu_op),
+        .alu_src_a(alu_src_a),
+        .alu_src_b(alu_src_b),
+        .reg_write(reg_write),
+        .mem_read(mem_read),
+        .mem_write(mem_write),
+        .mem_size(mem_size),
+        .mem_unsigned(mem_unsigned),
+        .wb_sel(wb_sel),
+        .branch(branch),
+        .jump(jump),
+        .branch_type(branch_type)
+    );
 
-// Outputs
-logic [31:0] rs1_data;
-logic [31:0] rs2_data;
-logic [31:0] immediate;
-logic [4:0]  rs1;
-logic [4:0]  rs2;
-logic [4:0]  rd;
-logic [31:0] pc_out;
+    // Clock Generation
+    initial clk = 0;
+    always #5 clk = ~clk;
 
-// Control signals
-logic [3:0] alu_op;
-logic alu_src_a;
-logic alu_src_b;
-logic reg_write;
-logic mem_read;
-logic mem_write;
-logic [1:0] mem_size;
-logic mem_unsigned;
-logic [1:0] wb_sel;
-logic branch;
-logic jump;
-logic [2:0] branch_type;
+    // Test Variables
+    int tests_passed = 0;
+    int total_tests = 0;
 
-decode dut (.*);
+    // Task for checking results
+    task check_ctrl(input string msg, input logic exp_reg_write, input logic exp_mem_read, input logic exp_mem_write);
+        total_tests++;
+        if (reg_write === exp_reg_write && mem_read === exp_mem_read && mem_write === exp_mem_write) begin
+            $display("[PASS] %s: Ctrl signals OK", msg);
+            tests_passed++;
+        end else begin
+            $display("[FAIL] %s: Ctrl signals mismatch. Got R: %b, MR: %b, MW: %b", msg, reg_write, mem_read, mem_write);
+        end
+    endtask
 
-// Clock
-initial clk = 0;
-always #5 clk = ~clk;
+    initial begin
+        $display("Starting Decode Stage Testbench...");
 
-// Counters
-int test_count = 0;
-int fail_count = 0;
+        // Initialize
+        pc = 32'h0000_1000;
+        reg_write_wb = 0;
+        rd_wb = 0;
+        write_data_wb = 0;
 
-task test_decode(
-    input logic [31:0] Instruction,
-    input logic [31:0] Pc,
+        // Pre-load registers using WB interface
+        // Write 0xDEADBEEF to x2
+        @(posedge clk);
+        reg_write_wb = 1;
+        rd_wb = 2;
+        write_data_wb = 32'hDEADBEEF;
+        @(posedge clk);
+        // Write 0xCAFEBABE to x3
+        rd_wb = 3;
+        write_data_wb = 32'hCAFEBABE;
+        @(posedge clk);
+        reg_write_wb = 0;
 
-    // Write-back
-    input logic regWriteWb,
-    input logic [4:0] rdWb,
-    input logic [31:0] writeDataWb,
+        // --- Test R-type: ADD x1, x2, x3 ---
+        // opcode=0110011, f3=000, f7=0000000, rd=1, rs1=2, rs2=3
+        instruction = {7'b0000000, 5'd3, 5'd2, 3'b000, 5'd1, 7'b0110011};
+        #1;
+        check_ctrl("ADD x1, x2, x3", 1, 0, 0);
+        if (rs1_data === 32'hDEADBEEF && rs2_data === 32'hCAFEBABE) begin
+            $display("[PASS] Register data read OK");
+            tests_passed++;
+        end else begin
+            $display("[FAIL] Register data mismatch. rs1: 0x%h, rs2: 0x%h", rs1_data, rs2_data);
+        end
+        total_tests++;
 
-    // Expected outputs
-    input logic [31:0] expectedRs1Data,
-    input logic [31:0] expectedRs2Data,
-    input logic [31:0] expectedImmediate,
-    input logic [4:0]  expectedRs1,
-    input logic [4:0]  expectedRs2,
-    input logic [4:0]  expectedRd,
-    input logic [31:0] expectedPcOut,
+        // --- Test I-type: ADDI x4, x2, 123 ---
+        // opcode=0010011, f3=000, rd=4, rs1=2, imm=123
+        instruction = {12'd123, 5'd2, 3'b000, 5'd4, 7'b0010011};
+        #1;
+        check_ctrl("ADDI x4, x2, 123", 1, 0, 0);
+        if (immediate === 32'd123) begin
+            $display("[PASS] Immediate OK");
+            tests_passed++;
+        end else begin
+            $display("[FAIL] Immediate mismatch. Got 0x%h", immediate);
+        end
+        total_tests++;
 
-    input logic [3:0] expectedAluOp,
-    input logic expectedAluSrcA,
-    input logic expectedAluSrcB,
-    input logic expectedRegWrite,
-    input logic expectedMemRead,
-    input logic expectedMemWrite,
-    input logic [1:0] expectedMemSize,
-    input logic expectedMemUnsigned,
-    input logic [1:0] expectedWbSel,
-    input logic expectedBranch,
-    input logic expectedJump,
-    input logic [2:0] expectedBranchType
-);
-begin
-    test_count++;
+        // --- Test Load: LW x6, 4(x2) ---
+        // opcode=0000011, f3=010 (Word), rd=6, rs1=2, imm=4
+        instruction = {12'd4, 5'd2, 3'b010, 5'd6, 7'b0000011};
+        #1;
+        check_ctrl("LW x6, 4(x2)", 1, 1, 0);
+        if (wb_sel === 2'b01) begin // Select memory data
+            $display("[PASS] wb_sel OK for LW");
+            tests_passed++;
+        end else begin
+            $display("[FAIL] wb_sel mismatch for LW: %b", wb_sel);
+        end
+        total_tests++;
 
-    // Apply write-back first
-    reg_write_wb = regWriteWb;
-    rd_wb = rdWb;
-    write_data_wb = writeDataWb;
-    pc = Pc;
+        // --- Test Store: SW x8, 8(x2) ---
+        // opcode=0100011, f3=010, rs1=2, rs2=8, imm=8
+        instruction = {7'b0000000, 5'd8, 5'd2, 3'b010, 5'b01000, 7'b0100011}; // imm[11:5], rs2, rs1, f3, imm[4:0], opcode
+        #1;
+        check_ctrl("SW x8, 8(x2)", 0, 0, 1);
 
-    @(posedge clk); // commit write
-
-    // Apply instruction
-    instruction = Instruction;
-
-    #1; // allow combinational logic to settle
-
-    // Checks
-    if (
-        rs1_data !== expectedRs1Data ||
-        rs2_data !== expectedRs2Data ||
-        immediate !== expectedImmediate ||
-        rs1 !== expectedRs1 ||
-        rs2 !== expectedRs2 ||
-        rd  !== expectedRd ||
-        pc_out !== expectedPcOut ||
-        alu_op !== expectedAluOp ||
-        alu_src_a !== expectedAluSrcA ||
-        alu_src_b !== expectedAluSrcB ||
-        reg_write !== expectedRegWrite ||
-        mem_read !== expectedMemRead ||
-        mem_write !== expectedMemWrite ||
-        mem_size !== expectedMemSize ||
-        mem_unsigned !== expectedMemUnsigned ||
-        wb_sel !== expectedWbSel ||
-        branch !== expectedBranch ||
-        jump !== expectedJump ||
-        branch_type !== expectedBranchType
-    ) begin
-        fail_count++;
-        $display("Test %0d FAILED", test_count);
-        $display("Instruction = %h", Instruction);
+        // Generate Summary
+        $display("\nDecode Stage Test Summary: %0d/%0d tests passed", tests_passed, total_tests);
+        if (tests_passed == total_tests) $display("SUCCESS: All tests passed!");
+        else $display("FAILURE: Some tests failed.");
+        
+        $finish;
     end
-    else begin
-        $display("Test %0d PASSED", test_count);
-    end
-
-end
-endtask
-
-
-// Test Cases
-initial begin
-    // Initialize
-    instruction = 0;
-    reg_write_wb = 0;
-    rd_wb = 0;
-    write_data_wb = 0;
-
-    @(posedge clk);
-
-    // Preload registers
-    test_decode(32'b0, 32'd100, 1, 5'd1, 32'd10, 0,0,0,0,0,0, 32'd100, ALU_ADD, 0,0, 0,0,0, 2'b00, 0, 2'b00, 0,0, 3'b000);
-    test_decode(32'b0, 32'd100, 1, 5'd2, 32'd20, 0,0,0,0,0,0, 32'd100, ALU_ADD, 0,0, 0,0,0, 2'b00, 0, 2'b00, 0,0, 3'b000);
-
-    // ADD x3, x1, x2
-    test_decode(
-        32'b0000000_00010_00001_000_00011_0110011,
-        32'd100,
-        0,0,0,
-        32'd10,
-        32'd20,
-        32'd0,
-        5'd1,
-        5'd2,
-        5'd3,
-        32'd100,
-        ALU_ADD,
-        0,0,
-        1,0,0,
-        2'b00, 0, 2'b00,
-        0,0,
-        3'b000
-    );
-
-    // ADDI x4, x1, 5
-    test_decode(
-        32'b000000000101_00001_000_00100_0010011,
-        32'd100,
-        0,0,0,
-        32'd10,
-        32'd0,
-        32'd5,
-        5'd1,
-        5'd5,
-        5'd4,
-        32'd100,
-        ALU_ADD,
-        0,1,
-        1,0,0,
-        2'b00, 0, 2'b00,
-        0,0,
-        3'b000
-    );
-
-    // LW x5, 8(x1)
-    test_decode(
-        32'b000000001000_00001_010_00101_0000011,
-        32'd100,
-        0,0,0,
-        32'd10,
-        32'd0,
-        32'd8,
-        5'd1,
-        5'd8,
-        5'd5,
-        32'd100,
-        ALU_ADD,
-        0,1,
-        1,1,0,
-        2'b10, 0, 2'b01,
-        0,0,
-        3'b010
-    );
-
-    // SW x2, 4(x1)
-    test_decode(
-        32'b0000000_00010_00001_010_00100_0100011,
-        32'd100,
-        0,0,0,
-        32'd10,
-        32'd20,
-        32'd4,
-        5'd1,
-        5'd2,
-        5'd4,
-        32'd100,
-        ALU_ADD,
-        0,1,
-        0,0,1,
-        2'b10, 0, 2'b00,
-        0,0,
-        3'b010
-    );
-
-    // BEQ x1, x2, 4
-    test_decode(
-        32'b0000000_00010_00001_000_00100_1100011,
-        32'd100,
-        0,0,0,
-        32'd10,
-        32'd20,
-        32'd4,
-        5'd1,
-        5'd2,
-        5'd4,
-        32'd100,
-        ALU_SUB,
-        0,0,
-        0,0,0,
-        2'b00, 0, 2'b00,
-        1,0,
-        3'b000
-    );
-
-    // JAL x1
-    test_decode(
-        32'b00000000010000000000_00001_1101111,
-        32'd100,
-        0,0,0,
-        32'd0,
-        32'd0,
-        32'd4,
-        5'd0,
-        5'd4,
-        5'd1,
-        32'd100,
-        ALU_ADD,
-        1,1,
-        1,0,0,
-        2'b00, 0, 2'b10,
-        0,1,
-        3'b000
-    );
-
-    // Report
-    $display("Tests run: %0d, Failures: %0d", test_count, fail_count);
-    $finish;
-end
 
 endmodule

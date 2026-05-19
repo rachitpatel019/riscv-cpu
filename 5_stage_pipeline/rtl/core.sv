@@ -54,6 +54,7 @@ module core (
     logic [4:0]  E_rd_out;
     logic [4:0]  E_rs1_out, E_rs2_out;
     logic E_reg_write_out;
+    logic [31:0] E_rs2_data_fwd;
 
     // --- Memory Stage Wires ---
     logic [31:0] M_rs2_data;
@@ -221,7 +222,8 @@ module core (
         .rd_out(E_rd_out),
         .reg_write_out(E_reg_write_out),
         .rs1_out(E_rs1_out),
-        .rs2_out(E_rs2_out)
+        .rs2_out(E_rs2_out),
+        .rs2_data_out(E_rs2_data_fwd)
     );
 
     // EX/MEM Pipeline Register
@@ -231,7 +233,7 @@ module core (
         .alu_result_in(E_alu_result),
         .pc_target_in(E_pc_target),
         .pc_sel_in(E_pc_sel),
-        .rs2_data_in(E_rs2_data),
+        .rs2_data_in(E_rs2_data_fwd),
         .rs1_in(E_rs1_out),
         .rs2_in(E_rs2_out),
         .rd_in(E_rd_out),

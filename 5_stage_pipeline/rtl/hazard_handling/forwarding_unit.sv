@@ -33,13 +33,13 @@ always_comb begin
         forward_a = 1;
         forward_a_data = alu_result_mem;
     end
-    else if (uses_rs2 && reg_write_wb && (rd_wb != 0) && (rd_wb == rs1_ex)) begin
+    else if (reg_write_wb && (rd_wb != 0) && (rd_wb == rs1_ex)) begin
         forward_a = 1;
         forward_a_data = write_data_wb; 
     end
 
     // Forward B (rs2)
-    if (reg_write_mem && (rd_mem != 0) && (rd_mem == rs2_ex)) begin
+    if (uses_rs2 && reg_write_mem && (rd_mem != 0) && (rd_mem == rs2_ex)) begin
         forward_b = 1;
         forward_b_data = alu_result_mem; 
     end

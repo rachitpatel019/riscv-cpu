@@ -16,7 +16,7 @@ initial begin
     for (i = 0; i < MEM_DEPTH; i++)
         instruction_memory[i] = 32'b0;
 
-    $readmemh("test.hex", instruction_memory);
+    $readmemh("program.hex", instruction_memory);
 end
 
 /* Because every instruction starts at an address that is a multiple of 4,

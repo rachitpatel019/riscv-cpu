@@ -30,7 +30,8 @@ module execute (
     output logic [4:0] rd_out,
     output logic reg_write_out,
     output logic [4:0] rs1_out,
-    output logic [4:0] rs2_out
+    output logic [4:0] rs2_out,
+    output logic [31:0] rs2_data_out
 );
 
 // Pass through register locations for use in forwarding unit
@@ -45,6 +46,9 @@ logic [31:0] operand_b;
 // Select operands
 assign operand_a = alu_src_a ? pc : (forward_a ? forward_a_data : rs1_data);
 assign operand_b = alu_src_b ? imm : (forward_b ? forward_b_data : rs2_data);
+
+// Forwarded rs2 data for Store instructions (even if ALU uses imm for offset)
+assign rs2_data_out = forward_b ? forward_b_data : rs2_data;
 
 pc_target_calculator pc_calc (
     .pc(pc),
