@@ -35,8 +35,10 @@ module memory_arbiter (
     output logic        c1_stall,
 
     // Shared Instruction Memory
-    output logic [31:0] shared_imem_addr,
-    input  logic [31:0] shared_imem_data,
+    output logic [31:0] shared_imem_addr_a,
+    input  logic [31:0] shared_imem_data_a,
+    output logic [31:0] shared_imem_addr_b,
+    input  logic [31:0] shared_imem_data_b,
 
     // Shared Data Memory
     output logic [31:0] shared_dmem_addr,
@@ -49,20 +51,15 @@ module memory_arbiter (
 );
 
     // -------------------------------------------------------------------------
-    // Instruction Memory Arbitration (Fixed Priority: Core 0 > Core 1)
+    // Instruction Memory Interface (Dual-Ported Pass-through)
     // -------------------------------------------------------------------------
-    // Note: In a real system, IMEM is often dual-ported or cached. 
-    // Here we arbitrate for a single-ported IMEM.
+    // Both cores can fetch instructions independently from the dual-ported IMEM.
     
-    assign shared_imem_addr = c0_imem_addr; // Simple pass-through for demo
-    assign c0_imem_data = shared_imem_data;
-    assign c1_imem_data = shared_imem_data; // Both see same if addr is same
-    // Stalling for IMEM contention would be complex without a bus protocol.
-    // For this implementation, we assume dual-ported IMEM or interleaved.
-    // If we must arbitrate:
-    /*
-    assign shared_imem_addr = c0_priority ? c0_imem_addr : c1_imem_addr;
-    */
+    assign shared_imem_addr_a = c0_imem_addr;
+    assign c0_imem_data       = shared_imem_data_a;
+
+    assign shared_imem_addr_b = c1_imem_addr;
+    assign c1_imem_data       = shared_imem_data_b;
 
     // -------------------------------------------------------------------------
     // Data Memory Arbitration (Fixed Priority: Core 0 > Core 1)

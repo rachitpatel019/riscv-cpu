@@ -42,8 +42,10 @@ module core_tb;
 
     // Instantiate Instruction Memory
     instr_mem imem (
-        .pc(imem_addr),
-        .instruction(imem_instruction)
+        .pc_a(imem_addr),
+        .instruction_a(imem_instruction),
+        .pc_b(32'd0),
+        .instruction_b()
     );
 
     // Instantiate Data Memory

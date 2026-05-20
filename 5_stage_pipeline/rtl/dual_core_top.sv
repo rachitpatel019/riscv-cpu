@@ -36,8 +36,10 @@ module dual_core_top (
     logic        c1_stall;
 
     // --- Shared Memory Interface Wires ---
-    logic [31:0] shared_imem_addr;
-    logic [31:0] shared_imem_data;
+    logic [31:0] shared_imem_addr_a;
+    logic [31:0] shared_imem_data_a;
+    logic [31:0] shared_imem_addr_b;
+    logic [31:0] shared_imem_data_b;
     logic [31:0] shared_dmem_addr;
     logic [31:0] shared_dmem_wdata;
     logic        shared_dmem_read;
@@ -116,8 +118,10 @@ module dual_core_top (
         .c1_dmem_is_sc(c1_dmem_is_sc),
         .c1_dmem_sc_success(c1_dmem_sc_success),
         .c1_stall(c1_stall),
-        .shared_imem_addr(shared_imem_addr),
-        .shared_imem_data(shared_imem_data),
+        .shared_imem_addr_a(shared_imem_addr_a),
+        .shared_imem_data_a(shared_imem_data_a),
+        .shared_imem_addr_b(shared_imem_addr_b),
+        .shared_imem_data_b(shared_imem_data_b),
         .shared_dmem_addr(shared_dmem_addr),
         .shared_dmem_wdata(shared_dmem_wdata),
         .shared_dmem_read(shared_dmem_read),
@@ -129,8 +133,10 @@ module dual_core_top (
 
     // 4. Shared Instruction Memory
     instr_mem imem (
-        .pc(shared_imem_addr),
-        .instruction(shared_imem_data)
+        .pc_a(shared_imem_addr_a),
+        .instruction_a(shared_imem_data_a),
+        .pc_b(shared_imem_addr_b),
+        .instruction_b(shared_imem_data_b)
     );
 
     // 5. Shared Data Memory

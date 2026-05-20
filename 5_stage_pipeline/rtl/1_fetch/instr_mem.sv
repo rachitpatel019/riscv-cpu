@@ -2,9 +2,11 @@
 Stores all instructions and outputs the current instruction. */
 
 module instr_mem(
-    input  logic [31:0] pc,
+    input  logic [31:0] pc_a,
+    input  logic [31:0] pc_b,
 
-    output logic [31:0] instruction
+    output logic [31:0] instruction_a,
+    output logic [31:0] instruction_b
 );
 
 localparam MEM_DEPTH = 256;
@@ -21,6 +23,7 @@ end
 
 /* Because every instruction starts at an address that is a multiple of 4,
 the last two bits of the Program Counter (PC) will always be 00. */
-assign instruction = instruction_memory[pc[31:2]];
+assign instruction_a = instruction_memory[pc_a[31:2]];
+assign instruction_b = instruction_memory[pc_b[31:2]];
 
 endmodule

@@ -12,7 +12,7 @@ Z0 dC:/Rachit/RISC-V CPU/riscv-cpu/5_stage_pipeline/sim
 valu
 Z1 DXx6 sv_std 3 std 0 22 VYECXdT12H8WgbUP_5Y6:3
 Z2 DXx4 work 11 alu_package 0 22 M@n42mGzZ[jf?hFQ_IR:k0
-Z3 !s110 1779249734
+Z3 !s110 1779288366
 !i10b 1
 !s100 [3=mJF00hEeR:I5eNT_VS2
 Z4 !s11b Dg1SIo80bB@j0V0VzS_@n1
@@ -23,21 +23,21 @@ R0
 w1778278970
 8../rtl/3_execute/alu.sv
 F../rtl/3_execute/alu.sv
-!i122 67
+!i122 72
 L0 3 28
 Z6 OV;L;2020.1;71
 r1
 !s85 0
 31
-Z7 !s108 1779249733.000000
-!s107 ../tb/dual_core_top_tb.sv|../rtl/dual_core_top.sv|../rtl/core.sv|../rtl/hazard_handling/memory_arbiter.sv|../rtl/hazard_handling/hazard_detection_unit.sv|../rtl/hazard_handling/forwarding_unit.sv|../rtl/pipeline_registers/MEM_WB.sv|../rtl/pipeline_registers/EX_MEM.sv|../rtl/pipeline_registers/ID_EX.sv|../rtl/pipeline_registers/IF_ID.sv|../rtl/5_writeback/writeback.sv|../rtl/4_memory/memory.sv|../rtl/4_memory/amo_alu.sv|../rtl/4_memory/data_mem.sv|../rtl/3_execute/execute.sv|../rtl/3_execute/pc_target_calculator.sv|../rtl/3_execute/alu.sv|../rtl/2_decode/decode.sv|../rtl/2_decode/control.sv|../rtl/2_decode/imm_gen.sv|../rtl/2_decode/regfile.sv|../rtl/1_fetch/fetch.sv|../rtl/1_fetch/pc_update.sv|../rtl/1_fetch/pc.sv|../rtl/1_fetch/instr_mem.sv|../packages/alu_pkg.sv|../packages/decoder_pkg.sv|
-Z8 !s90 -sv|../packages/decoder_pkg.sv|../packages/alu_pkg.sv|../rtl/1_fetch/instr_mem.sv|../rtl/1_fetch/pc.sv|../rtl/1_fetch/pc_update.sv|../rtl/1_fetch/fetch.sv|../rtl/2_decode/regfile.sv|../rtl/2_decode/imm_gen.sv|../rtl/2_decode/control.sv|../rtl/2_decode/decode.sv|../rtl/3_execute/alu.sv|../rtl/3_execute/pc_target_calculator.sv|../rtl/3_execute/execute.sv|../rtl/4_memory/data_mem.sv|../rtl/4_memory/amo_alu.sv|../rtl/4_memory/memory.sv|../rtl/5_writeback/writeback.sv|../rtl/pipeline_registers/IF_ID.sv|../rtl/pipeline_registers/ID_EX.sv|../rtl/pipeline_registers/EX_MEM.sv|../rtl/pipeline_registers/MEM_WB.sv|../rtl/hazard_handling/forwarding_unit.sv|../rtl/hazard_handling/hazard_detection_unit.sv|../rtl/hazard_handling/memory_arbiter.sv|../rtl/core.sv|../rtl/dual_core_top.sv|../tb/dual_core_top_tb.sv|
+Z7 !s108 1779288366.000000
+Z8 !s107 ../tb/execute_tb.sv|../rtl/3_execute/execute.sv|../rtl/3_execute/pc_target_calculator.sv|../rtl/3_execute/alu.sv|../packages/alu_pkg.sv|../packages/decoder_pkg.sv|
+Z9 !s90 -sv|../packages/decoder_pkg.sv|../packages/alu_pkg.sv|../rtl/3_execute/alu.sv|../rtl/3_execute/pc_target_calculator.sv|../rtl/3_execute/execute.sv|../tb/execute_tb.sv|
 !i113 1
 o-sv
-Z9 tCvgOpt 0
+Z10 tCvgOpt 0
 Xalu_package
 R1
-R3
+Z11 !s110 1779288369
 !i10b 1
 !s100 aF96IcTc9b]6ZHYM4eg[J0
 R4
@@ -48,22 +48,22 @@ R0
 w1774575688
 8../packages/alu_pkg.sv
 F../packages/alu_pkg.sv
-!i122 67
-Z10 L0 1 0
+!i122 75
+Z12 L0 1 0
 R6
 r1
 !s85 0
 31
-R7
-Z11 !s107 ../tb/dual_core_top_tb.sv|../rtl/dual_core_top.sv|../rtl/core.sv|../rtl/hazard_handling/memory_arbiter.sv|../rtl/hazard_handling/hazard_detection_unit.sv|../rtl/hazard_handling/forwarding_unit.sv|../rtl/pipeline_registers/MEM_WB.sv|../rtl/pipeline_registers/EX_MEM.sv|../rtl/pipeline_registers/ID_EX.sv|../rtl/pipeline_registers/IF_ID.sv|../rtl/5_writeback/writeback.sv|../rtl/4_memory/memory.sv|../rtl/4_memory/amo_alu.sv|../rtl/4_memory/data_mem.sv|../rtl/3_execute/execute.sv|../rtl/3_execute/pc_target_calculator.sv|../rtl/3_execute/alu.sv|../rtl/2_decode/decode.sv|../rtl/2_decode/control.sv|../rtl/2_decode/imm_gen.sv|../rtl/2_decode/regfile.sv|../rtl/1_fetch/fetch.sv|../rtl/1_fetch/pc_update.sv|../rtl/1_fetch/pc.sv|../rtl/1_fetch/instr_mem.sv|../packages/alu_pkg.sv|../packages/decoder_pkg.sv|
-R8
+Z13 !s108 1779288369.000000
+!s107 ../tb/writeback_tb.sv|../rtl/5_writeback/writeback.sv|../packages/alu_pkg.sv|../packages/decoder_pkg.sv|
+Z14 !s90 -sv|../packages/decoder_pkg.sv|../packages/alu_pkg.sv|../rtl/5_writeback/writeback.sv|../tb/writeback_tb.sv|
 !i113 1
 o-sv
-R9
+R10
 vamo_alu
 R1
-Z12 DXx4 work 15 decoder_package 0 22 lakMO3Mn>:2d_h^;eVJZ>3
-R3
+Z15 DXx4 work 15 decoder_package 0 22 lakMO3Mn>:2d_h^;eVJZ>3
+Z16 !s110 1779288368
 !i10b 1
 !s100 ^EzZ5WbbGEmEKB=4;ahIn3
 R4
@@ -74,23 +74,23 @@ R0
 w1779238318
 8../rtl/4_memory/amo_alu.sv
 F../rtl/4_memory/amo_alu.sv
-!i122 67
+!i122 74
 L0 4 25
 R6
 r1
 !s85 0
 31
-R7
-R11
-R8
+Z17 !s108 1779288368.000000
+Z18 !s107 ../tb/memory_tb.sv|../rtl/4_memory/memory.sv|../rtl/4_memory/amo_alu.sv|../rtl/4_memory/data_mem.sv|../packages/alu_pkg.sv|../packages/decoder_pkg.sv|
+Z19 !s90 -sv|../packages/decoder_pkg.sv|../packages/alu_pkg.sv|../rtl/4_memory/data_mem.sv|../rtl/4_memory/amo_alu.sv|../rtl/4_memory/memory.sv|../tb/memory_tb.sv|
 !i113 1
 o-sv
-R9
+R10
 vcontrol
 R1
-R12
+R15
 R2
-R3
+Z20 !s110 1779288365
 !i10b 1
 !s100 NC0LN^F7dZWN_CC[<T3N32
 R4
@@ -98,24 +98,24 @@ I3dfjSR[8<GVRPcjdX@YoJ2
 R5
 S1
 R0
-Z13 w1779238225
+Z21 w1779238225
 8../rtl/2_decode/control.sv
 F../rtl/2_decode/control.sv
-!i122 67
+!i122 71
 L0 3 233
 R6
 r1
 !s85 0
 31
-R7
-R11
-R8
+Z22 !s108 1779288365.000000
+Z23 !s107 ../tb/decode_tb.sv|../rtl/2_decode/decode.sv|../rtl/2_decode/control.sv|../rtl/2_decode/imm_gen.sv|../rtl/2_decode/regfile.sv|../packages/alu_pkg.sv|../packages/decoder_pkg.sv|
+Z24 !s90 -sv|../packages/decoder_pkg.sv|../packages/alu_pkg.sv|../rtl/2_decode/regfile.sv|../rtl/2_decode/imm_gen.sv|../rtl/2_decode/control.sv|../rtl/2_decode/decode.sv|../tb/decode_tb.sv|
 !i113 1
 o-sv
-R9
+R10
 vcore
 R1
-R3
+Z25 !s110 1779288355
 !i10b 1
 !s100 eKiNdOo6d5@mAL:P@T4Ng2
 R4
@@ -126,46 +126,46 @@ R0
 w1779249172
 8../rtl/core.sv
 F../rtl/core.sv
-!i122 67
+!i122 70
 L0 3 395
 R6
 r1
 !s85 0
 31
-R7
-R11
-R8
+Z26 !s108 1779288355.000000
+Z27 !s107 ../tb/dual_core_top_tb.sv|../rtl/dual_core_top.sv|../rtl/core.sv|../rtl/hazard_handling/memory_arbiter.sv|../rtl/hazard_handling/hazard_detection_unit.sv|../rtl/hazard_handling/forwarding_unit.sv|../rtl/pipeline_registers/MEM_WB.sv|../rtl/pipeline_registers/EX_MEM.sv|../rtl/pipeline_registers/ID_EX.sv|../rtl/pipeline_registers/IF_ID.sv|../rtl/5_writeback/writeback.sv|../rtl/4_memory/memory.sv|../rtl/4_memory/amo_alu.sv|../rtl/4_memory/data_mem.sv|../rtl/3_execute/execute.sv|../rtl/3_execute/pc_target_calculator.sv|../rtl/3_execute/alu.sv|../rtl/2_decode/decode.sv|../rtl/2_decode/control.sv|../rtl/2_decode/imm_gen.sv|../rtl/2_decode/regfile.sv|../rtl/1_fetch/fetch.sv|../rtl/1_fetch/pc_update.sv|../rtl/1_fetch/pc.sv|../rtl/1_fetch/instr_mem.sv|../packages/alu_pkg.sv|../packages/decoder_pkg.sv|
+Z28 !s90 -sv|../packages/decoder_pkg.sv|../packages/alu_pkg.sv|../rtl/1_fetch/instr_mem.sv|../rtl/1_fetch/pc.sv|../rtl/1_fetch/pc_update.sv|../rtl/1_fetch/fetch.sv|../rtl/2_decode/regfile.sv|../rtl/2_decode/imm_gen.sv|../rtl/2_decode/control.sv|../rtl/2_decode/decode.sv|../rtl/3_execute/alu.sv|../rtl/3_execute/pc_target_calculator.sv|../rtl/3_execute/execute.sv|../rtl/4_memory/data_mem.sv|../rtl/4_memory/amo_alu.sv|../rtl/4_memory/memory.sv|../rtl/5_writeback/writeback.sv|../rtl/pipeline_registers/IF_ID.sv|../rtl/pipeline_registers/ID_EX.sv|../rtl/pipeline_registers/EX_MEM.sv|../rtl/pipeline_registers/MEM_WB.sv|../rtl/hazard_handling/forwarding_unit.sv|../rtl/hazard_handling/hazard_detection_unit.sv|../rtl/hazard_handling/memory_arbiter.sv|../rtl/core.sv|../rtl/dual_core_top.sv|../tb/dual_core_top_tb.sv|
 !i113 1
 o-sv
-R9
+R10
 vcore_tb
 R1
-!s110 1779249626
+!s110 1779288354
 !i10b 1
-!s100 Qg?Ag=JhVhE:k<TWB><kT3
+!s100 OMRENN47SW;e`O:X6EfVK3
 R4
-I_RMkZE>BbQoEA;FIjP2KR3
+Ijk4IfALjP[4WI76fCL55K3
 R5
 S1
 R0
-w1779249376
+w1779288347
 8../tb/core_tb.sv
 F../tb/core_tb.sv
-!i122 65
-L0 3 142
+!i122 69
+L0 3 144
 R6
 r1
 !s85 0
 31
-!s108 1779249626.000000
+!s108 1779288354.000000
 !s107 ../tb/core_tb.sv|../rtl/core.sv|../rtl/hazard_handling/hazard_detection_unit.sv|../rtl/hazard_handling/forwarding_unit.sv|../rtl/pipeline_registers/MEM_WB.sv|../rtl/pipeline_registers/EX_MEM.sv|../rtl/pipeline_registers/ID_EX.sv|../rtl/pipeline_registers/IF_ID.sv|../rtl/5_writeback/writeback.sv|../rtl/4_memory/memory.sv|../rtl/4_memory/amo_alu.sv|../rtl/4_memory/data_mem.sv|../rtl/3_execute/execute.sv|../rtl/3_execute/pc_target_calculator.sv|../rtl/3_execute/alu.sv|../rtl/2_decode/decode.sv|../rtl/2_decode/control.sv|../rtl/2_decode/imm_gen.sv|../rtl/2_decode/regfile.sv|../rtl/1_fetch/fetch.sv|../rtl/1_fetch/pc_update.sv|../rtl/1_fetch/pc.sv|../rtl/1_fetch/instr_mem.sv|../packages/alu_pkg.sv|../packages/decoder_pkg.sv|
 !s90 -sv|../packages/decoder_pkg.sv|../packages/alu_pkg.sv|../rtl/1_fetch/instr_mem.sv|../rtl/1_fetch/pc.sv|../rtl/1_fetch/pc_update.sv|../rtl/1_fetch/fetch.sv|../rtl/2_decode/regfile.sv|../rtl/2_decode/imm_gen.sv|../rtl/2_decode/control.sv|../rtl/2_decode/decode.sv|../rtl/3_execute/alu.sv|../rtl/3_execute/pc_target_calculator.sv|../rtl/3_execute/execute.sv|../rtl/4_memory/data_mem.sv|../rtl/4_memory/amo_alu.sv|../rtl/4_memory/memory.sv|../rtl/5_writeback/writeback.sv|../rtl/pipeline_registers/IF_ID.sv|../rtl/pipeline_registers/ID_EX.sv|../rtl/pipeline_registers/EX_MEM.sv|../rtl/pipeline_registers/MEM_WB.sv|../rtl/hazard_handling/forwarding_unit.sv|../rtl/hazard_handling/hazard_detection_unit.sv|../rtl/core.sv|../tb/core_tb.sv|
 !i113 1
 o-sv
-R9
+R10
 vdata_mem
 R1
-R3
+R16
 !i10b 1
 !s100 cn1CPJjFf@R?ei56O@aS22
 R4
@@ -176,22 +176,22 @@ R0
 w1778511048
 8../rtl/4_memory/data_mem.sv
 F../rtl/4_memory/data_mem.sv
-!i122 67
+!i122 74
 L0 4 74
 R6
 r1
 !s85 0
 31
-R7
-R11
-R8
+R17
+R18
+R19
 !i113 1
 o-sv
-R9
+R10
 vdecode
 R1
-R12
-R3
+R15
+R20
 !i10b 1
 !s100 1[D<>o2Ok^Pb<PXaPGFF@0
 R4
@@ -202,23 +202,23 @@ R0
 w1779238260
 8../rtl/2_decode/decode.sv
 F../rtl/2_decode/decode.sv
-!i122 67
+!i122 71
 L0 6 93
 R6
 r1
 !s85 0
 31
-R7
-R11
-R8
+R22
+R23
+R24
 !i113 1
 o-sv
-R9
+R10
 vdecode_tb
 R1
-R12
+R15
 R2
-!s110 1779249608
+R20
 !i10b 1
 !s100 ?nl4XU83NHj]EXcaXA<J=1
 R4
@@ -226,24 +226,24 @@ IUghT2YMA^T?TG?n14k?=81
 R5
 S1
 R0
-Z14 w1779248847
+Z29 w1779248847
 8../tb/decode_tb.sv
 F../tb/decode_tb.sv
-!i122 61
+!i122 71
 L0 3 187
 R6
 r1
 !s85 0
 31
-!s108 1779249608.000000
-!s107 ../tb/decode_tb.sv|../rtl/2_decode/decode.sv|../rtl/2_decode/control.sv|../rtl/2_decode/imm_gen.sv|../rtl/2_decode/regfile.sv|../packages/alu_pkg.sv|../packages/decoder_pkg.sv|
-!s90 -sv|../packages/decoder_pkg.sv|../packages/alu_pkg.sv|../rtl/2_decode/regfile.sv|../rtl/2_decode/imm_gen.sv|../rtl/2_decode/control.sv|../rtl/2_decode/decode.sv|../tb/decode_tb.sv|
+R22
+R23
+R24
 !i113 1
 o-sv
-R9
+R10
 Xdecoder_package
 R1
-R3
+R11
 !i10b 1
 !s100 NoRl4aBEFFEV_m3<Q<[QM3
 R4
@@ -251,49 +251,49 @@ IlakMO3Mn>:2d_h^;eVJZ>3
 VlakMO3Mn>:2d_h^;eVJZ>3
 S1
 R0
-R13
+R21
 8../packages/decoder_pkg.sv
 F../packages/decoder_pkg.sv
-!i122 67
-R10
+!i122 75
+R12
 R6
 r1
 !s85 0
 31
-R7
-R11
-R8
+R13
+Z30 !s107 ../tb/writeback_tb.sv|../rtl/5_writeback/writeback.sv|../packages/alu_pkg.sv|../packages/decoder_pkg.sv|
+R14
 !i113 1
 o-sv
-R9
+R10
 vdual_core_top
 R1
-R3
+R25
 !i10b 1
-!s100 IbBc9XaPm;>V_zn45n?OS3
+!s100 f>XkjmP@2<HmJb_`0Bkcc3
 R4
-I9a_8?D`bYee0DI56;AaLc1
+IP0_J5S6c1@2kHADMBcc<;2
 R5
 S1
 R0
-w1779249201
+Z31 w1779288253
 8../rtl/dual_core_top.sv
 F../rtl/dual_core_top.sv
-!i122 67
-L0 3 146
+!i122 70
+L0 3 152
 R6
 r1
 !s85 0
 31
-R7
-R11
-R8
+R26
+R27
+R28
 !i113 1
 o-sv
-R9
+R10
 vdual_core_top_tb
 R1
-R3
+R25
 !i10b 1
 !s100 =]d=91>`;IAL^TzK1RL`?1
 R4
@@ -304,21 +304,21 @@ R0
 w1779249729
 8../tb/dual_core_top_tb.sv
 F../tb/dual_core_top_tb.sv
-!i122 67
+!i122 70
 L0 3 124
 R6
 r1
 !s85 0
 31
-R7
-R11
-R8
+R26
+R27
+R28
 !i113 1
 o-sv
-R9
+R10
 vEX_MEM
 R1
-R3
+R25
 !i10b 1
 !s100 32[I2Sz;cG9a`UJLW5hnY0
 R4
@@ -329,18 +329,18 @@ R0
 w1779244768
 8../rtl/pipeline_registers/EX_MEM.sv
 F../rtl/pipeline_registers/EX_MEM.sv
-!i122 67
+!i122 70
 L0 4 78
 R6
 r1
 !s85 0
 31
-R7
-R11
-R8
+R26
+R27
+R28
 !i113 1
 o-sv
-R9
+R10
 n@e@x_@m@e@m
 vexecute
 R1
@@ -355,22 +355,22 @@ R0
 w1779232009
 8../rtl/3_execute/execute.sv
 F../rtl/3_execute/execute.sv
-!i122 67
+!i122 72
 L0 7 67
 R6
 r1
 !s85 0
 31
 R7
-R11
 R8
+R9
 !i113 1
 o-sv
-R9
+R10
 vexecute_tb
 R1
 R2
-!s110 1779249612
+R3
 !i10b 1
 !s100 76_@:i_1VU2UL94lfoA^j3
 R4
@@ -378,24 +378,24 @@ Ie=c^Y1MMTbR7@9i4L?FiU1
 R5
 S1
 R0
-R14
+R29
 8../tb/execute_tb.sv
 F../tb/execute_tb.sv
-!i122 62
+!i122 72
 L0 3 165
 R6
 r1
 !s85 0
 31
-!s108 1779249612.000000
-!s107 ../tb/execute_tb.sv|../rtl/3_execute/execute.sv|../rtl/3_execute/pc_target_calculator.sv|../rtl/3_execute/alu.sv|../packages/alu_pkg.sv|../packages/decoder_pkg.sv|
-!s90 -sv|../packages/decoder_pkg.sv|../packages/alu_pkg.sv|../rtl/3_execute/alu.sv|../rtl/3_execute/pc_target_calculator.sv|../rtl/3_execute/execute.sv|../tb/execute_tb.sv|
+R7
+R8
+R9
 !i113 1
 o-sv
-R9
+R10
 vfetch
 R1
-R3
+Z32 !s110 1779288367
 !i10b 1
 !s100 e33F=IhQio<QkTSL]jA^N1
 R4
@@ -406,21 +406,21 @@ R0
 w1779249135
 8../rtl/1_fetch/fetch.sv
 F../rtl/1_fetch/fetch.sv
-!i122 67
+!i122 73
 L0 5 37
 R6
 r1
 !s85 0
 31
-R7
-R11
-R8
+Z33 !s108 1779288367.000000
+Z34 !s107 ../tb/fetch_tb.sv|../rtl/1_fetch/fetch.sv|../rtl/1_fetch/pc_update.sv|../rtl/1_fetch/pc.sv|../packages/alu_pkg.sv|../packages/decoder_pkg.sv|
+Z35 !s90 -sv|../packages/decoder_pkg.sv|../packages/alu_pkg.sv|../rtl/1_fetch/pc.sv|../rtl/1_fetch/pc_update.sv|../rtl/1_fetch/fetch.sv|../tb/fetch_tb.sv|
 !i113 1
 o-sv
-R9
+R10
 vfetch_tb
 R1
-!s110 1779249603
+R32
 !i10b 1
 !s100 V>?>M:@OXd8JnJfZlzKPg0
 R4
@@ -431,21 +431,21 @@ R0
 w1779249351
 8../tb/fetch_tb.sv
 F../tb/fetch_tb.sv
-!i122 60
+!i122 73
 L0 3 123
 R6
 r1
 !s85 0
 31
-!s108 1779249603.000000
-!s107 ../tb/fetch_tb.sv|../rtl/1_fetch/fetch.sv|../rtl/1_fetch/pc_update.sv|../rtl/1_fetch/pc.sv|../packages/alu_pkg.sv|../packages/decoder_pkg.sv|
-!s90 -sv|../packages/decoder_pkg.sv|../packages/alu_pkg.sv|../rtl/1_fetch/pc.sv|../rtl/1_fetch/pc_update.sv|../rtl/1_fetch/fetch.sv|../tb/fetch_tb.sv|
+R33
+R34
+R35
 !i113 1
 o-sv
-R9
+R10
 vforwarding_unit
 R1
-R3
+R25
 !i10b 1
 !s100 H<ZGN@lO>]0:]491A<X:o3
 R4
@@ -456,21 +456,21 @@ R0
 w1779232033
 8../rtl/hazard_handling/forwarding_unit.sv
 F../rtl/hazard_handling/forwarding_unit.sv
-!i122 67
+!i122 70
 L0 5 48
 R6
 r1
 !s85 0
 31
-R7
-R11
-R8
+R26
+R27
+R28
 !i113 1
 o-sv
-R9
+R10
 vhazard_detection_unit
 R1
-R3
+R25
 !i10b 1
 !s100 [`>:Rf6Z3D;39fA6CaOoF2
 R4
@@ -481,21 +481,21 @@ R0
 w1779249175
 8../rtl/hazard_handling/hazard_detection_unit.sv
 F../rtl/hazard_handling/hazard_detection_unit.sv
-!i122 67
+!i122 70
 L0 1 26
 R6
 r1
 !s85 0
 31
-R7
-R11
-R8
+R26
+R27
+R28
 !i113 1
 o-sv
-R9
+R10
 vID_EX
 R1
-R3
+R25
 !i10b 1
 !s100 A>STfYoT0_CnnFdMND;^Z2
 R4
@@ -506,22 +506,22 @@ R0
 w1779244769
 8../rtl/pipeline_registers/ID_EX.sv
 F../rtl/pipeline_registers/ID_EX.sv
-!i122 67
+!i122 70
 L0 5 117
 R6
 r1
 !s85 0
 31
-R7
-R11
-R8
+R26
+R27
+R28
 !i113 1
 o-sv
-R9
+R10
 n@i@d_@e@x
 vIF_ID
 R1
-R3
+R25
 !i10b 1
 !s100 m8]MNm;^>JG@C6RHdQdIN2
 R4
@@ -532,23 +532,23 @@ R0
 w1778803527
 8../rtl/pipeline_registers/IF_ID.sv
 F../rtl/pipeline_registers/IF_ID.sv
-!i122 67
+!i122 70
 L0 5 31
 R6
 r1
 !s85 0
 31
-R7
-R11
-R8
+R26
+R27
+R28
 !i113 1
 o-sv
-R9
+R10
 n@i@f_@i@d
 vimm_gen
 R1
-R12
-R3
+R15
+R20
 !i10b 1
 !s100 zOY[ZzMJeflM6Y9z;SmZ52
 R4
@@ -559,46 +559,46 @@ R0
 w1778202515
 8../rtl/2_decode/imm_gen.sv
 F../rtl/2_decode/imm_gen.sv
-!i122 67
+!i122 71
 L0 3 57
 R6
 r1
 !s85 0
 31
-R7
-R11
-R8
+R22
+R23
+R24
 !i113 1
 o-sv
-R9
+R10
 vinstr_mem
 R1
-R3
+R25
 !i10b 1
-!s100 m62Y]3GR3@[=;iACTaPfl0
+!s100 iYe@MVd8jXe4NJdTNj29<2
 R4
-IIB^Jce[HYmYcDNAlUM92@0
+Im3A0<hZB;d3n`OjG@AZaM2
 R5
 S1
 R0
-w1779245434
+R31
 8../rtl/1_fetch/instr_mem.sv
 F../rtl/1_fetch/instr_mem.sv
-!i122 67
-L0 4 23
+!i122 70
+L0 4 26
 R6
 r1
 !s85 0
 31
-R7
-R11
-R8
+R26
+R27
+R28
 !i113 1
 o-sv
-R9
+R10
 vMEM_WB
 R1
-R3
+R25
 !i10b 1
 !s100 l38B5jaJ3@mO1C2T<PV;[2
 R4
@@ -609,23 +609,23 @@ R0
 w1779244770
 8../rtl/pipeline_registers/MEM_WB.sv
 F../rtl/pipeline_registers/MEM_WB.sv
-!i122 67
+!i122 70
 L0 4 39
 R6
 r1
 !s85 0
 31
-R7
-R11
-R8
+R26
+R27
+R28
 !i113 1
 o-sv
-R9
+R10
 n@m@e@m_@w@b
 vmemory
 R1
-R12
-R3
+R15
+R16
 !i10b 1
 !s100 YFZPP?h_`FmZJ_8DJNh1F0
 R4
@@ -636,47 +636,47 @@ R0
 w1779249142
 8../rtl/4_memory/memory.sv
 F../rtl/4_memory/memory.sv
-!i122 67
+!i122 74
 L0 3 91
 R6
 r1
 !s85 0
 31
-R7
-R11
-R8
+R17
+R18
+R19
 !i113 1
 o-sv
-R9
+R10
 vmemory_arbiter
 R1
-R3
+R25
 !i10b 1
-!s100 USX6I82bgSBMTd5b8RnnW3
+!s100 ];jf6NCh8QN6Wg6=_:[aE0
 R4
-I<cPbA[odBDDYOQP1]?0T22
+IhEYdLYzTX4m0lLj]XX3g;2
 R5
 S1
 R0
-w1779249187
+R31
 8../rtl/hazard_handling/memory_arbiter.sv
 F../rtl/hazard_handling/memory_arbiter.sv
-!i122 67
-L0 3 125
+!i122 70
+L0 3 122
 R6
 r1
 !s85 0
 31
-R7
-R11
-R8
+R26
+R27
+R28
 !i113 1
 o-sv
-R9
+R10
 vmemory_tb
 R1
-R12
-!s110 1779249617
+R15
+R16
 !i10b 1
 !s100 DV0W0]_Ebo[bP]55TPY;g2
 R4
@@ -687,21 +687,21 @@ R0
 w1779249363
 8../tb/memory_tb.sv
 F../tb/memory_tb.sv
-!i122 63
+!i122 74
 L0 3 204
 R6
 r1
 !s85 0
 31
-!s108 1779249617.000000
-!s107 ../tb/memory_tb.sv|../rtl/4_memory/memory.sv|../rtl/4_memory/amo_alu.sv|../rtl/4_memory/data_mem.sv|../packages/alu_pkg.sv|../packages/decoder_pkg.sv|
-!s90 -sv|../packages/decoder_pkg.sv|../packages/alu_pkg.sv|../rtl/4_memory/data_mem.sv|../rtl/4_memory/amo_alu.sv|../rtl/4_memory/memory.sv|../tb/memory_tb.sv|
+R17
+R18
+R19
 !i113 1
 o-sv
-R9
+R10
 vpc
 R1
-R3
+R32
 !i10b 1
 !s100 FmJk1DbQzoHDLC[C4=oK]3
 R4
@@ -712,18 +712,18 @@ R0
 w1778183078
 8../rtl/1_fetch/pc.sv
 F../rtl/1_fetch/pc.sv
-!i122 67
+!i122 73
 L0 3 16
 R6
 r1
 !s85 0
 31
-R7
-R11
-R8
+R33
+R34
+R35
 !i113 1
 o-sv
-R9
+R10
 vpc_target_calculator
 R1
 R3
@@ -737,21 +737,21 @@ R0
 w1778809151
 8../rtl/3_execute/pc_target_calculator.sv
 F../rtl/3_execute/pc_target_calculator.sv
-!i122 67
+!i122 72
 L0 1 40
 R6
 r1
 !s85 0
 31
 R7
-R11
 R8
+R9
 !i113 1
 o-sv
-R9
+R10
 vpc_update
 R1
-R3
+R32
 !i10b 1
 !s100 QEfecQX2`e0YPhQD7Z=QB0
 R4
@@ -762,21 +762,21 @@ R0
 w1779231691
 8../rtl/1_fetch/pc_update.sv
 F../rtl/1_fetch/pc_update.sv
-!i122 67
+!i122 73
 L0 4 12
 R6
 r1
 !s85 0
 31
-R7
-R11
-R8
+R33
+R34
+R35
 !i113 1
 o-sv
-R9
+R10
 vregfile
 R1
-R3
+R20
 !i10b 1
 !s100 Lca1T[?T=>ngX>_NcSLd_0
 R4
@@ -787,21 +787,21 @@ R0
 w1778202843
 8../rtl/2_decode/regfile.sv
 F../rtl/2_decode/regfile.sv
-!i122 67
+!i122 71
 L0 4 42
 R6
 r1
 !s85 0
 31
-R7
-R11
-R8
+R22
+R23
+R24
 !i113 1
 o-sv
-R9
+R10
 vwriteback
 R1
-R3
+R11
 !i10b 1
 !s100 0[5;iK2>XTW]MU5JE1;mV2
 R4
@@ -812,21 +812,21 @@ R0
 w1778809199
 8../rtl/5_writeback/writeback.sv
 F../rtl/5_writeback/writeback.sv
-!i122 67
+!i122 75
 L0 3 19
 R6
 r1
 !s85 0
 31
-R7
-R11
-R8
+R13
+R30
+R14
 !i113 1
 o-sv
-R9
+R10
 vwriteback_tb
 R1
-!s110 1779249620
+R11
 !i10b 1
 !s100 TI1G:82Ol3Q@O_D0DRL[k2
 R4
@@ -834,18 +834,18 @@ I[0cfH[EIa[?LY0K;k2;M>1
 R5
 S1
 R0
-R14
+R29
 8../tb/writeback_tb.sv
 F../tb/writeback_tb.sv
-!i122 64
+!i122 75
 L0 3 70
 R6
 r1
 !s85 0
 31
-!s108 1779249620.000000
-!s107 ../tb/writeback_tb.sv|../rtl/5_writeback/writeback.sv|../packages/alu_pkg.sv|../packages/decoder_pkg.sv|
-!s90 -sv|../packages/decoder_pkg.sv|../packages/alu_pkg.sv|../rtl/5_writeback/writeback.sv|../tb/writeback_tb.sv|
+R13
+R30
+R14
 !i113 1
 o-sv
-R9
+R10
