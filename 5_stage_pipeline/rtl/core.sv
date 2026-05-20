@@ -2,7 +2,26 @@
 
 module core (
     input logic clk,
-    input logic reset
+    input logic reset,
+    
+    input logic [31:0] hart_id,
+    input logic core_stall,
+
+    // Instruction Memory Interface
+    output logic [31:0] imem_addr,
+    input  logic [31:0] imem_instruction,
+
+    // Data Memory Interface
+    output logic [31:0] dmem_addr,
+    output logic [31:0] dmem_write_data,
+    output logic        dmem_mem_read,
+    output logic        dmem_mem_write,
+    output logic [1:0]  dmem_size,
+    output logic        dmem_unsigned,
+    input  logic [31:0] dmem_read_data,
+    output logic        dmem_is_lr,
+    output logic        dmem_is_sc,
+    input  logic        dmem_sc_success
 );
 
     // ==========================================
@@ -107,6 +126,8 @@ module core (
         .stall(stall),
         .pc_sel(E_pc_sel),         // PC selection fed back from EX stage
         .pc_target(E_pc_target),   // Target address fed back from EX stage
+        .imem_addr(imem_addr),
+        .imem_instruction(imem_instruction),
         .pc(F_pc),
         .instruction(F_instruction)
     );
@@ -294,6 +315,17 @@ module core (
         .is_atomic(M_is_atomic),
         .amo_op(M_amo_op),
         
+        .dmem_addr(dmem_addr),
+        .dmem_write_data(dmem_write_data),
+        .dmem_mem_read(dmem_mem_read),
+        .dmem_mem_write(dmem_mem_write),
+        .dmem_size(dmem_size),
+        .dmem_unsigned(dmem_unsigned),
+        .dmem_read_data(dmem_read_data),
+        .dmem_is_lr(dmem_is_lr),
+        .dmem_is_sc(dmem_is_sc),
+        .dmem_sc_success(dmem_sc_success),
+
         .read_data(M_read_data),
         .alu_result_output(M_alu_result_out),
         .rs1_out(M_rs1_out),
@@ -357,74 +389,9 @@ module core (
         .rs1_id(D_rs1),
         .rs2_id(D_rs2),
         .uses_rs2(D_uses_rs2),
+        .core_stall(core_stall),
         
         .stall(stall)
     );
 
 endmodule
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// module core(
-//     input logic clk,
-//     input logic reset
-// );
-
-// logic pc_sel;
-// logic [31:0] pc_target;
-// logic [31:0] pc_fetch;
-// logic [31:0] instruction_fetch;
-
-// fetch fetch_inst (
-//     .clk(clk),
-//     .reset(reset),
-//     .pc_sel(pc_sel),
-//     .pc_target(pc_target),
-//     .pc(pc_fetch),
-//     .instruction(instruction_fetch)
-// );
-
-// logic [31:0] pc_decode;
-// logic [31:0] instruction_decode;
-
-// IF_ID if_id_inst (
-//     .clk(clk),
-//     .reset(reset),
-//     .stall(later),
-//     .fludh(later),
-//     .pc_in(pc_fetch),
-//     .instruction_in(instruction_fetch),
-//     .pc_out(pc_decode),
-//     .instruction_out(instruction_decode)
-// );
-
-// decode decode_inst (
-//     .clk(clk),
-//     .pc(pc_decode),
-//     .instruction(instruction_decode)
-//     .reg_write_wb(reg_write_wb),
-//     .rd_wb(rd_wb),
-//     .write_data_wb(write_data_wb),
-//     .rs1_data(rs1_data),
-//     .rs2_data(rs2_data),
-//     .immediate(immediate),
-//     .rs1(rs1),
-//     .rs2(rs2),
-//     .rd(rd),
-//     .pc_out(pc_out),
-// );
-
-// endmodule

@@ -6,11 +6,69 @@ module core_tb;
     logic clk;
     logic reset;
 
+    // Core Memory Interface Wires
+    logic [31:0] imem_addr;
+    logic [31:0] imem_instruction;
+    logic [31:0] dmem_addr;
+    logic [31:0] dmem_write_data;
+    logic        dmem_mem_read;
+    logic        dmem_mem_write;
+    logic [1:0]  dmem_size;
+    logic        dmem_unsigned;
+    logic [31:0] dmem_read_data;
+    logic        dmem_is_lr;
+    logic        dmem_is_sc;
+    logic        dmem_sc_success;
+
     // Instantiate DUT
     core dut (
         .clk(clk),
-        .reset(reset)
+        .reset(reset),
+        .hart_id(32'd0),
+        .core_stall(1'b0),
+        .imem_addr(imem_addr),
+        .imem_instruction(imem_instruction),
+        .dmem_addr(dmem_addr),
+        .dmem_write_data(dmem_write_data),
+        .dmem_mem_read(dmem_mem_read),
+        .dmem_mem_write(dmem_mem_write),
+        .dmem_size(dmem_size),
+        .dmem_unsigned(dmem_unsigned),
+        .dmem_read_data(dmem_read_data),
+        .dmem_is_lr(dmem_is_lr),
+        .dmem_is_sc(dmem_is_sc),
+        .dmem_sc_success(dmem_sc_success)
     );
+
+    // Instantiate Instruction Memory
+    instr_mem imem (
+        .pc(imem_addr),
+        .instruction(imem_instruction)
+    );
+
+    // Instantiate Data Memory
+    data_mem dmem (
+        .clk(clk),
+        .mem_read(dmem_mem_read),
+        .mem_write(dmem_mem_write & (!dmem_is_sc | dmem_sc_success)),
+        .address(dmem_addr),
+        .write_data(dmem_write_data),
+        .mem_size(dmem_size),
+        .mem_unsigned(dmem_unsigned),
+        .read_data(dmem_read_data)
+    );
+
+    // Simple Reservation Station for Single Core TB
+    logic res_valid;
+    logic [31:0] res_addr;
+    always_ff @(posedge clk) begin
+        if (reset) res_valid <= 0;
+        else if (dmem_is_lr) begin
+            res_valid <= 1;
+            res_addr <= dmem_addr;
+        end else if (dmem_is_sc) res_valid <= 0;
+    end
+    assign dmem_sc_success = dmem_is_sc && res_valid && (res_addr == dmem_addr);
 
     // Clock Generation
     initial clk = 0;
@@ -41,7 +99,7 @@ module core_tb;
         reset = 0;
         
         // Give it enough cycles to complete the extended program
-        repeat (50) @(posedge clk);
+        repeat (100) @(posedge clk);
 
         $display("\nChecking Final Register State:");
         check_reg(1, 32'd10, "x1 (addi)");
@@ -62,11 +120,11 @@ module core_tb;
 
         // Check if memory was written correctly by the final SC
         total_tests++;
-        if (dut.memory_inst.dmem.memory[0] === 32'd20) begin
+        if (dmem.memory[0] === 32'd20) begin
             $display("[PASS] Memory[0] = 20");
             tests_passed++;
         end else begin
-            $display("[FAIL] Memory[0] mismatch. Expected 20, Got 0x%h", dut.memory_inst.dmem.memory[0]);
+            $display("[FAIL] Memory[0] mismatch. Expected 20, Got 0x%h", dmem.memory[0]);
         end
 
         // Generate Summary

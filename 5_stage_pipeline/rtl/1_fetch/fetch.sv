@@ -1,7 +1,6 @@
 /* Fetch stage of the 5-stage RISC-V pipeline.
 Responsible for fetching instructions from memory and updating the program counter (PC).
-TODO: Implement control flow handling for branch and jump instructions.
-TODO: Output the next program counter value to support branch and jump instructions. */
+*/
 
 module fetch(
     input logic clk,
@@ -10,16 +9,19 @@ module fetch(
     input logic pc_sel,
     input logic [31:0] pc_target,
 
+    // Instruction Memory Interface
+    output logic [31:0] imem_addr,
+    input  logic [31:0] imem_instruction,
+
     output logic [31:0] pc,
     output logic [31:0] instruction
 );
 
 logic [31:0] next_address;
 
-instr_mem imem(
-    .pc(pc),
-    .instruction(instruction)
-);
+// Interface assignment
+assign imem_addr = pc;
+assign instruction = imem_instruction;
 
 pc_update pc_upd(
     .current_address(pc),

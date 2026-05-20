@@ -12,7 +12,6 @@ vmap work work
 vlog -sv \
     ../packages/decoder_pkg.sv \
     ../packages/alu_pkg.sv \
-    ../rtl/1_fetch/instr_mem.sv \
     ../rtl/1_fetch/pc.sv \
     ../rtl/1_fetch/pc_update.sv \
     ../rtl/1_fetch/fetch.sv \

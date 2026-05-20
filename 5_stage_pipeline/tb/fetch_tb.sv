@@ -8,8 +8,17 @@ module fetch_tb;
     logic stall;
     logic pc_sel;
     logic [31:0] pc_target;
+    
+    // Instruction Memory Interface
+    logic [31:0] imem_addr;
+    logic [31:0] imem_instruction;
+
     logic [31:0] pc;
     logic [31:0] instruction;
+
+    // Mock Instruction Memory
+    logic [31:0] mock_imem [0:255];
+    assign imem_instruction = mock_imem[imem_addr[31:2]];
 
     // Instantiate DUT
     fetch dut (
@@ -18,6 +27,8 @@ module fetch_tb;
         .stall(stall),
         .pc_sel(pc_sel),
         .pc_target(pc_target),
+        .imem_addr(imem_addr),
+        .imem_instruction(imem_instruction),
         .pc(pc),
         .instruction(instruction)
     );
@@ -42,9 +53,8 @@ module fetch_tb;
     endtask
 
     initial begin
-        // Create a dummy program.hex for testing
-        // For simulation, we can also just force the memory if needed, 
-        // but let's assume program.hex has something predictable or just test PC logic.
+        // Initialize mock memory
+        for (int i = 0; i < 256; i++) mock_imem[i] = i * 4;
         
         $display("Starting Fetch Stage Testbench...");
 
@@ -90,10 +100,7 @@ module fetch_tb;
         #1;
         check_result(32'h0000_0104, "Increment from branch");
 
-        // --- STALL & PC SELECT (Stall should be ignored during PC select usually, but let's see) ---
-        // In most designs, pc_sel from EX has priority over ID stall.
-        // Actually, in this design, pc_update.sv logic:
-        // assign next_address = pc_sel ? pc_target : (stall ? current_address : current_address + 4);
+        // --- STALL & PC SELECT ---
         stall = 1;
         pc_sel = 1;
         pc_target = 32'h0000_0200;
