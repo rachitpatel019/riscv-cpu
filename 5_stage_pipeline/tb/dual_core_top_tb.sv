@@ -5,11 +5,24 @@ module dual_core_top_tb;
     // Port Signals
     logic clk;
     logic reset;
+    logic [9:0]  fpga_sw;
+    logic [1:0]  fpga_key;
+    logic [9:0]  fpga_ledr;
+    logic [7:0]  fpga_hex0, fpga_hex1, fpga_hex2, fpga_hex3, fpga_hex4, fpga_hex5;
 
     // Instantiate DUT
     dual_core_top dut (
         .clk(clk),
-        .reset(reset)
+        .reset(reset),
+        .fpga_sw(fpga_sw),
+        .fpga_key(fpga_key),
+        .fpga_ledr(fpga_ledr),
+        .fpga_hex0(fpga_hex0),
+        .fpga_hex1(fpga_hex1),
+        .fpga_hex2(fpga_hex2),
+        .fpga_hex3(fpga_hex3),
+        .fpga_hex4(fpga_hex4),
+        .fpga_hex5(fpga_hex5)
     );
 
     // Clock Generation
@@ -38,6 +51,10 @@ module dual_core_top_tb;
     initial begin
         $display("Starting Dual-Core Top Testbench...");
 
+        // Initialize I/O
+        fpga_sw = 10'h123;
+        fpga_key = 2'b10;
+
         // --- RESET ---
         reset = 1;
         @(posedge clk);
@@ -45,8 +62,42 @@ module dual_core_top_tb;
         reset = 0;
         
         // Let them run for a significant amount of time
-        // We expect Core 0 to win most arbitrations
         repeat (200) @(posedge clk);
+
+        // --- MMIO Verification ---
+        $display("\nTesting MMIO Access...");
+        
+        // Test 1: Write to LEDs
+        force dut.shared_dmem_addr = 32'h80000008;
+        force dut.shared_dmem_write = 1'b1;
+        force dut.shared_dmem_wdata = 32'h000003AA;
+        @(posedge clk);
+        release dut.shared_dmem_addr;
+        release dut.shared_dmem_write;
+        release dut.shared_dmem_wdata;
+        #1;
+        total_tests++;
+        if (fpga_ledr === 10'h3AA) begin
+            $display("[PASS] MMIO Write to LEDs successful: 0x%h", fpga_ledr);
+            tests_passed++;
+        end else begin
+            $display("[FAIL] MMIO Write to LEDs failed: Expected 0x3AA, Got 0x%h", fpga_ledr);
+        end
+
+        // Test 2: Read from Switches
+        force dut.shared_dmem_addr = 32'h80000000;
+        force dut.shared_dmem_read = 1'b1;
+        @(posedge clk);
+        #1;
+        total_tests++;
+        if (dut.shared_dmem_rdata === 32'h00000123) begin
+            $display("[PASS] MMIO Read from Switches successful: 0x%h", dut.shared_dmem_rdata);
+            tests_passed++;
+        end else begin
+            $display("[FAIL] MMIO Read from Switches failed: Expected 0x123, Got 0x%h", dut.shared_dmem_rdata);
+        end
+        release dut.shared_dmem_addr;
+        release dut.shared_dmem_read;
 
         $display("\nChecking Core 0 Results:");
         // Assuming program.hex is the same one used in single core but now running on both

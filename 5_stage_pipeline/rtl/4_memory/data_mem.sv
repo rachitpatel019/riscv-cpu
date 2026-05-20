@@ -12,7 +12,7 @@ module data_mem (
     output logic [31:0] read_data
 );
 
-logic [31:0] memory [0:255]; // 256 words
+logic [31:0] memory [0:4095]; // 4096 words = 16KB
 
 // Write logic
 always_ff @(posedge clk) begin

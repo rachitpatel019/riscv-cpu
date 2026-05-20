@@ -1,8 +1,19 @@
 `timescale 1ns / 1ps
 
 module dual_core_top (
-    input logic clk,
-    input logic reset
+    input  logic clk,
+    input  logic reset,
+
+    // Physical FPGA I/O
+    input  logic [9:0]  fpga_sw,
+    input  logic [1:0]  fpga_key,
+    output logic [9:0]  fpga_ledr,
+    output logic [7:0]  fpga_hex0,
+    output logic [7:0]  fpga_hex1,
+    output logic [7:0]  fpga_hex2,
+    output logic [7:0]  fpga_hex3,
+    output logic [7:0]  fpga_hex4,
+    output logic [7:0]  fpga_hex5
 );
 
     // --- Core 0 Memory Interface Wires ---
@@ -47,6 +58,17 @@ module dual_core_top (
     logic [1:0]  shared_dmem_size;
     logic        shared_dmem_unsigned;
     logic [31:0] shared_dmem_rdata;
+
+    // --- Interconnect Wires ---
+    logic [31:0] ram_addr, ram_wdata, ram_rdata;
+    logic        ram_read, ram_write;
+    logic [1:0]  ram_size;
+    logic        ram_unsigned;
+
+    logic [31:0] mmio_addr, mmio_wdata, mmio_rdata;
+    logic        mmio_read, mmio_write;
+    logic [1:0]  mmio_size;
+    logic        mmio_unsigned;
 
     // 1. Core 0 Instance
     core core0 (
@@ -131,7 +153,34 @@ module dual_core_top (
         .shared_dmem_rdata(shared_dmem_rdata)
     );
 
-    // 4. Shared Instruction Memory
+    // 4. System Interconnect
+    system_interconnect interconnect (
+        .master_addr(shared_dmem_addr),
+        .master_wdata(shared_dmem_wdata),
+        .master_read(shared_dmem_read),
+        .master_write(shared_dmem_write),
+        .master_size(shared_dmem_size),
+        .master_unsigned(shared_dmem_unsigned),
+        .master_rdata(shared_dmem_rdata),
+
+        .ram_addr(ram_addr),
+        .ram_wdata(ram_wdata),
+        .ram_read(ram_read),
+        .ram_write(ram_write),
+        .ram_size(ram_size),
+        .ram_unsigned(ram_unsigned),
+        .ram_rdata(ram_rdata),
+
+        .mmio_addr(mmio_addr),
+        .mmio_wdata(mmio_wdata),
+        .mmio_read(mmio_read),
+        .mmio_write(mmio_write),
+        .mmio_size(mmio_size),
+        .mmio_unsigned(mmio_unsigned),
+        .mmio_rdata(mmio_rdata)
+    );
+
+    // 5. Shared Instruction Memory
     instr_mem imem (
         .pc_a(shared_imem_addr_a),
         .instruction_a(shared_imem_data_a),
@@ -139,16 +188,38 @@ module dual_core_top (
         .instruction_b(shared_imem_data_b)
     );
 
-    // 5. Shared Data Memory
+    // 6. Shared Data Memory (RAM)
     data_mem dmem (
         .clk(clk),
-        .mem_read(shared_dmem_read),
-        .mem_write(shared_dmem_write),
-        .address(shared_dmem_addr),
-        .write_data(shared_dmem_wdata),
-        .mem_size(shared_dmem_size),
-        .mem_unsigned(shared_dmem_unsigned),
-        .read_data(shared_dmem_rdata)
+        .mem_read(ram_read),
+        .mem_write(ram_write),
+        .address(ram_addr),
+        .write_data(ram_wdata),
+        .mem_size(ram_size),
+        .mem_unsigned(ram_unsigned),
+        .read_data(ram_rdata)
+    );
+
+    // 7. MMIO Controller
+    mmio_controller mmio (
+        .clk(clk),
+        .reset(reset),
+        .address(mmio_addr),
+        .write_data(mmio_wdata),
+        .mem_read(mmio_read),
+        .mem_write(mmio_write),
+        .mem_size(mmio_size),
+        .mem_unsigned(mmio_unsigned),
+        .read_data(mmio_rdata),
+        .fpga_sw(fpga_sw),
+        .fpga_key(fpga_key),
+        .fpga_ledr(fpga_ledr),
+        .fpga_hex0(fpga_hex0),
+        .fpga_hex1(fpga_hex1),
+        .fpga_hex2(fpga_hex2),
+        .fpga_hex3(fpga_hex3),
+        .fpga_hex4(fpga_hex4),
+        .fpga_hex5(fpga_hex5)
     );
 
 endmodule
