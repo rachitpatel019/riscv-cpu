@@ -35,7 +35,9 @@ module decode(
     output logic [1:0] wb_sel,
     output logic branch,
     output logic jump,
-    output logic [2:0] branch_type     
+    output logic [2:0] branch_type,
+    output logic is_atomic,
+    output logic [4:0] amo_op
 );
 
 import decoder_package::*;
@@ -86,7 +88,11 @@ control ctrl (
     // Control flow
     .branch(branch),
     .jump(jump),
-    .branch_type(branch_type)
+    .branch_type(branch_type),
+
+    // Atomic
+    .is_atomic(is_atomic),
+    .amo_op(amo_op)
 );
 
 endmodule

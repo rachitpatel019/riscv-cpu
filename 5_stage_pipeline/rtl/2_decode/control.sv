@@ -20,7 +20,11 @@ module control(
     // Control flow
     output logic branch,
     output logic jump,
-    output logic [2:0] branch_type  // Passes funct3 directly to the branch evaluator
+    output logic [2:0] branch_type,  // Passes funct3 directly to the branch evaluator
+
+    // Atomic
+    output logic is_atomic,
+    output logic [4:0] amo_op
 );
 
 import decoder_package::*;
@@ -39,6 +43,9 @@ assign f7 = instruction[31:25];
 assign mem_size = f3[1:0];      // 00=B, 01=H, 10=W (Matches RV32I encoding)
 assign mem_unsigned = f3[2];    // 1=Unsigned (LBU, LHU)
 assign branch_type = f3;        // Tells execute stage which branch condition to check
+
+assign is_atomic = (opcode == OP_AMO);
+assign amo_op = instruction[31:27];
 
 // Main Control (opcode only)
 always_comb begin
@@ -122,6 +129,17 @@ always_comb begin
             wb_sel = 2'b10; // Select PC + 4 for linking
         end
 
+        // ATOMIC
+        OP_AMO: begin
+            uses_rs2 = 1;
+            alu_src_a = 0; // rs1
+            alu_src_b = 1; // immediate (0)
+            reg_write = 1; // all OP_AMO write to rd
+            mem_read = 1;  // stall dependents
+            mem_write = (amo_op != AMO_LR); // Write for SC and AMO
+            wb_sel = 2'b01; // Select Memory
+        end
+
         default: ;
     endcase
 end
@@ -176,8 +194,8 @@ always_comb begin
             endcase
         end
 
-        // LOAD/STORE
-        OP_I_LOAD, OP_S: begin
+        // LOAD/STORE/AMO
+        OP_I_LOAD, OP_S, OP_AMO: begin
             alu_op = ALU_ADD; // Used for address calculation
         end
 

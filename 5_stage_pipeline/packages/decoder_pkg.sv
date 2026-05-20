@@ -8,7 +8,8 @@ package decoder_package;
         OP_U_LUI = 7'b0110111,
         OP_U_AUIPC = 7'b0010111,
         OP_J = 7'b1101111,
-        OP_I_JALR = 7'b1100111 
+        OP_I_JALR = 7'b1100111,
+        OP_AMO = 7'b0101111
     } opcode_t;
 
     typedef enum logic [2:0] {
@@ -26,4 +27,18 @@ package decoder_package;
         F7_ADD_SRL = 7'b0000000,
         F7_SUB_SRA = 7'b0100000
     } f7_R_t;
+
+    typedef enum logic [4:0] {
+        AMO_LR    = 5'b00010,
+        AMO_SC    = 5'b00011,
+        AMO_SWAP  = 5'b00001,
+        AMO_ADD   = 5'b00000,
+        AMO_XOR   = 5'b00100,
+        AMO_AND   = 5'b01100,
+        AMO_OR    = 5'b01000,
+        AMO_MIN   = 5'b10000,
+        AMO_MAX   = 5'b10100,
+        AMO_MINU  = 5'b11000,
+        AMO_MAXU  = 5'b11100
+    } amo_op_t;
 endpackage

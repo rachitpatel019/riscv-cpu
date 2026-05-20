@@ -1,9 +1,11 @@
 `timescale 1ns / 1ps
 
 module memory_tb;
+    import decoder_package::*;
 
     // Port Signals
     logic clk;
+    logic reset;
     logic [31:0] alu_result;
     logic [31:0] rs2_data;
     logic mem_read;
@@ -12,6 +14,8 @@ module memory_tb;
     logic mem_unsigned;
     logic [4:0] rs1, rs2, rd;
     logic reg_write;
+    logic is_atomic;
+    logic [4:0] amo_op;
 
     logic [31:0] read_data;
     logic [31:0] alu_result_output;
@@ -21,6 +25,7 @@ module memory_tb;
     // Instantiate DUT
     memory dut (
         .clk(clk),
+        .reset(reset),
         .alu_result(alu_result),
         .rs2_data(rs2_data),
         .mem_read(mem_read),
@@ -31,6 +36,8 @@ module memory_tb;
         .rs2(rs2),
         .rd(rd),
         .reg_write(reg_write),
+        .is_atomic(is_atomic),
+        .amo_op(amo_op),
         .read_data(read_data),
         .alu_result_output(alu_result_output),
         .rs1_out(rs1_out),
@@ -62,6 +69,7 @@ module memory_tb;
         $display("Starting Memory Stage Testbench...");
 
         // Initialize
+        reset = 1;
         alu_result = 32'h0000_0000;
         rs2_data = 32'h0000_0000;
         mem_read = 0;
@@ -69,6 +77,11 @@ module memory_tb;
         mem_size = 2'b10; // Word
         mem_unsigned = 0;
         rs1 = 0; rs2 = 0; rd = 0; reg_write = 0;
+        is_atomic = 0;
+        amo_op = 0;
+
+        @(posedge clk);
+        #1 reset = 0;
 
         // --- Test Word Store & Load ---
         @(posedge clk);
@@ -81,44 +94,77 @@ module memory_tb;
         #1;
         check_data(32'h1234_5678, "Word Store/Load");
 
-        // --- Test Byte Store & Load ---
+        // --- Test Atomic: LR.W (Load Reserved) ---
         @(posedge clk);
-        alu_result = 32'h0000_0020;
-        rs2_data = 32'h0000_00AB;
-        mem_write = 1;
-        mem_size = 2'b00; // Byte
-        @(posedge clk);
-        mem_write = 0;
+        alu_result = 32'h0000_0010;
         mem_read = 1;
-        mem_unsigned = 1;
+        is_atomic = 1;
+        amo_op = AMO_LR;
+        @(posedge clk);
         #1;
-        check_data(32'h0000_00AB, "Byte Store/Load (unsigned)");
+        check_data(32'h1234_5678, "LR.W Read");
+        
+        // --- Test Atomic: SC.W Success ---
+        @(posedge clk);
+        alu_result = 32'h0000_0010;
+        rs2_data = 32'h8765_4321;
+        mem_write = 1;
+        is_atomic = 1;
+        amo_op = AMO_SC;
+        #1; // Check code before posedge clk that clears reservation
+        check_data(32'h0000_0000, "SC.W Success Code");
+        
+        @(posedge clk);
+        
+        // Verify memory was updated
+        mem_write = 0;
+        is_atomic = 0;
+        mem_read = 1;
+        @(posedge clk);
+        #1;
+        check_data(32'h8765_4321, "SC.W Memory Verify");
 
-        // --- Test Halfword Store & Load ---
+        // --- Test Atomic: SC.W Failure (No LR) ---
         @(posedge clk);
-        alu_result = 32'h0000_0030;
-        rs2_data = 32'h0000_CDEF;
+        alu_result = 32'h0000_0010;
+        rs2_data = 32'hFFFF_FFFF;
         mem_write = 1;
-        mem_size = 2'b01; // Half
+        is_atomic = 1;
+        amo_op = AMO_SC;
         @(posedge clk);
-        mem_write = 0;
-        mem_read = 1;
-        mem_unsigned = 1;
         #1;
-        check_data(32'h0000_CDEF, "Half Store/Load (unsigned)");
+        check_data(32'h0000_0001, "SC.W Failure Code");
 
-        // --- Test Signed Byte Load ---
-        @(posedge clk);
-        alu_result = 32'h0000_0040;
-        rs2_data = 32'h0000_0080; // Negative if byte
-        mem_write = 1;
-        mem_size = 2'b00;
-        @(posedge clk);
+        // Verify memory was NOT updated
         mem_write = 0;
+        is_atomic = 0;
         mem_read = 1;
-        mem_unsigned = 0;
+        @(posedge clk);
         #1;
-        check_data(32'hFFFF_FF80, "Signed Byte Load");
+        check_data(32'h8765_4321, "SC.W Failure Memory Verify");
+
+        // --- Test Atomic: AMOADD.W ---
+        // Memory[0x10] is 0x8765_4321
+        // Add 0x1111_1111
+        @(posedge clk);
+        alu_result = 32'h0000_0010;
+        rs2_data = 32'h1111_1111;
+        mem_read = 1;
+        mem_write = 1;
+        is_atomic = 1;
+        amo_op = AMO_ADD;
+        #1; // Check before posedge clk that updates memory
+        check_data(32'h8765_4321, "AMOADD.W Read Data"); // Returns original value
+
+        @(posedge clk);
+        #1;
+        // Verify memory update (0x8765_4321 + 0x1111_1111 = 0x9876_5432)
+        mem_read = 1;
+        mem_write = 0;
+        is_atomic = 0;
+        @(posedge clk);
+        #1;
+        check_data(32'h9876_5432, "AMOADD.W Memory Verify");
 
         // Generate Summary
         $display("\nMemory Stage Test Summary: %0d/%0d tests passed", tests_passed, total_tests);

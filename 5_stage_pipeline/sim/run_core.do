@@ -27,6 +27,7 @@ vlog -sv \
     ../rtl/3_execute/pc_target_calculator.sv \
     ../rtl/3_execute/execute.sv \
     ../rtl/4_memory/data_mem.sv \
+    ../rtl/4_memory/amo_alu.sv \
     ../rtl/4_memory/memory.sv \
     ../rtl/5_writeback/writeback.sv \
     ../rtl/pipeline_registers/IF_ID.sv \

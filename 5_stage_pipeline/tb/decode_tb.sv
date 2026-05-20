@@ -24,6 +24,8 @@ module decode_tb;
     logic [1:0] wb_sel;
     logic branch, jump;
     logic [2:0] branch_type;
+    logic is_atomic;
+    logic [4:0] amo_op;
 
     // Instantiate DUT
     decode dut (
@@ -52,7 +54,9 @@ module decode_tb;
         .wb_sel(wb_sel),
         .branch(branch),
         .jump(jump),
-        .branch_type(branch_type)
+        .branch_type(branch_type),
+        .is_atomic(is_atomic),
+        .amo_op(amo_op)
     );
 
     // Clock Generation
@@ -71,6 +75,16 @@ module decode_tb;
             tests_passed++;
         end else begin
             $display("[FAIL] %s: Ctrl signals mismatch. Got R: %b, MR: %b, MW: %b", msg, reg_write, mem_read, mem_write);
+        end
+    endtask
+
+    task check_atomic(input string msg, input logic exp_is_atomic, input logic [4:0] exp_amo_op);
+        total_tests++;
+        if (is_atomic === exp_is_atomic && (exp_is_atomic == 0 || amo_op === exp_amo_op)) begin
+            $display("[PASS] %s: Atomic signals OK", msg);
+            tests_passed++;
+        end else begin
+            $display("[FAIL] %s: Atomic signals mismatch. Got is_atomic: %b, amo_op: 5'b%b", msg, is_atomic, amo_op);
         end
     endtask
 
@@ -101,6 +115,8 @@ module decode_tb;
         instruction = {7'b0000000, 5'd3, 5'd2, 3'b000, 5'd1, 7'b0110011};
         #1;
         check_ctrl("ADD x1, x2, x3", 1, 0, 0);
+        check_atomic("ADD", 0, 5'b0); // Ignore amo_op if not atomic
+
         if (rs1_data === 32'hDEADBEEF && rs2_data === 32'hCAFEBABE) begin
             $display("[PASS] Register data read OK");
             tests_passed++;
@@ -140,6 +156,27 @@ module decode_tb;
         instruction = {7'b0000000, 5'd8, 5'd2, 3'b010, 5'b01000, 7'b0100011}; // imm[11:5], rs2, rs1, f3, imm[4:0], opcode
         #1;
         check_ctrl("SW x8, 8(x2)", 0, 0, 1);
+
+        // --- Test AMOADD.W x10, x2, (x3) ---
+        // opcode=0101111, f3=010, rd=10, rs1=3, rs2=2, f7=00000xx
+        instruction = {5'b00000, 2'b00, 5'd2, 5'd3, 3'b010, 5'd10, 7'b0101111};
+        #1;
+        check_ctrl("AMOADD.W", 1, 1, 1);
+        check_atomic("AMOADD.W", 1, AMO_ADD);
+        
+        // --- Test LR.W x11, (x3) ---
+        // opcode=0101111, f3=010, rd=11, rs1=3, rs2=0, f7=00010xx
+        instruction = {5'b00010, 2'b00, 5'd0, 5'd3, 3'b010, 5'd11, 7'b0101111};
+        #1;
+        check_ctrl("LR.W", 1, 1, 0);
+        check_atomic("LR.W", 1, AMO_LR);
+
+        // --- Test SC.W x12, x2, (x3) ---
+        // opcode=0101111, f3=010, rd=12, rs1=3, rs2=2, f7=00011xx
+        instruction = {5'b00011, 2'b00, 5'd2, 5'd3, 3'b010, 5'd12, 7'b0101111};
+        #1;
+        check_ctrl("SC.W", 1, 1, 1);
+        check_atomic("SC.W", 1, AMO_SC);
 
         // Generate Summary
         $display("\nDecode Stage Test Summary: %0d/%0d tests passed", tests_passed, total_tests);

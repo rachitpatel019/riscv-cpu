@@ -40,20 +40,8 @@ module core_tb;
         #1;
         reset = 0;
         
-        // Wait for program to execute
-        // Program:
-        // 0: addi x1, x0, 10
-        // 4: addi x2, x0, 20
-        // 8: add x3, x1, x2   (Forwarding)
-        // c: sw x3, 0(x0)
-        // 10: lw x4, 0(x0)
-        // 14: add x5, x4, x1  (Load-use stall + Forwarding)
-        // 18: beq x0, x0, 8   (Branch - offset 8 -> 18+8 = 20)
-        // 1c: nop
-        // 20: addi x6, x0, 1
-        
-        // Give it enough cycles to complete
-        repeat (20) @(posedge clk);
+        // Give it enough cycles to complete the extended program
+        repeat (50) @(posedge clk);
 
         $display("\nChecking Final Register State:");
         check_reg(1, 32'd10, "x1 (addi)");
@@ -63,13 +51,22 @@ module core_tb;
         check_reg(5, 32'd40, "x5 (add with load-use stall)");
         check_reg(6, 32'd1,  "x6 (branch target execution)");
 
-        // Check if memory was written
+        // AMO tests
+        check_reg(7, 32'd30, "x7 (amoadd read val)");
+        check_reg(8, 32'd40, "x8 (amoswap read val)");
+        check_reg(9, 32'd20, "x9 (lr success read val)");
+        check_reg(10, 32'd0, "x10 (sc success code)");
+        check_reg(11, 32'd10, "x11 (lr second read val)");
+        check_reg(12, 32'd0, "x12 (sc second success code)");
+        check_reg(13, 32'd1, "x13 (sc fail code)");
+
+        // Check if memory was written correctly by the final SC
         total_tests++;
-        if (dut.memory_inst.dmem.memory[0] === 32'd30) begin
-            $display("[PASS] Memory[0] = 32");
+        if (dut.memory_inst.dmem.memory[0] === 32'd20) begin
+            $display("[PASS] Memory[0] = 20");
             tests_passed++;
         end else begin
-            $display("[FAIL] Memory[0] mismatch. Got 0x%h", dut.memory_inst.dmem.memory[0]);
+            $display("[FAIL] Memory[0] mismatch. Expected 20, Got 0x%h", dut.memory_inst.dmem.memory[0]);
         end
 
         // Generate Summary

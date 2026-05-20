@@ -19,6 +19,8 @@ module EX_MEM (
     input logic mem_unsigned_in,
     input logic [1:0] wb_sel_in,
     input logic [31:0] pc_in,
+    input logic is_atomic_in,
+    input logic [4:0] amo_op_in,
     
     output logic [31:0] alu_result_out,
     output logic [31:0] pc_target_out,
@@ -33,7 +35,9 @@ module EX_MEM (
     output logic [1:0] mem_size_out,
     output logic mem_unsigned_out,
     output logic [1:0] wb_sel_out,
-    output logic [31:0] pc_out
+    output logic [31:0] pc_out,
+    output logic is_atomic_out,
+    output logic [4:0] amo_op_out
 );
 
 always_ff @(posedge clk) begin
@@ -52,6 +56,8 @@ always_ff @(posedge clk) begin
         mem_unsigned_out <= 1'b0;
         wb_sel_out <= 2'b0;
         pc_out <= 32'b0;
+        is_atomic_out <= 1'b0;
+        amo_op_out <= 5'b0;
     end
     else begin
         alu_result_out <= alu_result_in;
@@ -68,6 +74,8 @@ always_ff @(posedge clk) begin
         mem_unsigned_out <= mem_unsigned_in;
         wb_sel_out <= wb_sel_in;
         pc_out <= pc_in;
+        is_atomic_out <= is_atomic_in;
+        amo_op_out <= amo_op_in;
     end    
 end
 endmodule

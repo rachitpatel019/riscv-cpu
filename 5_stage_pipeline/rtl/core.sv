@@ -34,6 +34,8 @@ module core (
     logic [1:0]  D_wb_sel;
     logic D_branch, D_jump;
     logic [2:0]  D_branch_type;
+    logic D_is_atomic;
+    logic [4:0]  D_amo_op;
 
     // --- Execute Stage Wires ---
     logic [31:0] E_rs1_data, E_rs2_data, E_immediate;
@@ -55,6 +57,8 @@ module core (
     logic [4:0]  E_rs1_out, E_rs2_out;
     logic E_reg_write_out;
     logic [31:0] E_rs2_data_fwd;
+    logic E_is_atomic;
+    logic [4:0]  E_amo_op;
 
     // --- Memory Stage Wires ---
     logic [31:0] M_rs2_data;
@@ -73,6 +77,8 @@ module core (
     logic [31:0] M_alu_result_out;
     logic [4:0]  M_rs1_out, M_rs2_out, M_rd_out;
     logic M_reg_write_out;
+    logic M_is_atomic;
+    logic [4:0]  M_amo_op;
 
     // --- Writeback Stage Wires ---
     logic [31:0] W_read_data;
@@ -144,7 +150,9 @@ module core (
         .wb_sel(D_wb_sel),
         .branch(D_branch),
         .jump(D_jump),
-        .branch_type(D_branch_type)
+        .branch_type(D_branch_type),
+        .is_atomic(D_is_atomic),
+        .amo_op(D_amo_op)
     );
 
     // ID/EX Pipeline Register
@@ -173,6 +181,8 @@ module core (
         .jump_in(D_jump),
         .branch_type_in(D_branch_type),
         .uses_rs2_in(D_uses_rs2),
+        .is_atomic_in(D_is_atomic),
+        .amo_op_in(D_amo_op),
         
         .rs1_data_out(E_rs1_data),
         .rs2_data_out(E_rs2_data),
@@ -193,7 +203,9 @@ module core (
         .branch_out(E_branch),
         .jump_out(E_jump),
         .branch_type_out(E_branch_type),
-        .uses_rs2_out(E_uses_rs2)
+        .uses_rs2_out(E_uses_rs2),
+        .is_atomic_out(E_is_atomic),
+        .amo_op_out(E_amo_op)
     );
 
     // 3. Execute Stage
@@ -244,6 +256,8 @@ module core (
         .mem_unsigned_in(E_mem_unsigned),
         .wb_sel_in(E_wb_sel),
         .pc_in(E_pc),
+        .is_atomic_in(E_is_atomic),
+        .amo_op_in(E_amo_op),
         
         .alu_result_out(M_alu_result),
         .pc_target_out(M_pc_target),
@@ -258,12 +272,15 @@ module core (
         .mem_size_out(M_mem_size),
         .mem_unsigned_out(M_mem_unsigned),
         .wb_sel_out(M_wb_sel),
-        .pc_out(M_pc)
+        .pc_out(M_pc),
+        .is_atomic_out(M_is_atomic),
+        .amo_op_out(M_amo_op)
     );
 
     // 4. Memory Stage
     memory memory_inst (
         .clk(clk),
+        .reset(reset),
         .alu_result(M_alu_result),
         .rs2_data(M_rs2_data),
         .mem_read(M_mem_read),
@@ -274,6 +291,8 @@ module core (
         .rs2(M_rs2),
         .rd(M_rd),
         .reg_write(M_reg_write),
+        .is_atomic(M_is_atomic),
+        .amo_op(M_amo_op),
         
         .read_data(M_read_data),
         .alu_result_output(M_alu_result_out),

@@ -31,6 +31,8 @@ module ID_EX (
     input logic jump_in,
     input logic [2:0] branch_type_in,
     input logic uses_rs2_in,
+    input logic is_atomic_in,
+    input logic [4:0] amo_op_in,
 
     // Outputs to execute stage
     output logic [31:0] rs1_data_out,
@@ -54,7 +56,9 @@ module ID_EX (
     output logic [1:0] wb_sel_out,
     output logic branch_out,
     output logic jump_out,
-    output logic [2:0] branch_type_out
+    output logic [2:0] branch_type_out,
+    output logic is_atomic_out,
+    output logic [4:0] amo_op_out
 );
 
 always_ff @(posedge clk) begin
@@ -81,6 +85,9 @@ always_ff @(posedge clk) begin
         branch_out <= 1'b0;
         jump_out <= 1'b0;
         branch_type_out <= 3'b0;
+        uses_rs2_out <= 1'b0;
+        is_atomic_out <= 1'b0;
+        amo_op_out <= 5'b0;
     end
     else begin
         // Outputs to execute stage
@@ -106,6 +113,8 @@ always_ff @(posedge clk) begin
         jump_out <= jump_in;
         branch_type_out <= branch_type_in;
         uses_rs2_out <= uses_rs2_in;
+        is_atomic_out <= is_atomic_in;
+        amo_op_out <= amo_op_in;
     end    
 end
 

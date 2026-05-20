@@ -13,6 +13,7 @@ vlog -sv \
     ../packages/decoder_pkg.sv \
     ../packages/alu_pkg.sv \
     ../rtl/4_memory/data_mem.sv \
+    ../rtl/4_memory/amo_alu.sv \
     ../rtl/4_memory/memory.sv \
     ../tb/memory_tb.sv
 
