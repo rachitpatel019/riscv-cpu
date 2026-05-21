@@ -16,9 +16,13 @@ module fetch_tb;
     logic [31:0] pc;
     logic [31:0] instruction;
 
-    // Mock Instruction Memory
+    // Mock Instruction Memory (Synchronous)
     logic [31:0] mock_imem [0:255];
-    assign imem_instruction = mock_imem[imem_addr[31:2]];
+    always_ff @(posedge clk) begin
+        if (!stall) begin
+            imem_instruction <= mock_imem[imem_addr[31:2]];
+        end
+    end
 
     // Instantiate DUT
     fetch dut (

@@ -52,8 +52,8 @@ module dual_core_top_tb;
         $display("Starting Dual-Core Top Testbench...");
 
         // Initialize I/O
-        fpga_sw = 10'h123;
-        fpga_key = 2'b10;
+        fpga_sw = 10'b0;
+        fpga_key = 2'b11; // KEYs are usually active low, idle at 1
 
         // --- RESET ---
         reset = 1;
@@ -83,21 +83,23 @@ module dual_core_top_tb;
         end else begin
             $display("[FAIL] MMIO Write to LEDs failed: Expected 0x3AA, Got 0x%h", fpga_ledr);
         end
+// Core 0: lw x14, 0(x0) -> Read SW
+force dut.shared_dmem_addr = 32'h8000_0000;
+force dut.shared_dmem_read = 1'b1;
+fpga_sw = 10'h123;
+@(posedge clk);
+@(posedge clk); // Wait for synchronous output
+#1;
+total_tests++;
+if (dut.shared_dmem_rdata === 32'h00000123) begin
+    $display("[PASS] MMIO Read from Switches successful: 0x%h", dut.shared_dmem_rdata);
+    tests_passed++;
+end else begin
+    $display("[FAIL] MMIO Read from Switches failed: Expected 0x123, Got 0x%h", dut.shared_dmem_rdata);
+end
+release dut.shared_dmem_addr;
+release dut.shared_dmem_read;
 
-        // Test 2: Read from Switches
-        force dut.shared_dmem_addr = 32'h80000000;
-        force dut.shared_dmem_read = 1'b1;
-        @(posedge clk);
-        #1;
-        total_tests++;
-        if (dut.shared_dmem_rdata === 32'h00000123) begin
-            $display("[PASS] MMIO Read from Switches successful: 0x%h", dut.shared_dmem_rdata);
-            tests_passed++;
-        end else begin
-            $display("[FAIL] MMIO Read from Switches failed: Expected 0x123, Got 0x%h", dut.shared_dmem_rdata);
-        end
-        release dut.shared_dmem_addr;
-        release dut.shared_dmem_read;
 
         $display("\nChecking Core 0 Results:");
         // Assuming program.hex is the same one used in single core but now running on both

@@ -64,11 +64,16 @@ module dual_core_top (
     logic        ram_read, ram_write;
     logic [1:0]  ram_size;
     logic        ram_unsigned;
+    logic        ram_stall;
 
     logic [31:0] mmio_addr, mmio_wdata, mmio_rdata;
     logic        mmio_read, mmio_write;
     logic [1:0]  mmio_size;
     logic        mmio_unsigned;
+
+    logic c0_imem_stall, c0_dmem_stall;
+    logic c1_imem_stall, c1_dmem_stall;
+    logic shared_imem_stall_a, shared_imem_stall_b;
 
     // 1. Core 0 Instance
     core core0 (
@@ -87,7 +92,9 @@ module dual_core_top (
         .dmem_read_data(c0_dmem_rdata),
         .dmem_is_lr(c0_dmem_is_lr),
         .dmem_is_sc(c0_dmem_is_sc),
-        .dmem_sc_success(c0_dmem_sc_success)
+        .dmem_sc_success(c0_dmem_sc_success),
+        .imem_stall(c0_imem_stall),
+        .dmem_stall(c0_dmem_stall)
     );
 
     // 2. Core 1 Instance
@@ -107,7 +114,9 @@ module dual_core_top (
         .dmem_read_data(c1_dmem_rdata),
         .dmem_is_lr(c1_dmem_is_lr),
         .dmem_is_sc(c1_dmem_is_sc),
-        .dmem_sc_success(c1_dmem_sc_success)
+        .dmem_sc_success(c1_dmem_sc_success),
+        .imem_stall(c1_imem_stall),
+        .dmem_stall(c1_dmem_stall)
     );
 
     // 3. Memory Arbiter Instance
@@ -127,6 +136,8 @@ module dual_core_top (
         .c0_dmem_is_sc(c0_dmem_is_sc),
         .c0_dmem_sc_success(c0_dmem_sc_success),
         .c0_stall(c0_stall),
+        .c0_imem_stall(c0_imem_stall),
+        .c0_dmem_stall(c0_dmem_stall),
         .c1_imem_addr(c1_imem_addr),
         .c1_imem_data(c1_imem_data),
         .c1_dmem_addr(c1_dmem_addr),
@@ -140,21 +151,28 @@ module dual_core_top (
         .c1_dmem_is_sc(c1_dmem_is_sc),
         .c1_dmem_sc_success(c1_dmem_sc_success),
         .c1_stall(c1_stall),
+        .c1_imem_stall(c1_imem_stall),
+        .c1_dmem_stall(c1_dmem_stall),
         .shared_imem_addr_a(shared_imem_addr_a),
         .shared_imem_data_a(shared_imem_data_a),
         .shared_imem_addr_b(shared_imem_addr_b),
         .shared_imem_data_b(shared_imem_data_b),
+        .shared_imem_stall_a(shared_imem_stall_a),
+        .shared_imem_stall_b(shared_imem_stall_b),
         .shared_dmem_addr(shared_dmem_addr),
         .shared_dmem_wdata(shared_dmem_wdata),
         .shared_dmem_read(shared_dmem_read),
         .shared_dmem_write(shared_dmem_write),
         .shared_dmem_size(shared_dmem_size),
         .shared_dmem_unsigned(shared_dmem_unsigned),
-        .shared_dmem_rdata(shared_dmem_rdata)
+        .shared_dmem_rdata(shared_dmem_rdata),
+        .shared_dmem_stall(ram_stall)
     );
 
     // 4. System Interconnect
-    system_interconnect interconnect (
+    system_interconnect interconnect_inst (
+        .clk(clk),
+        .reset(reset),
         .master_addr(shared_dmem_addr),
         .master_wdata(shared_dmem_wdata),
         .master_read(shared_dmem_read),
@@ -182,6 +200,9 @@ module dual_core_top (
 
     // 5. Shared Instruction Memory
     instr_mem imem (
+        .clk(clk),
+        .stall_a(shared_imem_stall_a),
+        .stall_b(shared_imem_stall_b),
         .pc_a(shared_imem_addr_a),
         .instruction_a(shared_imem_data_a),
         .pc_b(shared_imem_addr_b),
@@ -191,6 +212,7 @@ module dual_core_top (
     // 6. Shared Data Memory (RAM)
     data_mem dmem (
         .clk(clk),
+        .stall(ram_stall),
         .mem_read(ram_read),
         .mem_write(ram_write),
         .address(ram_addr),

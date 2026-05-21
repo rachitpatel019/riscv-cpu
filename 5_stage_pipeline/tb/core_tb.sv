@@ -19,6 +19,8 @@ module core_tb;
     logic        dmem_is_lr;
     logic        dmem_is_sc;
     logic        dmem_sc_success;
+    logic        imem_stall;
+    logic        dmem_stall;
 
     // Instantiate DUT
     core dut (
@@ -37,11 +39,16 @@ module core_tb;
         .dmem_read_data(dmem_read_data),
         .dmem_is_lr(dmem_is_lr),
         .dmem_is_sc(dmem_is_sc),
-        .dmem_sc_success(dmem_sc_success)
+        .dmem_sc_success(dmem_sc_success),
+        .imem_stall(imem_stall),
+        .dmem_stall(dmem_stall)
     );
 
     // Instantiate Instruction Memory
     instr_mem imem (
+        .clk(clk),
+        .stall_a(imem_stall),
+        .stall_b(1'b0),
         .pc_a(imem_addr),
         .instruction_a(imem_instruction),
         .pc_b(32'd0),
@@ -51,6 +58,7 @@ module core_tb;
     // Instantiate Data Memory
     data_mem dmem (
         .clk(clk),
+        .stall(dmem_stall),
         .mem_read(dmem_mem_read),
         .mem_write(dmem_mem_write & (!dmem_is_sc | dmem_sc_success)),
         .address(dmem_addr),

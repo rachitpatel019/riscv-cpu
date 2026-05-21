@@ -1,6 +1,9 @@
 `timescale 1ns / 1ps
 
 module system_interconnect (
+    input  logic clk,   // Added clock for sync selection
+    input  logic reset,
+    
     // Arbiter Interface (Master)
     input  logic [31:0] master_addr,
     input  logic [31:0] master_wdata,
@@ -36,6 +39,13 @@ module system_interconnect (
     logic is_mmio;
     assign is_mmio = master_addr[31];
 
+    // Register the selection signal to match data latency (1 cycle)
+    logic is_mmio_reg;
+    always_ff @(posedge clk) begin
+        if (reset) is_mmio_reg <= 1'b0;
+        else       is_mmio_reg <= is_mmio;
+    end
+
     // Steer signals to RAM
     assign ram_addr     = master_addr;
     assign ram_wdata    = master_wdata;
@@ -52,7 +62,7 @@ module system_interconnect (
     assign mmio_size     = master_size;
     assign mmio_unsigned = master_unsigned;
 
-    // Multiplex read data back to master
-    assign master_rdata = is_mmio ? mmio_rdata : ram_rdata;
+    // Multiplex read data back to master (using registered selection)
+    assign master_rdata = is_mmio_reg ? mmio_rdata : ram_rdata;
 
 endmodule

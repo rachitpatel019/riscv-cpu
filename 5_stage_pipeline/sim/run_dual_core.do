@@ -2,7 +2,6 @@
 cd 5_stage_pipeline/sim/
 
 # Copy the specific test program to program.hex
-file copy -force test_core.hex program.hex
 
 # Create the library if it doesn't exist
 if {![file isdirectory work]} {
@@ -29,6 +28,8 @@ vlog -sv \
     ../rtl/4_memory/data_mem.sv \
     ../rtl/4_memory/amo_alu.sv \
     ../rtl/4_memory/memory.sv \
+    ../rtl/4_memory/mmio_controller.sv \
+    ../rtl/4_memory/system_interconnect.sv \
     ../rtl/5_writeback/writeback.sv \
     ../rtl/pipeline_registers/IF_ID.sv \
     ../rtl/pipeline_registers/ID_EX.sv \

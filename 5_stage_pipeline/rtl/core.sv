@@ -21,7 +21,10 @@ module core (
     input  logic [31:0] dmem_read_data,
     output logic        dmem_is_lr,
     output logic        dmem_is_sc,
-    input  logic        dmem_sc_success
+    input  logic        dmem_sc_success,
+    
+    output logic        imem_stall,
+    output logic        dmem_stall
 );
 
     // ==========================================
@@ -30,6 +33,12 @@ module core (
     
     // --- Hazard & Control ---
     logic stall;
+    
+    // Memory stall signals for BRAM inference
+    // Instruction memory MUST stall whenever the ID stage stalls to hold the instruction.
+    assign imem_stall = stall; 
+    // Data memory only stalls on external core stalls.
+    assign dmem_stall = core_stall;
     logic flush;
     logic forward_a, forward_b;
     logic [31:0] forward_a_data, forward_b_data;
@@ -107,6 +116,8 @@ module core (
     logic [1:0]  W_wb_sel;
     logic [31:0] W_pc;
     logic [31:0] W_write_data;
+    logic [31:0] W_sc_result;
+    logic        W_is_sc;
 
     // ==========================================
     // Control Logic Assignments
@@ -139,10 +150,12 @@ module core (
         .stall(stall),
         .flush(flush),
         .pc_in(F_pc),
-        .instruction_in(F_instruction),
-        .pc_out(D_pc),
-        .instruction_out(D_instruction)
+        .pc_out(D_pc)
     );
+
+    // Instruction for ID stage comes directly from IMEM in synchronous mode.
+    // Insert NOP (0x00000013) on reset or flush.
+    assign D_instruction = (reset || flush) ? 32'h00000013 : F_instruction;
 
     // 2. Decode Stage
     decode decode_inst (
@@ -338,20 +351,27 @@ module core (
     MEM_WB mem_wb_inst (
         .clk(clk),
         .reset(reset),
-        .read_data_in(M_read_data),
         .alu_result_output_in(M_alu_result_out),
         .rd_in(M_rd_out),
         .reg_write_in(M_reg_write_out),
         .wb_sel_in(M_wb_sel),
         .pc_in(M_pc),
+        .sc_result_in(M_read_data), // SC result (0 or 1) generated in MEM stage
+        .is_sc_in(M_is_atomic && (M_amo_op == 5'b00011)), // AMO_SC from decoder_pkg
         
-        .read_data_out(W_read_data),
         .alu_result_output_out(W_alu_result),
         .rd_out(W_rd),
         .reg_write_out(W_reg_write),
         .wb_sel_out(W_wb_sel),
-        .pc_out(W_pc)
+        .pc_out(W_pc),
+        .sc_result_out(W_sc_result),
+        .is_sc_out(W_is_sc)
     );
+
+    // Read data for Writeback stage:
+    // If it's an SC instruction, use the success code carried through MEM_WB.
+    // Otherwise, use the synchronous read data arriving from memory.
+    assign W_read_data = W_is_sc ? W_sc_result : dmem_read_data;
 
     // 5. Writeback Stage
     writeback writeback_inst (
@@ -386,6 +406,8 @@ module core (
     hazard_detection_unit hazard_unit (
         .mem_read_ex(E_mem_read),
         .rd_ex(E_rd),
+        .mem_read_mem(M_mem_read),
+        .rd_mem(M_rd),
         .rs1_id(D_rs1),
         .rs2_id(D_rs2),
         .uses_rs2(D_uses_rs2),

@@ -33,6 +33,7 @@ module memory_tb;
     logic [31:0] alu_result_output;
     logic [4:0] rs1_out, rs2_out, rd_out;
     logic reg_write_out;
+    logic stall;
 
     // Instantiate DUT
     memory dut (
@@ -73,6 +74,7 @@ module memory_tb;
     // Instantiate Data Memory
     data_mem dmem (
         .clk(clk),
+        .stall(stall),
         .mem_read(dmem_mem_read),
         .mem_write(dmem_mem_write & (!dmem_is_sc | dmem_sc_success)),
         .address(dmem_addr),
@@ -121,6 +123,7 @@ module memory_tb;
 
         // Initialize
         reset = 1;
+        stall = 0;
         alu_result = 32'h0000_0000;
         rs2_data = 32'h0000_0000;
         mem_read = 0;

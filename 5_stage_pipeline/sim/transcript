@@ -1,0 +1,12 @@
+# do run_fetch.do
+# ** Error: couldn't change working directory to "5_stage_pipeline/sim/": no such file or directory
+# Error in macro ./run_fetch.do line 2
+# couldn't change working directory to "5_stage_pipeline/sim/": no such file or directory
+#     while executing
+# "_cd 5_stage_pipeline/sim/"
+#     ("eval" body line 1)
+#     invoked from within
+# "eval $cmd"
+#     (procedure "cd" line 22)
+#     invoked from within
+# "cd 5_stage_pipeline/sim/"

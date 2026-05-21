@@ -75,11 +75,25 @@ module mmio_controller (
         end
     end
 
-    // Read Logic
+    // Internal Registers for Synchronous Read
+    logic [31:0] read_addr_reg;
+    logic        read_en_reg;
+
+    always_ff @(posedge clk) begin
+        if (reset) begin
+            read_addr_reg <= 32'b0;
+            read_en_reg   <= 1'b0;
+        end else begin
+            read_addr_reg <= address;
+            read_en_reg   <= mem_read;
+        end
+    end
+
+    // Read Logic (Synchronous based on registered address)
     always_comb begin
         read_data = 32'b0;
-        if (mem_read) begin
-            case (address)
+        if (read_en_reg) begin
+            case (read_addr_reg)
                 32'h80000000: read_data = {22'b0, fpga_sw};
                 32'h80000004: read_data = {30'b0, fpga_key};
                 32'h80000008: read_data = {22'b0, reg_ledr};

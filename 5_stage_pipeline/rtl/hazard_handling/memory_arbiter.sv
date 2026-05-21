@@ -18,6 +18,8 @@ module memory_arbiter (
     input  logic        c0_dmem_is_sc,
     output logic        c0_dmem_sc_success,
     output logic        c0_stall,
+    input  logic        c0_imem_stall, // Missing input
+    input  logic        c0_dmem_stall, // Missing input
 
     // Core 1 Interface
     input  logic [31:0] c1_imem_addr,
@@ -33,12 +35,16 @@ module memory_arbiter (
     input  logic        c1_dmem_is_sc,
     output logic        c1_dmem_sc_success,
     output logic        c1_stall,
+    input  logic        c1_imem_stall, // Missing input
+    input  logic        c1_dmem_stall, // Missing input
 
     // Shared Instruction Memory
     output logic [31:0] shared_imem_addr_a,
     input  logic [31:0] shared_imem_data_a,
     output logic [31:0] shared_imem_addr_b,
     input  logic [31:0] shared_imem_data_b,
+    output logic        shared_imem_stall_a,
+    output logic        shared_imem_stall_b,
 
     // Shared Data Memory
     output logic [31:0] shared_dmem_addr,
@@ -47,7 +53,8 @@ module memory_arbiter (
     output logic        shared_dmem_write,
     output logic [1:0]  shared_dmem_size,
     output logic        shared_dmem_unsigned,
-    input  logic [31:0] shared_dmem_rdata
+    input  logic [31:0] shared_dmem_rdata,
+    output logic        shared_dmem_stall
 );
 
     // -------------------------------------------------------------------------
@@ -61,6 +68,9 @@ module memory_arbiter (
     assign shared_imem_addr_b = c1_imem_addr;
     assign c1_imem_data       = shared_imem_data_b;
 
+    assign shared_imem_stall_a = c0_imem_stall;
+    assign shared_imem_stall_b = c1_imem_stall;
+
     // -------------------------------------------------------------------------
     // Data Memory Arbitration (Fixed Priority: Core 0 > Core 1)
     // -------------------------------------------------------------------------
@@ -70,6 +80,14 @@ module memory_arbiter (
 
     logic c0_wins_dmem;
     assign c0_wins_dmem = c0_dmem_req; // Core 0 always wins if it requests
+    
+    // Register the winner to steer read data in the next cycle (Synchronous BRAM)
+    logic c0_wins_dmem_reg;
+    always_ff @(posedge clk) begin
+        if (reset) c0_wins_dmem_reg <= 1'b0;
+        else       c0_wins_dmem_reg <= c0_wins_dmem;
+    end
+
     assign c1_stall = c1_dmem_req && c0_dmem_req; // Core 1 stalls if Core 0 is using dmem
     assign c0_stall = 1'b0; // Core 0 never stalls for Core 1 in fixed priority
 
@@ -80,9 +98,11 @@ module memory_arbiter (
                                                  (c1_dmem_write & (!c1_dmem_is_sc | c1_dmem_sc_success));
     assign shared_dmem_size      = c0_wins_dmem ? c0_dmem_size      : c1_dmem_size;
     assign shared_dmem_unsigned  = c0_wins_dmem ? c0_dmem_unsigned  : c1_dmem_unsigned;
+    assign shared_dmem_stall     = c0_wins_dmem ? c0_dmem_stall     : c1_dmem_stall;
 
-    assign c0_dmem_rdata = shared_dmem_rdata;
-    assign c1_dmem_rdata = shared_dmem_rdata;
+    // Steering read data back to the cores using the registered winner
+    assign c0_dmem_rdata = c0_wins_dmem_reg ? shared_dmem_rdata : 32'b0;
+    assign c1_dmem_rdata = !c0_wins_dmem_reg ? shared_dmem_rdata : 32'b0;
 
     // -------------------------------------------------------------------------
     // Global Reservation Stations (LR/SC Logic)

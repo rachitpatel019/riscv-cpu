@@ -2,7 +2,6 @@
 cd 5_stage_pipeline/sim/
 
 # Copy the specific test program to program.hex
-file copy -force test_core.hex program.hex
 
 # Create the library if it doesn't exist
 if {![file isdirectory work]} {

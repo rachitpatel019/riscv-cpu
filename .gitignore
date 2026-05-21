@@ -1,4 +1,5 @@
 /single_cycle/sim/work
 /single_cycle/sim/sim_address.txt
 /.gemini
+/5_stage_pipeline/fpga
 /GEMINI.md

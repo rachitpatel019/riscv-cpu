@@ -1,7 +1,11 @@
-/* Module to represent the instruction memory of the CPU.
-Stores all instructions and outputs the current instruction. */
+/* Synchronous dual-port instruction memory for simulation and BRAM inference.
+   The read data is available on the clock edge following the address. */
 
 module instr_mem(
+    input  logic clk,
+    input  logic stall_a,
+    input  logic stall_b,
+
     input  logic [31:0] pc_a,
     input  logic [31:0] pc_b,
 
@@ -12,7 +16,7 @@ module instr_mem(
 localparam MEM_DEPTH = 256;
 logic [31:0] instruction_memory [0:MEM_DEPTH-1];
 
-// Initialize memory to zero & load program
+// Initialize memory
 initial begin
     integer i;
     for (i = 0; i < MEM_DEPTH; i++)
@@ -21,9 +25,14 @@ initial begin
     $readmemh("program.hex", instruction_memory);
 end
 
-/* Because every instruction starts at an address that is a multiple of 4,
-the last two bits of the Program Counter (PC) will always be 00. */
-assign instruction_a = instruction_memory[pc_a[31:2]];
-assign instruction_b = instruction_memory[pc_b[31:2]];
+// Dual-Port Synchronous Read
+always_ff @(posedge clk) begin
+    if (!stall_a) begin
+        instruction_a <= instruction_memory[pc_a[31:2]];
+    end
+    if (!stall_b) begin
+        instruction_b <= instruction_memory[pc_b[31:2]];
+    end
+end
 
 endmodule
