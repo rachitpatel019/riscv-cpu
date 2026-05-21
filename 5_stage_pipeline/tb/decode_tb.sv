@@ -113,6 +113,7 @@ module decode_tb;
         // --- Test R-type: ADD x1, x2, x3 ---
         // opcode=0110011, f3=000, f7=0000000, rd=1, rs1=2, rs2=3
         instruction = {7'b0000000, 5'd3, 5'd2, 3'b000, 5'd1, 7'b0110011};
+        @(posedge clk);
         #1;
         check_ctrl("ADD x1, x2, x3", 1, 0, 0);
         check_atomic("ADD", 0, 5'b0); // Ignore amo_op if not atomic

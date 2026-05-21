@@ -18,26 +18,26 @@ module regfile(
 
 logic [31:0] registers [31:0] = '{default: '0};
 
-// Read logic
-always_comb begin
-    // Read port 1
-    // Implementing write forwarding for the case when the instruction is writing to a register that is being read in the same cycle. This is a common optimization in register files to avoid stalls.
+// Read logic - Synchronous
+always_ff @(posedge clk) begin
+    // Read port 1 from first RAM block
+    // Internal write-forwarding
     if (write_enable && (write_address == read_address1) && (write_address != 0))
-        read_data1 = write_data;
+        read_data1 <= write_data;
     else
-        read_data1 = registers[read_address1];
+        read_data1 <= registers[read_address1];
 
-    // Read port 2
-    // Implementing write forwarding for the case when the instruction is writing to a register that is being read in the same cycle. This is a common optimization in register files to avoid stalls.
+    // Read port 2 from second RAM block
+    // Internal write-forwarding
     if (write_enable && (write_address == read_address2) && (write_address != 0))
-        read_data2 = write_data;
+        read_data2 <= write_data;
     else
-        read_data2 = registers[read_address2];
+        read_data2 <= registers[read_address2];
 end
 
-// Write logic
+// Write logic - Writes to both blocks to keep them synchronized
 always_ff @(posedge clk) begin
-    if (write_enable && (write_address != 0)) begin // register 0 is immutable
+    if (write_enable && (write_address != 0)) begin
         registers[write_address] <= write_data;
     end
 end

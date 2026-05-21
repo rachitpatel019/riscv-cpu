@@ -61,11 +61,13 @@ module ID_EX (
     output logic [4:0] amo_op_out
 );
 
+// Register data signals are now pass-through because regfile is synchronous
+assign rs1_data_out = rs1_data_in;
+assign rs2_data_out = rs2_data_in;
+
 always_ff @(posedge clk) begin
     if (reset || flush || stall) begin
         // Outputs to execute stage
-        rs1_data_out <= 32'b0;
-        rs2_data_out <= 32'b0;
         immediate_out <= 32'b0;
         rs1_out <= 5'b0;
         rs2_out <= 5'b0;
@@ -91,8 +93,6 @@ always_ff @(posedge clk) begin
     end
     else begin
         // Outputs to execute stage
-        rs1_data_out <= rs1_data_in;
-        rs2_data_out <= rs2_data_in;
         immediate_out <= immediate_in;
         rs1_out <= rs1_in;
         rs2_out <= rs2_in;
