@@ -1,6 +1,12 @@
 module cpu (
-    input logic clk,
-    input logic reset
+    input  logic        clk,
+    input  logic        reset,
+
+    // Outputs to prevent optimization and for FPGA debugging
+    output logic [31:0] out_pc,
+    output logic [31:0] out_writeback_data,
+    output logic        out_reg_write,
+    output logic [31:0] out_alu_result
 );
 
 // -----------------------------------------
@@ -28,7 +34,7 @@ logic [4:0]  rs1, rs2, rd;
 logic [31:0] pc_out;       // NEW: Passed-through PC
 
 // Control signals
-logic alu_src_a, alu_src_b; 
+logic alu_src_a, alu_src_b;
 logic mem_read, mem_write, reg_write;
 logic [1:0] wb_sel;        // NEW: 2-bit writeback selector
 logic [1:0] mem_size;      // NEW: Byte, Halfword, Word
@@ -88,7 +94,7 @@ execute execute_inst (
     .branch(branch),       // NEW
     .jump(jump),           // NEW
     .branch_type(branch_type), // NEW
-    
+
     .alu_result(alu_result),
     .pc_target(pc_target), // NEW: Output to Fetch
     .pc_sel(pc_sel)        // NEW: Output to Fetch
@@ -123,5 +129,13 @@ writeback wb_inst (
 
     .write_data(write_data)
 );
+
+// ==========================================
+// External Output Assignments
+// ==========================================
+assign out_pc             = pc;
+assign out_writeback_data = write_data;
+assign out_reg_write      = reg_write;
+assign out_alu_result     = alu_result;
 
 endmodule
