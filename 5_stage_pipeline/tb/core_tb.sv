@@ -5,11 +5,19 @@ module core_tb;
     // Port Signals
     logic clk;
     logic reset;
+    logic [31:0] out_pc;
+    logic [31:0] out_writeback_data;
+    logic        out_reg_write;
+    logic [31:0] out_alu_result;
 
     // Instantiate DUT
     core dut (
         .clk(clk),
-        .reset(reset)
+        .reset(reset),
+        .out_pc(out_pc),
+        .out_writeback_data(out_writeback_data),
+        .out_reg_write(out_reg_write),
+        .out_alu_result(out_alu_result)
     );
 
     // Clock Generation

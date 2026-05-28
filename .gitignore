@@ -1,6 +1,7 @@
 /single_cycle/sim/work
 /5_stage_pipeline/sim/scripts/work
 /5_stage_pipeline/sim/logs
+/5_stage_pipeline/fpga
 /single_cycle/sim/sim_address.txt
 /.gemini
 /GEMINI.md

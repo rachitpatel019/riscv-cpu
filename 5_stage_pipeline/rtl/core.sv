@@ -1,8 +1,14 @@
 `timescale 1ns / 1ps
 
 module core (
-    input logic clk,
-    input logic reset
+    input  logic        clk,
+    input  logic        reset,
+    
+    // Outputs to prevent optimization and for FPGA debugging
+    output logic [31:0] out_pc,
+    output logic [31:0] out_writeback_data,
+    output logic        out_reg_write,
+    output logic [31:0] out_alu_result
 );
 
     // ==========================================
@@ -342,70 +348,12 @@ module core (
         .stall(stall)
     );
 
+    // ==========================================
+    // External Output Assignments
+    // ==========================================
+    assign out_pc             = W_pc;
+    assign out_writeback_data = W_write_data;
+    assign out_reg_write      = W_reg_write;
+    assign out_alu_result     = E_alu_result;
+
 endmodule
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// module core(
-//     input logic clk,
-//     input logic reset
-// );
-
-// logic pc_sel;
-// logic [31:0] pc_target;
-// logic [31:0] pc_fetch;
-// logic [31:0] instruction_fetch;
-
-// fetch fetch_inst (
-//     .clk(clk),
-//     .reset(reset),
-//     .pc_sel(pc_sel),
-//     .pc_target(pc_target),
-//     .pc(pc_fetch),
-//     .instruction(instruction_fetch)
-// );
-
-// logic [31:0] pc_decode;
-// logic [31:0] instruction_decode;
-
-// IF_ID if_id_inst (
-//     .clk(clk),
-//     .reset(reset),
-//     .stall(later),
-//     .fludh(later),
-//     .pc_in(pc_fetch),
-//     .instruction_in(instruction_fetch),
-//     .pc_out(pc_decode),
-//     .instruction_out(instruction_decode)
-// );
-
-// decode decode_inst (
-//     .clk(clk),
-//     .pc(pc_decode),
-//     .instruction(instruction_decode)
-//     .reg_write_wb(reg_write_wb),
-//     .rd_wb(rd_wb),
-//     .write_data_wb(write_data_wb),
-//     .rs1_data(rs1_data),
-//     .rs2_data(rs2_data),
-//     .immediate(immediate),
-//     .rs1(rs1),
-//     .rs2(rs2),
-//     .rd(rd),
-//     .pc_out(pc_out),
-// );
-
-// endmodule
