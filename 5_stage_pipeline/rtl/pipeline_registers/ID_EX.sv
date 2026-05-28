@@ -9,8 +9,6 @@ module ID_EX (
     input logic flush,
 
     // Outputs to execute stage
-    input logic [31:0] rs1_data_in,
-    input logic [31:0] rs2_data_in,
     input logic [31:0] immediate_in,
     input logic [4:0]  rs1_in,
     input logic [4:0]  rs2_in,
@@ -33,8 +31,6 @@ module ID_EX (
     input logic uses_rs2_in,
 
     // Outputs to execute stage
-    output logic [31:0] rs1_data_out,
-    output logic [31:0] rs2_data_out,
     output logic [31:0] immediate_out,
     output logic [4:0]  rs1_out,
     output logic [4:0]  rs2_out,
@@ -60,8 +56,6 @@ module ID_EX (
 always_ff @(posedge clk) begin
     if (reset || flush || stall) begin
         // Outputs to execute stage
-        rs1_data_out <= 32'b0;
-        rs2_data_out <= 32'b0;
         immediate_out <= 32'b0;
         rs1_out <= 5'b0;
         rs2_out <= 5'b0;
@@ -81,11 +75,10 @@ always_ff @(posedge clk) begin
         branch_out <= 1'b0;
         jump_out <= 1'b0;
         branch_type_out <= 3'b0;
+        uses_rs2_out <= 1'b0;
     end
     else begin
         // Outputs to execute stage
-        rs1_data_out <= rs1_data_in;
-        rs2_data_out <= rs2_data_in;
         immediate_out <= immediate_in;
         rs1_out <= rs1_in;
         rs2_out <= rs2_in;

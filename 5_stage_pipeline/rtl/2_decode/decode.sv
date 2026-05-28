@@ -5,6 +5,7 @@ TODO: Output the next program counter value to support branch and jump instructi
 
 module decode(
     input logic clk,
+    input logic en,
     input logic [31:0] pc,
     input logic [31:0] instruction,
 
@@ -50,6 +51,7 @@ assign pc_out = pc;
 
 regfile rf (
     .clk(clk),
+    .en(en),
 
     .read_address1(rs1),
     .read_address2(rs2),

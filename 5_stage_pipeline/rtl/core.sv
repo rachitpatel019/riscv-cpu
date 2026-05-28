@@ -18,6 +18,7 @@ module core (
     // --- Hazard & Control ---
     logic stall;
     logic flush;
+    logic flush_reg; // Delayed flush to handle synchronous IMEM
     logic forward_a, forward_b;
     logic [31:0] forward_a_data, forward_b_data;
 
@@ -111,6 +112,15 @@ module core (
         .instruction(F_instruction)
     );
 
+    // Flush logic for synchronous IMEM
+    always_ff @(posedge clk) begin
+        if (reset) flush_reg <= 1'b0;
+        else if (!stall) flush_reg <= flush;
+        else flush_reg <= 1'b0; // If stalled, any pending flush should be cleared or handled? Actually if stalled, the IF stage is not advancing.
+    end
+
+    assign D_instruction = flush_reg ? 32'h00000013 : F_instruction;
+
     // IF/ID Pipeline Register
     IF_ID if_id_inst (
         .clk(clk),
@@ -118,14 +128,13 @@ module core (
         .stall(stall),
         .flush(flush),
         .pc_in(F_pc),
-        .instruction_in(F_instruction),
-        .pc_out(D_pc),
-        .instruction_out(D_instruction)
+        .pc_out(D_pc)
     );
 
     // 2. Decode Stage
     decode decode_inst (
         .clk(clk),
+        .en(!stall),
         .pc(D_pc),
         .instruction(D_instruction),
         .reg_write_wb(W_reg_write), // Writeback loops back here
@@ -159,8 +168,6 @@ module core (
         .reset(reset),
         .stall(stall),
         .flush(flush),
-        .rs1_data_in(D_rs1_data),
-        .rs2_data_in(D_rs2_data),
         .immediate_in(D_immediate),
         .rs1_in(D_rs1),
         .rs2_in(D_rs2),
@@ -180,8 +187,6 @@ module core (
         .branch_type_in(D_branch_type),
         .uses_rs2_in(D_uses_rs2),
         
-        .rs1_data_out(E_rs1_data),
-        .rs2_data_out(E_rs2_data),
         .immediate_out(E_immediate),
         .rs1_out(E_rs1),
         .rs2_out(E_rs2),
@@ -201,6 +206,10 @@ module core (
         .branch_type_out(E_branch_type),
         .uses_rs2_out(E_uses_rs2)
     );
+
+    // Bypassing ID_EX for synchronous register data
+    assign E_rs1_data = D_rs1_data;
+    assign E_rs2_data = D_rs2_data;
 
     // 3. Execute Stage
     execute execute_inst (
@@ -270,6 +279,7 @@ module core (
     // 4. Memory Stage
     memory memory_inst (
         .clk(clk),
+        .en(!stall),
         .alu_result(M_alu_result),
         .rs2_data(M_rs2_data),
         .mem_read(M_mem_read),
@@ -293,20 +303,21 @@ module core (
     MEM_WB mem_wb_inst (
         .clk(clk),
         .reset(reset),
-        .read_data_in(M_read_data),
         .alu_result_output_in(M_alu_result_out),
         .rd_in(M_rd_out),
         .reg_write_in(M_reg_write_out),
         .wb_sel_in(M_wb_sel),
         .pc_in(M_pc),
         
-        .read_data_out(W_read_data),
         .alu_result_output_out(W_alu_result),
         .rd_out(W_rd),
         .reg_write_out(W_reg_write),
         .wb_sel_out(W_wb_sel),
         .pc_out(W_pc)
     );
+
+    // Bypassing MEM_WB for synchronous memory data
+    assign W_read_data = M_read_data;
 
     // 5. Writeback Stage
     writeback writeback_inst (

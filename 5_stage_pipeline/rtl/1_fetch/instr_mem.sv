@@ -2,25 +2,30 @@
 Stores all instructions and outputs the current instruction. */
 
 module instr_mem(
+    input  logic clk,
+    input  logic en,
     input  logic [31:0] pc,
 
     output logic [31:0] instruction
 );
 
 localparam MEM_DEPTH = 256;
-logic [31:0] instruction_memory [0:MEM_DEPTH-1];
+(* ramstyle = "M9K" *) logic [31:0] instruction_memory [0:MEM_DEPTH-1];
 
-// Initialize memory to zero & load program
+// Initialize memory using hex file
 initial begin
-    integer i;
-    for (i = 0; i < MEM_DEPTH; i++)
-        instruction_memory[i] = 32'b0;
-
     $readmemh("program.hex", instruction_memory);
 end
 
-/* Because every instruction starts at an address that is a multiple of 4,
-the last two bits of the Program Counter (PC) will always be 00. */
-assign instruction = instruction_memory[pc[31:2]];
+/* Synchronous read for BRAM inference. */
+always_ff @(posedge clk) begin
+    if (en) begin
+        instruction <= instruction_memory[pc[31:2]];
+    end
+end
+
+/* Note: Even though this is a ROM, Quartus sometimes requires a 
+   write port (even if unused) to correctly map to some BRAM modes.
+   The ramstyle attribute should handle this. */
 
 endmodule

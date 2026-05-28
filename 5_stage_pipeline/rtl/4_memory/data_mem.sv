@@ -3,6 +3,7 @@ Supports byte, halfword, and word accesses with proper alignment handling */
 
 module data_mem (
     input  logic clk,
+    input  logic en,
     input  logic mem_read,
     input  logic mem_write,
     input  logic [31:0] address,
@@ -12,7 +13,8 @@ module data_mem (
     output logic [31:0] read_data
 );
 
-logic [31:0] memory [0:255]; // 256 words
+localparam MEM_DEPTH = 256;
+(* ramstyle = "M9K" *) logic [31:0] memory [0:MEM_DEPTH-1];
 
 // Write logic
 always_ff @(posedge clk) begin
@@ -36,33 +38,47 @@ always_ff @(posedge clk) begin
     end
 end
 
-// Read Logic
+// Synchronous Read Logic for BRAM inference
 logic [31:0] current_word;
+logic [1:0]  addr_low;
+logic        read_active;
+logic [1:0]  size_reg;
+logic        unsigned_reg;
+
+always_ff @(posedge clk) begin
+    if (en) begin
+        current_word <= memory[address[31:2]];
+        addr_low     <= address[1:0];
+        read_active  <= mem_read;
+        size_reg     <= mem_size;
+        unsigned_reg <= mem_unsigned;
+    end
+end
+
+// Combinational extraction logic based on registered signals
 logic [15:0] extracted_halfword;
 logic [7:0]  extracted_byte;
 
 always_comb begin
-    current_word = memory[address[31:2]];
-
-    extracted_halfword = address[1] ? current_word[31:16] : current_word[15:0];
+    extracted_halfword = addr_low[1] ? current_word[31:16] : current_word[15:0];
     
-    case (address[1:0])
+    case (addr_low)
         2'b11: extracted_byte = current_word[31:24];
         2'b10: extracted_byte = current_word[23:16];
         2'b01: extracted_byte = current_word[15:8];
         2'b00: extracted_byte = current_word[7:0];
     endcase
 
-    if (mem_read) begin
-        case (mem_size)
+    if (read_active) begin
+        case (size_reg)
             2'b10: read_data = current_word;
             2'b01: // Halfword
-                if (mem_unsigned)
+                if (unsigned_reg)
                     read_data = {16'b0, extracted_halfword};
                 else
                     read_data = {{16{extracted_halfword[15]}}, extracted_halfword}; 
             2'b00: // Byte
-                if (mem_unsigned)
+                if (unsigned_reg)
                     read_data = {24'b0, extracted_byte};
                 else
                     read_data = {{24{extracted_byte[7]}}, extracted_byte}; 

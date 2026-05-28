@@ -16,7 +16,11 @@ module fetch(
 
 logic [31:0] next_address;
 
+// Instruction memory is now synchronous.
+// It uses !stall as enable to hold the instruction during a stall.
 instr_mem imem(
+    .clk(clk),
+    .en(!stall),
     .pc(pc),
     .instruction(instruction)
 );

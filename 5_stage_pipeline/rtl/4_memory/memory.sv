@@ -2,6 +2,7 @@
 
 module memory (
     input logic clk,
+    input logic en,
     input logic [31:0] alu_result,
     input logic [31:0] rs2_data,
     input logic mem_read,
@@ -31,6 +32,7 @@ assign reg_write_out = reg_write;
 // Data memory instance
 data_mem dmem (
     .clk(clk),
+    .en(en),
     .mem_read(mem_read),
     .mem_write(mem_write),
     .address(alu_result),
