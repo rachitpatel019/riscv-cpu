@@ -35,6 +35,7 @@ module writeback_tb;
 
     initial begin
         $display("Starting Writeback Stage Testbench...");
+        $display("Architecture: 8-stage pipeline (Writeback module remains combinational)");
 
         // Initialize
         pc = 32'h0000_1000;

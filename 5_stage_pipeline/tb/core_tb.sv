@@ -31,11 +31,11 @@ module core_tb;
     // Task for checking a register value
     task check_reg(input int reg_idx, input [31:0] expected, input string msg);
         total_tests++;
-        if (dut.decode_inst.rf.registers[reg_idx] === expected) begin
+        if (dut.decode_inst.rf.registers1[reg_idx] === expected) begin
             $display("[PASS] %s: x%0d = 0x%h", msg, reg_idx, expected);
             tests_passed++;
         end else begin
-            $display("[FAIL] %s: Expected x%0d = 0x%h, Got 0x%h", msg, reg_idx, expected, dut.decode_inst.rf.registers[reg_idx]);
+            $display("[FAIL] %s: Expected x%0d = 0x%h, Got 0x%h", msg, reg_idx, expected, dut.decode_inst.rf.registers1[reg_idx]);
         end
     endtask
 
@@ -49,19 +49,9 @@ module core_tb;
         reset = 0;
         
         // Wait for program to execute
-        // Program:
-        // 0: addi x1, x0, 10
-        // 4: addi x2, x0, 20
-        // 8: add x3, x1, x2   (Forwarding)
-        // c: sw x3, 0(x0)
-        // 10: lw x4, 0(x0)
-        // 14: add x5, x4, x1  (Load-use stall + Forwarding)
-        // 18: beq x0, x0, 8   (Branch - offset 8 -> 18+8 = 20)
-        // 1c: nop
-        // 20: addi x6, x0, 1
-        
-        // Give it enough cycles to complete
-        repeat (20) @(posedge clk);
+        // The pipeline is now 8-stages deep with synchronous IMEM, Regfile, and DMEM.
+        // We need to give it more cycles to drain.
+        repeat (50) @(posedge clk);
 
         $display("\nChecking Final Register State:");
         check_reg(1, 32'd10, "x1 (addi)");

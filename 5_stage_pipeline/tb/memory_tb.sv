@@ -4,6 +4,7 @@ module memory_tb;
 
     // Port Signals
     logic clk;
+    logic en;
     logic [31:0] alu_result;
     logic [31:0] rs2_data;
     logic mem_read;
@@ -21,6 +22,7 @@ module memory_tb;
     // Instantiate DUT
     memory dut (
         .clk(clk),
+        .en(en),
         .alu_result(alu_result),
         .rs2_data(rs2_data),
         .mem_read(mem_read),
@@ -62,6 +64,7 @@ module memory_tb;
         $display("Starting Memory Stage Testbench...");
 
         // Initialize
+        en = 1;
         alu_result = 32'h0000_0000;
         rs2_data = 32'h0000_0000;
         mem_read = 0;
@@ -78,6 +81,7 @@ module memory_tb;
         @(posedge clk);
         mem_write = 0;
         mem_read = 1;
+        @(posedge clk); // Synchronous read takes 1 cycle
         #1;
         check_data(32'h1234_5678, "Word Store/Load");
 
@@ -91,6 +95,7 @@ module memory_tb;
         mem_write = 0;
         mem_read = 1;
         mem_unsigned = 1;
+        @(posedge clk);
         #1;
         check_data(32'h0000_00AB, "Byte Store/Load (unsigned)");
 
@@ -104,6 +109,7 @@ module memory_tb;
         mem_write = 0;
         mem_read = 1;
         mem_unsigned = 1;
+        @(posedge clk);
         #1;
         check_data(32'h0000_CDEF, "Half Store/Load (unsigned)");
 
@@ -117,6 +123,7 @@ module memory_tb;
         mem_write = 0;
         mem_read = 1;
         mem_unsigned = 0;
+        @(posedge clk);
         #1;
         check_data(32'hFFFF_FF80, "Signed Byte Load");
 

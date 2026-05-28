@@ -6,6 +6,7 @@ module decode_tb;
 
     // Port Signals
     logic clk;
+    logic en;
     logic [31:0] pc;
     logic [31:0] instruction;
     logic reg_write_wb;
@@ -28,6 +29,7 @@ module decode_tb;
     // Instantiate DUT
     decode dut (
         .clk(clk),
+        .en(en),
         .pc(pc),
         .instruction(instruction),
         .reg_write_wb(reg_write_wb),
@@ -79,6 +81,7 @@ module decode_tb;
 
         // Initialize
         pc = 32'h0000_1000;
+        en = 1;
         reg_write_wb = 0;
         rd_wb = 0;
         write_data_wb = 0;
@@ -99,6 +102,7 @@ module decode_tb;
         // --- Test R-type: ADD x1, x2, x3 ---
         // opcode=0110011, f3=000, f7=0000000, rd=1, rs1=2, rs2=3
         instruction = {7'b0000000, 5'd3, 5'd2, 3'b000, 5'd1, 7'b0110011};
+        @(posedge clk); // Synchronous read takes 1 cycle
         #1;
         check_ctrl("ADD x1, x2, x3", 1, 0, 0);
         if (rs1_data === 32'hDEADBEEF && rs2_data === 32'hCAFEBABE) begin
@@ -112,6 +116,7 @@ module decode_tb;
         // --- Test I-type: ADDI x4, x2, 123 ---
         // opcode=0010011, f3=000, rd=4, rs1=2, imm=123
         instruction = {12'd123, 5'd2, 3'b000, 5'd4, 7'b0010011};
+        @(posedge clk);
         #1;
         check_ctrl("ADDI x4, x2, 123", 1, 0, 0);
         if (immediate === 32'd123) begin
@@ -125,6 +130,7 @@ module decode_tb;
         // --- Test Load: LW x6, 4(x2) ---
         // opcode=0000011, f3=010 (Word), rd=6, rs1=2, imm=4
         instruction = {12'd4, 5'd2, 3'b010, 5'd6, 7'b0000011};
+        @(posedge clk);
         #1;
         check_ctrl("LW x6, 4(x2)", 1, 1, 0);
         if (wb_sel === 2'b01) begin // Select memory data
@@ -138,6 +144,7 @@ module decode_tb;
         // --- Test Store: SW x8, 8(x2) ---
         // opcode=0100011, f3=010, rs1=2, rs2=8, imm=8
         instruction = {7'b0000000, 5'd8, 5'd2, 3'b010, 5'b01000, 7'b0100011}; // imm[11:5], rs2, rs1, f3, imm[4:0], opcode
+        @(posedge clk);
         #1;
         check_ctrl("SW x8, 8(x2)", 0, 0, 1);
 

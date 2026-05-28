@@ -19,16 +19,8 @@ module regfile(
 
 /* To infer BRAM for a 2-Read, 1-Write memory, we duplicate the storage.
    Each 'registers' array will be mapped to a separate M9K block. */
-(* ramstyle = "M9K" *) logic [31:0] registers1 [31:0];
-(* ramstyle = "M9K" *) logic [31:0] registers2 [31:0];
-
-// Initialize registers to zero
-initial begin
-    for (int i = 0; i < 32; i++) begin
-        registers1[i] = 32'b0;
-        registers2[i] = 32'b0;
-    end
-end
+(* ramstyle = "M9K" *) logic [31:0] registers1 [31:0] = '{default: 32'b0};
+(* ramstyle = "M9K" *) logic [31:0] registers2 [31:0] = '{default: 32'b0};
 
 // Synchronous Write Logic
 always_ff @(posedge clk) begin

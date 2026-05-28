@@ -30,6 +30,7 @@ module execute_tb;
     logic reg_write_out;
     logic [4:0] rs1_out;
     logic [4:0] rs2_out;
+    logic [31:0] rs2_data_out;
 
     // Instantiate DUT
     execute dut (
@@ -57,7 +58,8 @@ module execute_tb;
         .rd_out(rd_out),
         .reg_write_out(reg_write_out),
         .rs1_out(rs1_out),
-        .rs2_out(rs2_out)
+        .rs2_out(rs2_out),
+        .rs2_data_out(rs2_data_out)
     );
 
     // Test Variables
@@ -77,6 +79,7 @@ module execute_tb;
 
     initial begin
         $display("Starting Execute Stage Testbench...");
+        $display("Architecture: 8-stage pipeline (Execute module remains combinational)");
 
         // Initialize
         pc = 32'h0000_1000;
