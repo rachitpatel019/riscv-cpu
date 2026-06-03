@@ -25,7 +25,8 @@ module regfile(
 (* ramstyle = "M9K" *) logic [31:0] registersb [31:0] = '{default: 32'b0};
 
 // Synchronous Write Logic
-logic [31:0] write_data_actual = (write_address == 5'b0) ? 32'b0 : write_data;
+logic [31:0] write_data_actual;
+assign write_data_actual = (write_address == 5'b0) ? 32'b0 : write_data;
 
 always_ff @(posedge clk) begin
     if (write_enable && !stall) begin

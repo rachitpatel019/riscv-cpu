@@ -1,4 +1,4 @@
-module ID_RR (
+module RR (
     input logic clk,
     input logic reset,
     input logic stall,

@@ -63,6 +63,20 @@ module core (
     logic [2:0]  D_branch_type;
 
     // Stage 5: ID/RR Register (Control Flow)
+    logic [31:0] IDRR_immediate;
+    logic [4:0]  IDRR_rs1, IDRR_rs2, IDRR_rd;
+    logic [31:0] IDRR_pc;
+    logic        IDRR_uses_rs2;
+    logic [3:0]  IDRR_alu_op;
+    logic        IDRR_alu_src_a, IDRR_alu_src_b;
+    logic        IDRR_reg_write, IDRR_mem_read, IDRR_mem_write;
+    logic [1:0]  IDRR_mem_size;
+    logic        IDRR_mem_unsigned;
+    logic [1:0]  IDRR_wb_sel;
+    logic        IDRR_branch, IDRR_jump;
+    logic [2:0]  IDRR_branch_type;
+
+    // Stage 6: RR Register (Control Flow)
     logic [31:0] RR_immediate;
     logic [4:0]  RR_rs1, RR_rs2, RR_rd;
     logic [31:0] RR_pc;
@@ -129,16 +143,23 @@ module core (
     logic [31:0] E3_pc_target;
 
     // Stage 10: MEM Address
-    logic        M_reg_write, M_mem_read, M_mem_write;
-    logic [1:0]  M_mem_size;
-    logic        M_mem_unsigned;
+    logic        M1_reg_write, M1_mem_read, M1_mem_write;
+    logic [1:0]  M1_mem_size;
+    logic        M1_mem_unsigned;
+    logic [1:0]  M1_wb_sel;
+    logic [4:0]  M1_rs1, M1_rs2, M1_rd;
+    logic [31:0] M1_rs2_data, M1_alu_result;
+    logic [31:0] M1_pc;
+
+    // Stage 11: MEM Data
+    logic        M_reg_write;
     logic [1:0]  M_wb_sel;
     logic [4:0]  M_rs1, M_rs2, M_rd;
     logic [31:0] M_rs2_data, M_alu_result;
     logic [31:0] M_pc;
     logic [31:0] M_read_data;
 
-    // Stage 11: MEM Data
+    // Stage 11 -> 12: MEM/WB Register
     logic [4:0]  W_rs1, W_rs2, W_rd;
     logic        W_reg_write;
     logic [31:0] W_alu_result, W_mem_read_data;
@@ -251,6 +272,67 @@ module core (
         .branch_in(D_branch),
         .jump_in(D_jump),
         .branch_type_in(D_branch_type),
+        .immediate_out(IDRR_immediate),
+        .rs1_out(IDRR_rs1),
+        .rs2_out(IDRR_rs2),
+        .rd_out(IDRR_rd),
+        .pc_out(IDRR_pc),
+        .uses_rs2_out(IDRR_uses_rs2),
+        .alu_op_out(IDRR_alu_op),
+        .alu_src_a_out(IDRR_alu_src_a),
+        .alu_src_b_out(IDRR_alu_src_b),
+        .reg_write_out(IDRR_reg_write),
+        .mem_read_out(IDRR_mem_read),
+        .mem_write_out(IDRR_mem_write),
+        .mem_size_out(IDRR_mem_size),
+        .mem_unsigned_out(IDRR_mem_unsigned),
+        .wb_sel_out(IDRR_wb_sel),
+        .branch_out(IDRR_branch),
+        .jump_out(IDRR_jump),
+        .branch_type_out(IDRR_branch_type)
+    );
+
+    // =========================================================================
+    // Stage 5/6: Register Read
+    // =========================================================================
+    regfile stage5_regfile (
+        .clk(clk),
+        .stall(stall),
+        .read_address1(IDRR_rs1),
+        .read_address2(IDRR_rs2),
+        .read_data1(RF_read_data1),
+        .read_data2(RF_read_data2),
+        .write_address(W_rd),
+        .write_data(W_write_data),
+        .write_enable(W_reg_write)
+    );
+
+    // =========================================================================
+    // Stage 6: RR Register
+    // =========================================================================
+    RR stage6_rr_reg (
+        .clk(clk),
+        .reset(reset),
+        .stall(stall),
+        .flush(flush),
+        .immediate_in(IDRR_immediate),
+        .rs1_in(IDRR_rs1),
+        .rs2_in(IDRR_rs2),
+        .rd_in(IDRR_rd),
+        .pc_in(IDRR_pc),
+        .uses_rs2_in(IDRR_uses_rs2),
+        .alu_op_in(IDRR_alu_op),
+        .alu_src_a_in(IDRR_alu_src_a),
+        .alu_src_b_in(IDRR_alu_src_b),
+        .reg_write_in(IDRR_reg_write),
+        .mem_read_in(IDRR_mem_read),
+        .mem_write_in(IDRR_mem_write),
+        .mem_size_in(IDRR_mem_size),
+        .mem_unsigned_in(IDRR_mem_unsigned),
+        .wb_sel_in(IDRR_wb_sel),
+        .branch_in(IDRR_branch),
+        .jump_in(IDRR_jump),
+        .branch_type_in(IDRR_branch_type),
         .immediate_out(RR_immediate),
         .rs1_out(RR_rs1),
         .rs2_out(RR_rs2),
@@ -269,21 +351,6 @@ module core (
         .branch_out(RR_branch),
         .jump_out(RR_jump),
         .branch_type_out(RR_branch_type)
-    );
-
-    // =========================================================================
-    // Stage 5/6: Register Read
-    // =========================================================================
-    regfile stage5_regfile (
-        .clk(clk),
-        .stall(stall),
-        .read_address1(RR_rs1),
-        .read_address2(RR_rs2),
-        .read_data1(RF_read_data1),
-        .read_data2(RF_read_data2),
-        .write_address(W_rd),
-        .write_data(W_write_data),
-        .write_enable(W_reg_write)
     );
 
     // =========================================================================
@@ -474,7 +541,7 @@ module core (
         .clk(clk),
         .reset(reset),
         .stall(stall),
-        .flush(flush),
+        .flush(1'b0), // MEM stage is not flushed by Stage 9 branches
         .reg_write_in(E3_reg_write),
         .rs1_in(E3_rs1),
         .rs2_in(E3_rs2),
@@ -489,40 +556,63 @@ module core (
         .mem_unsigned_in(E3_mem_unsigned),
         .wb_sel_in(E3_wb_sel),
         .pc_in(E3_pc),
-        .reg_write_out(M_reg_write),
-        .rs1_out(M_rs1),
-        .rs2_out(M_rs2),
-        .rd_out(M_rd),
-        .rs2_data_out(M_rs2_data),
-        .alu_result_out(M_alu_result),
-        .mem_read_out(M_mem_read),
-        .mem_write_out(M_mem_write),
-        .mem_size_out(M_mem_size),
-        .mem_unsigned_out(M_mem_unsigned),
-        .wb_sel_out(M_wb_sel),
-        .pc_out(M_pc)
+        .reg_write_out(M1_reg_write),
+        .rs1_out(M1_rs1),
+        .rs2_out(M1_rs2),
+        .rd_out(M1_rd),
+        .rs2_data_out(M1_rs2_data),
+        .alu_result_out(M1_alu_result),
+        .mem_read_out(M1_mem_read),
+        .mem_write_out(M1_mem_write),
+        .mem_size_out(M1_mem_size),
+        .mem_unsigned_out(M1_mem_unsigned),
+        .wb_sel_out(M1_wb_sel),
+        .pc_out(M1_pc)
     );
 
     data_mem stage10_data_mem (
         .clk(clk),
         .stall(stall),
-        .mem_read(M_mem_read),
-        .mem_write(M_mem_write),
-        .address(M_alu_result),
-        .write_data(M_rs2_data),
-        .mem_size(M_mem_size),
-        .mem_unsigned(M_mem_unsigned),
+        .mem_read(M1_mem_read),
+        .mem_write(M1_mem_write),
+        .address(M1_alu_result),
+        .write_data(M1_rs2_data),
+        .mem_size(M1_mem_size),
+        .mem_unsigned(M1_mem_unsigned),
         .read_data(M_read_data)
     );
 
     // =========================================================================
     // Stage 11: MEM Data
     // =========================================================================
+    MEM stage11_mem_reg (
+        .clk(clk),
+        .reset(reset),
+        .stall(stall),
+        .flush(1'b0), // MEM stage is not flushed by Stage 9 branches
+        .rs1_in(M1_rs1),
+        .rs2_in(M1_rs2),
+        .rd_in(M1_rd),
+        .reg_write_in(M1_reg_write),
+        .alu_result_in(M1_alu_result),
+        .rs2_data_in(M1_rs2_data),
+        .wb_sel_in(M1_wb_sel),
+        .pc_in(M1_pc),
+        .rs1_out(M_rs1),
+        .rs2_out(M_rs2),
+        .rd_out(M_rd),
+        .reg_write_out(M_reg_write),
+        .alu_result_out(M_alu_result),
+        .rs2_data_out(M_rs2_data),
+        .wb_sel_out(M_wb_sel),
+        .pc_out(M_pc)
+    );
+
     MEM_WB stage11_reg (
         .clk(clk),
         .reset(reset),
         .stall(stall),
-        .flush(flush),
+        .flush(1'b0), // WB stage is not flushed by Stage 9 branches
         .rs1_in(M_rs1),
         .rs2_in(M_rs2),
         .rd_in(M_rd),
@@ -557,53 +647,83 @@ module core (
     // =========================================================================
 
     // Forwarding to Stage 7 (EX1)
-    // always_comb begin
-    //     E1_forward_a = 0;
-    //     E1_forward_b = 0;
-    //     E1_forward_a_data = 32'b0;
-    //     E1_forward_b_data = 32'b0;
+    always_comb begin
+        E1_forward_a = 0;
+        E1_forward_b = 0;
+        E1_forward_a_data = 32'b0;
+        E1_forward_b_data = 32'b0;
 
-    //     // Priority 1: MEM Stage result (available in M_alu_result)
-    //     if (M_reg_write && (M_rd != 0)) begin
-    //         if (M_rd == E1_rs1) begin
-    //             E1_forward_a = 1;
-    //             E1_forward_a_data = M_alu_result;
-    //         end
-    //         if (M_rd == E1_rs2 && E1_uses_rs2) begin
-    //             E1_forward_b = 1;
-    //             E1_forward_b_data = M_alu_result;
-    //         end
-    //     end
+        // Priority 1: Stage 9 result (available in E3_alu_result)
+        if (E3_reg_write && (E3_rd != 0)) begin
+            if (E3_rd == E1_rs1) begin
+                E1_forward_a = 1;
+                E1_forward_a_data = E3_alu_result;
+            end
+            if (E3_rd == E1_rs2 && E1_uses_rs2) begin
+                E1_forward_b = 1;
+                E1_forward_b_data = E3_alu_result;
+            end
+        end
 
-    //     // Priority 2: WB Stage result (available in W_write_data)
-    //     if (W_reg_write && (W_rd != 0)) begin
-    //         if (W_rd == E1_rs1 && !E1_forward_a) begin
-    //             E1_forward_a = 1;
-    //             E1_forward_a_data = W_write_data;
-    //         end
-    //         if (W_rd == E1_rs2 && E1_uses_rs2 && !E1_forward_b) begin
-    //             E1_forward_b = 1;
-    //             E1_forward_b_data = W_write_data;
-    //         end
-    //     end
-    // end
+        // Priority 2: Stage 10 result (available in M1_alu_result)
+        if (M1_reg_write && (M1_rd != 0)) begin
+            if (M1_rd == E1_rs1 && !E1_forward_a) begin
+                E1_forward_a = 1;
+                E1_forward_a_data = M1_alu_result;
+            end
+            if (M1_rd == E1_rs2 && E1_uses_rs2 && !E1_forward_b) begin
+                E1_forward_b = 1;
+                E1_forward_b_data = M1_alu_result;
+            end
+        end
 
-    // // Stall logic (Very basic)
-    // always_comb begin
-    //     stall = 0;
-    //     // Stall on Load-Use Hazard
-    //     if (M_mem_read && (M_rd != 0)) begin
-    //         if (M_rd == D_rs1 || (M_rd == D_rs2 && D_uses_rs2))
-    //             stall = 1;
-    //     end
-    // end
+        // Priority 3: Stage 11 result (available in M_alu_result)
+        if (M_reg_write && (M_rd != 0)) begin
+            if (M_rd == E1_rs1 && !E1_forward_a && !E1_forward_a) begin
+                E1_forward_a = 1;
+                E1_forward_a_data = M_alu_result;
+            end
+            if (M_rd == E1_rs2 && E1_uses_rs2 && !E1_forward_b && !E1_forward_b) begin
+                E1_forward_b = 1;
+                E1_forward_b_data = M_alu_result;
+            end
+        end
 
-    // // =========================================================================
-    // // External Outputs
-    // // =========================================================================
-    // assign out_pc             = W_pc;
-    // assign out_writeback_data = W_write_data;
-    // assign out_reg_write      = W_reg_write;
-    // assign out_alu_result     = E2_alu_result;
+        // Priority 4: WB Stage result (available in W_write_data)
+        if (W_reg_write && (W_rd != 0)) begin
+            if (W_rd == E1_rs1 && !E1_forward_a && !E1_forward_a && !E1_forward_a) begin
+                E1_forward_a = 1;
+                E1_forward_a_data = W_write_data;
+            end
+            if (W_rd == E1_rs2 && E1_uses_rs2 && !E1_forward_b && !E1_forward_b && !E1_forward_b) begin
+                E1_forward_b = 1;
+                E1_forward_b_data = W_write_data;
+            end
+        end
+    end
+
+    // Stall logic (Very basic)
+    always_comb begin
+        stall = 0;
+        // Stall on Load-Use Hazard
+        // Load in Stage 10
+        if (M1_mem_read && (M1_rd != 0)) begin
+            if (M1_rd == D_rs1 || (M1_rd == D_rs2 && D_uses_rs2))
+                stall = 1;
+        end
+        // Load in Stage 11
+        if (M_reg_write && M_wb_sel == 2'b01 && (M_rd != 0)) begin // wb_sel 01 is MEM
+             if (M_rd == D_rs1 || (M_rd == D_rs2 && D_uses_rs2))
+                stall = 1;
+        end
+    end
+
+    // =========================================================================
+    // External Outputs
+    // =========================================================================
+    assign out_pc             = W_pc;
+    assign out_writeback_data = W_write_data;
+    assign out_reg_write      = W_reg_write;
+    assign out_alu_result     = E2_alu_result;
 
 endmodule
