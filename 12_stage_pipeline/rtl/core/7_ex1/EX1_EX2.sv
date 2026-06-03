@@ -1,0 +1,89 @@
+module EX1_EX2(
+    input logic clk,
+    input logic reset,
+    input logic stall,
+    input logic flush,
+
+    input logic [31:0] pc_in,
+
+    input logic [3:0] alu_op_in,
+    input logic [31:0] imm_in,
+    input logic branch_in,
+    input logic jump_in,
+    input logic [2:0] branch_type_in,
+
+    input logic reg_write_in,
+    input logic [4:0] rs1_in,
+    input logic [4:0] rs2_in,
+    input logic [4:0] rd_in,
+
+    input logic [31:0] operand_a_in,
+    input logic [31:0] operand_b_in,
+    input logic [31:0] rs2_data_in,
+
+    output logic [31:0] pc_out,
+
+    output logic [3:0] alu_op_out,
+    output logic [31:0] imm_out,
+    output logic branch_out,
+    output logic jump_out,
+    output logic [2:0] branch_type_out,
+
+    output logic reg_write_out,
+    output logic [4:0] rs1_out,
+    output logic [4:0] rs2_out,
+    output logic [4:0] rd_out,
+
+    output logic [31:0] operand_a_out,
+    output logic [31:0] operand_b_out,
+    output logic [31:0] rs2_data_out
+);
+
+always_ff @(posedge clk) begin
+    if (reset || flush) begin
+        pc_out <= 32'b0;
+        alu_op_out <= 4'b0;
+        imm_out <= 32'b0;
+        branch_out <= 0;
+        jump_out <= 0;
+        branch_type_out <= 3'b0;
+        reg_write_out <= 0;
+        rs1_out <= 5'b0;
+        rs2_out <= 5'b0;
+        rd_out <= 5'b0;
+        operand_a_out <= 32'b0;
+        operand_b_out <= 32'b0;
+        rs2_data_out <= 32'b0;
+    end
+    else if (stall) begin
+pc_out <= 32'b0;
+        alu_op_out <= alu_op_out;
+        imm_out <= imm_out;
+        branch_out <= branch_out;
+        jump_out <= jump_out;
+        branch_type_out <= branch_type_out;
+        reg_write_out <= reg_write_out;
+        rs1_out <= rs1_out;
+        rs2_out <= rs2_out;
+        rd_out <= rd_out;
+        operand_a_out <= operand_a_out;
+        operand_b_out <= operand_b_out;
+        rs2_data_out <= rs2_data_out;
+    end
+    else begin
+        alu_op_out <= alu_op_in;
+        imm_out <= imm_in;
+        branch_out <= branch_in;
+        jump_out <= jump_in;
+        branch_type_out <= branch_type_in;
+        reg_write_out <= reg_write_in;
+        rs1_out <= rs1_in;
+        rs2_out <= rs2_in;
+        rd_out <= rd_in;
+        operand_a_out <= operand_a_in;
+        operand_b_out <= operand_b_in;
+        rs2_data_out <= rs2_data_in;
+    end
+end
+
+endmodule
