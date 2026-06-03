@@ -23,7 +23,7 @@ initial begin
 end
 
 always_ff @(posedge clk) begin
-    (!stall) begin
+    if (!stall) begin
         instruction <= instruction_memory[pc[31:2]];
         pc_out <= pc;
     end

@@ -17,7 +17,7 @@ always_ff @(posedge clk) begin
         instruction_out <= 32'b0;
     end
     else begin
-        if (!stall) begin
+        if (stall) begin
             pc_out <= pc_out;
             instruction_out <= instruction_out;
         end

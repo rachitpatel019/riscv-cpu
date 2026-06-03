@@ -21,6 +21,12 @@ module EX1_EX2(
     input logic [31:0] operand_b_in,
     input logic [31:0] rs2_data_in,
 
+    input logic mem_read_in,
+    input logic mem_write_in,
+    input logic [1:0] mem_size_in,
+    input logic mem_unsigned_in,
+    input logic [1:0] wb_sel_in,
+
     output logic [31:0] pc_out,
 
     output logic [3:0] alu_op_out,
@@ -36,7 +42,13 @@ module EX1_EX2(
 
     output logic [31:0] operand_a_out,
     output logic [31:0] operand_b_out,
-    output logic [31:0] rs2_data_out
+    output logic [31:0] rs2_data_out,
+
+    output logic mem_read_out,
+    output logic mem_write_out,
+    output logic [1:0] mem_size_out,
+    output logic mem_unsigned_out,
+    output logic [1:0] wb_sel_out
 );
 
 always_ff @(posedge clk) begin
@@ -54,9 +66,14 @@ always_ff @(posedge clk) begin
         operand_a_out <= 32'b0;
         operand_b_out <= 32'b0;
         rs2_data_out <= 32'b0;
+        mem_read_out <= 0;
+        mem_write_out <= 0;
+        mem_size_out <= 2'b0;
+        mem_unsigned_out <= 0;
+        wb_sel_out <= 2'b0;
     end
     else if (stall) begin
-pc_out <= 32'b0;
+        pc_out <= pc_out;
         alu_op_out <= alu_op_out;
         imm_out <= imm_out;
         branch_out <= branch_out;
@@ -69,8 +86,14 @@ pc_out <= 32'b0;
         operand_a_out <= operand_a_out;
         operand_b_out <= operand_b_out;
         rs2_data_out <= rs2_data_out;
+        mem_read_out <= mem_read_out;
+        mem_write_out <= mem_write_out;
+        mem_size_out <= mem_size_out;
+        mem_unsigned_out <= mem_unsigned_out;
+        wb_sel_out <= wb_sel_out;
     end
     else begin
+        pc_out <= pc_in;
         alu_op_out <= alu_op_in;
         imm_out <= imm_in;
         branch_out <= branch_in;
@@ -83,6 +106,11 @@ pc_out <= 32'b0;
         operand_a_out <= operand_a_in;
         operand_b_out <= operand_b_in;
         rs2_data_out <= rs2_data_in;
+        mem_read_out <= mem_read_in;
+        mem_write_out <= mem_write_in;
+        mem_size_out <= mem_size_in;
+        mem_unsigned_out <= mem_unsigned_in;
+        wb_sel_out <= wb_sel_in;
     end
 end
 

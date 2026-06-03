@@ -21,6 +21,12 @@ module EX2_EX3(
     input logic [31:0] rs2_data_in,
     input logic [31:0] alu_result_in,
 
+    input logic mem_read_in,
+    input logic mem_write_in,
+    input logic [1:0] mem_size_in,
+    input logic mem_unsigned_in,
+    input logic [1:0] wb_sel_in,
+
     output logic [31:0] pc_out,
 
     output logic [31:0] imm_out,
@@ -36,13 +42,18 @@ module EX2_EX3(
     output logic [31:0] operand_a_out,
     output logic [31:0] operand_b_out,
     output logic [31:0] rs2_data_out,
-    output logic [31:0] alu_result_out
+    output logic [31:0] alu_result_out,
+
+    output logic mem_read_out,
+    output logic mem_write_out,
+    output logic [1:0] mem_size_out,
+    output logic mem_unsigned_out,
+    output logic [1:0] wb_sel_out
 );
 
 always_ff @(posedge clk) begin
     if (reset || flush) begin
         pc_out <= 32'b0;
-        alu_op_out <= 4'b0;
         branch_out <= 0;
         jump_out <= 0;
         branch_type_out <= 3'b0;
@@ -54,10 +65,15 @@ always_ff @(posedge clk) begin
         operand_b_out <= 32'b0;
         rs2_data_out <= 32'b0;
         alu_result_out <= 32'b0;
+        imm_out <= 32'b0;
+        mem_read_out <= 0;
+        mem_write_out <= 0;
+        mem_size_out <= 2'b0;
+        mem_unsigned_out <= 0;
+        wb_sel_out <= 2'b0;
     end
     else if (stall) begin
-        pc_out <= 32'b0;
-        alu_op_out <= alu_op_out;
+        pc_out <= pc_out;
         branch_out <= branch_out;
         jump_out <= jump_out;
         branch_type_out <= branch_type_out;
@@ -69,9 +85,15 @@ always_ff @(posedge clk) begin
         operand_b_out <= operand_b_out;
         rs2_data_out <= rs2_data_out;
         alu_result_out <= alu_result_out;
+        imm_out <= imm_out;
+        mem_read_out <= mem_read_out;
+        mem_write_out <= mem_write_out;
+        mem_size_out <= mem_size_out;
+        mem_unsigned_out <= mem_unsigned_out;
+        wb_sel_out <= wb_sel_out;
     end
     else begin
-        alu_op_out <= alu_op_in;
+        pc_out <= pc_in;
         branch_out <= branch_in;
         jump_out <= jump_in;
         branch_type_out <= branch_type_in;
@@ -83,6 +105,12 @@ always_ff @(posedge clk) begin
         operand_b_out <= operand_b_in;
         rs2_data_out <= rs2_data_in;
         alu_result_out <= alu_result_in;
+        imm_out <= imm_in;
+        mem_read_out <= mem_read_in;
+        mem_write_out <= mem_write_in;
+        mem_size_out <= mem_size_in;
+        mem_unsigned_out <= mem_unsigned_in;
+        wb_sel_out <= wb_sel_in;
     end
 end
 
