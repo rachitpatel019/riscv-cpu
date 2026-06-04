@@ -3,6 +3,7 @@
 /5_stage_pipeline/sim/logs
 /5_stage_pipeline/fpga
 /12_stage_pipeline/fpga
+/12_stage_pipeline/sim/logs
 /single_cycle/fpga
 /single_cycle/sim/sim_address.txt
 /.gemini

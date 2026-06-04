@@ -643,80 +643,42 @@ module core (
     );
 
     // =========================================================================
-    // Forwarding & Hazard Units (Placeholders/Basic Logic)
+    // Forwarding & Hazard Units
     // =========================================================================
 
-    // Forwarding to Stage 7 (EX1)
-    always_comb begin
-        E1_forward_a = 0;
-        E1_forward_b = 0;
-        E1_forward_a_data = 32'b0;
-        E1_forward_b_data = 32'b0;
+    forwarding_unit fwd_unit (
+        .E1_rs1(E1_rs1),
+        .E1_rs2(E1_rs2),
+        .E1_uses_rs2(E1_uses_rs2),
+        .E3_reg_write(E3_reg_write),
+        .E3_rd(E3_rd),
+        .E3_alu_result(E3_alu_result),
+        .M1_reg_write(M1_reg_write),
+        .M1_rd(M1_rd),
+        .M1_alu_result(M1_alu_result),
+        .M_reg_write(M_reg_write),
+        .M_rd(M_rd),
+        .M_alu_result(M_alu_result),
+        .W_reg_write(W_reg_write),
+        .W_rd(W_rd),
+        .W_write_data(W_write_data),
+        .E1_forward_a(E1_forward_a),
+        .E1_forward_b(E1_forward_b),
+        .E1_forward_a_data(E1_forward_a_data),
+        .E1_forward_b_data(E1_forward_b_data)
+    );
 
-        // Priority 1: Stage 9 result (available in E3_alu_result)
-        if (E3_reg_write && (E3_rd != 0)) begin
-            if (E3_rd == E1_rs1) begin
-                E1_forward_a = 1;
-                E1_forward_a_data = E3_alu_result;
-            end
-            if (E3_rd == E1_rs2 && E1_uses_rs2) begin
-                E1_forward_b = 1;
-                E1_forward_b_data = E3_alu_result;
-            end
-        end
-
-        // Priority 2: Stage 10 result (available in M1_alu_result)
-        if (M1_reg_write && (M1_rd != 0)) begin
-            if (M1_rd == E1_rs1 && !E1_forward_a) begin
-                E1_forward_a = 1;
-                E1_forward_a_data = M1_alu_result;
-            end
-            if (M1_rd == E1_rs2 && E1_uses_rs2 && !E1_forward_b) begin
-                E1_forward_b = 1;
-                E1_forward_b_data = M1_alu_result;
-            end
-        end
-
-        // Priority 3: Stage 11 result (available in M_alu_result)
-        if (M_reg_write && (M_rd != 0)) begin
-            if (M_rd == E1_rs1 && !E1_forward_a && !E1_forward_a) begin
-                E1_forward_a = 1;
-                E1_forward_a_data = M_alu_result;
-            end
-            if (M_rd == E1_rs2 && E1_uses_rs2 && !E1_forward_b && !E1_forward_b) begin
-                E1_forward_b = 1;
-                E1_forward_b_data = M_alu_result;
-            end
-        end
-
-        // Priority 4: WB Stage result (available in W_write_data)
-        if (W_reg_write && (W_rd != 0)) begin
-            if (W_rd == E1_rs1 && !E1_forward_a && !E1_forward_a && !E1_forward_a) begin
-                E1_forward_a = 1;
-                E1_forward_a_data = W_write_data;
-            end
-            if (W_rd == E1_rs2 && E1_uses_rs2 && !E1_forward_b && !E1_forward_b && !E1_forward_b) begin
-                E1_forward_b = 1;
-                E1_forward_b_data = W_write_data;
-            end
-        end
-    end
-
-    // Stall logic (Very basic)
-    always_comb begin
-        stall = 0;
-        // Stall on Load-Use Hazard
-        // Load in Stage 10
-        if (M1_mem_read && (M1_rd != 0)) begin
-            if (M1_rd == D_rs1 || (M1_rd == D_rs2 && D_uses_rs2))
-                stall = 1;
-        end
-        // Load in Stage 11
-        if (M_reg_write && M_wb_sel == 2'b01 && (M_rd != 0)) begin // wb_sel 01 is MEM
-             if (M_rd == D_rs1 || (M_rd == D_rs2 && D_uses_rs2))
-                stall = 1;
-        end
-    end
+    hazard_detection_unit hazard_unit (
+        .D_rs1(D_rs1),
+        .D_rs2(D_rs2),
+        .D_uses_rs2(D_uses_rs2),
+        .M1_mem_read(M1_mem_read),
+        .M1_rd(M1_rd),
+        .M_reg_write(M_reg_write),
+        .M_wb_sel(M_wb_sel),
+        .M_rd(M_rd),
+        .stall(stall)
+    );
 
     // =========================================================================
     // External Outputs
