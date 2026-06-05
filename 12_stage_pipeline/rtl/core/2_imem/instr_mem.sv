@@ -40,8 +40,11 @@ always_ff @(posedge clk) begin
     if (reset) begin
         flush_reg <= 1'b1;
     end
+    else if (flush) begin
+        flush_reg <= 1'b1;
+    end
     else if (!stall) begin
-        flush_reg <= flush;
+        flush_reg <= 1'b0;
     end
 end
 

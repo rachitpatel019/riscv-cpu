@@ -4,6 +4,7 @@ module control(
     input logic [31:0] instruction,
     
     // Execution control
+    output logic uses_rs1,     // For hazard handling: indicates if rs1 is used
     output logic uses_rs2,     // For hazard handling: indicates if rs2 is used (R-type, S-type, B-type)
     output logic [3:0] alu_op,
     output logic alu_src_a,         // 0: rs1_data, 1: pc
@@ -43,6 +44,7 @@ assign branch_type = f3;        // Tells execute stage which branch condition to
 // Main Control (opcode only)
 always_comb begin
     // Default values
+    uses_rs1 = 0;
     uses_rs2 = 0;
     alu_src_a = 0;
     alu_src_b = 0;
@@ -57,18 +59,21 @@ always_comb begin
 
         // R-type
         OP_R: begin
+            uses_rs1 = 1;
             uses_rs2 = 1;
             reg_write = 1;
         end
 
         // I-type arithmetic
         OP_I: begin
+            uses_rs1 = 1;
             alu_src_b = 1;
             reg_write = 1;
         end
 
         // Loads
         OP_I_LOAD: begin
+            uses_rs1 = 1;
             alu_src_b = 1;
             reg_write = 1;
             mem_read = 1;
@@ -77,6 +82,7 @@ always_comb begin
 
         // Stores
         OP_S: begin
+            uses_rs1 = 1;
             uses_rs2 = 1;
             alu_src_b = 1;
             mem_write = 1;
@@ -84,6 +90,7 @@ always_comb begin
 
         // Branches
         OP_B: begin
+            uses_rs1 = 1;
             uses_rs2 = 1;
             branch = 1;
             // alu_src_a and b remain 0 to compare rs1 and rs2 in the ALU
@@ -91,6 +98,7 @@ always_comb begin
 
         // LUI
         OP_U_LUI: begin
+            // uses_rs1 = 0 (LUI does not use rs1)
             alu_src_b = 1;
             reg_write = 1;
             wb_sel = 2'b00; // Select ALU (ALU_PASS will pass the immediate)
@@ -98,6 +106,7 @@ always_comb begin
 
         // AUIPC
         OP_U_AUIPC: begin
+            // uses_rs1 = 0 (AUIPC does not use rs1)
             alu_src_a = 1; // Route PC to ALU A
             alu_src_b = 1; // Route Immediate to ALU B
             reg_write = 1;
@@ -106,6 +115,7 @@ always_comb begin
 
         // JAL
         OP_J: begin
+            // uses_rs1 = 0 (JAL does not use rs1)
             alu_src_a = 1; // PC (Can be used by ALU to compute branch target if needed)
             alu_src_b = 1; // Immediate
             jump = 1;
@@ -115,6 +125,7 @@ always_comb begin
 
         // JALR
         OP_I_JALR: begin
+            uses_rs1 = 1;
             alu_src_a = 0; // rs1
             alu_src_b = 1; // Immediate
             jump = 1;

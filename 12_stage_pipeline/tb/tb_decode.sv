@@ -5,19 +5,15 @@ module tb_decode;
     int tests_passed = 0;
     int tests_failed = 0;
 
-    logic clk = 0;
-    logic en;
     logic [31:0] pc;
     logic [31:0] instruction;
-    logic reg_write_wb;
-    logic [4:0] rd_wb;
-    logic [31:0] write_data_wb;
 
     logic [31:0] immediate;
     logic [4:0] rs1;
     logic [4:0] rs2;
     logic [4:0] rd;
     logic [31:0] pc_out;
+    logic uses_rs1;
     logic uses_rs2;
     logic [3:0] alu_op;
     logic alu_src_a;

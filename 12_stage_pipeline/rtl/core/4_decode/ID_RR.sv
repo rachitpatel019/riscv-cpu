@@ -12,6 +12,7 @@ module ID_RR (
     input logic [31:0] pc_in,
 
     // Control signals
+    input logic uses_rs1_in,
     input logic uses_rs2_in,
     input logic [3:0] alu_op_in,
     input logic alu_src_a_in,
@@ -34,6 +35,7 @@ module ID_RR (
     output logic [31:0] pc_out,
 
     // Control signals
+    output logic uses_rs1_out,
     output logic uses_rs2_out,
     output logic [3:0] alu_op_out,
     output logic alu_src_a_out,
@@ -59,6 +61,7 @@ always_ff @(posedge clk) begin
         pc_out <= 32'b0;
 
         // Control signals
+        uses_rs1_out <= 1'b0;
         uses_rs2_out <= 1'b0;
         alu_op_out <= 4'b0;
         alu_src_a_out <= 1'b0;
@@ -82,6 +85,7 @@ always_ff @(posedge clk) begin
         pc_out <= pc_in;
 
         // Control signals
+        uses_rs1_out <= uses_rs1_in;
         uses_rs2_out <= uses_rs2_in;
         alu_op_out <= alu_op_in;
         alu_src_a_out <= alu_src_a_in;

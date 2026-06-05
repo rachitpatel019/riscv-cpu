@@ -4,28 +4,38 @@
  * Forwarding Unit for 12-Stage Pipeline
  * 
  * Handles data hazards by bypassing results from later stages to EX1 (Stage 7).
+ * Priority: Stage 8 > Stage 9 > Stage 10 > Stage 11 > Stage 12
  */
 
 module forwarding_unit (
     // Inputs from Stage 7 (EX1)
     input  logic [4:0]  E1_rs1,
     input  logic [4:0]  E1_rs2,
+    input  logic        E1_uses_rs1,
     input  logic        E1_uses_rs2,
 
-    // Inputs from Stage 9 (EX3)
+    // Inputs from Stage 8 (EX2) - Result ready
+    input  logic        E2_reg_write,
+    input  logic        E2_mem_read,
+    input  logic [4:0]  E2_rd,
+    input  logic [31:0] E2_forward_data,
+
+    // Inputs from Stage 9 (EX3) - Registered Result
     input  logic        E3_reg_write,
+    input  logic        E3_mem_read,
     input  logic [4:0]  E3_rd,
-    input  logic [31:0] E3_alu_result,
+    input  logic [31:0] E3_forward_data,
 
     // Inputs from Stage 10 (M1)
     input  logic        M1_reg_write,
+    input  logic        M1_mem_read,
     input  logic [4:0]  M1_rd,
-    input  logic [31:0] M1_alu_result,
+    input  logic [31:0] M1_forward_data,
 
-    // Inputs from Stage 11 (M)
+    // Inputs from Stage 11 (M) - Load Data or ALU Result
     input  logic        M_reg_write,
     input  logic [4:0]  M_rd,
-    input  logic [31:0] M_alu_result,
+    input  logic [31:0] M_forward_data,
 
     // Inputs from Stage 12 (WB)
     input  logic        W_reg_write,
@@ -45,49 +55,49 @@ module forwarding_unit (
         E1_forward_a_data = 32'b0;
         E1_forward_b_data = 32'b0;
 
-        // Priority 1: Stage 9 result (available in E3_alu_result)
-        if (E3_reg_write && (E3_rd != 5'b0)) begin
-            if (E3_rd == E1_rs1) begin
+        // RS1 Forwarding Logic
+        if (E1_uses_rs1) begin
+            if (E2_reg_write && !E2_mem_read && (E2_rd != 5'b0) && (E2_rd == E1_rs1)) begin
                 E1_forward_a = 1'b1;
-                E1_forward_a_data = E3_alu_result;
+                E1_forward_a_data = E2_forward_data;
             end
-            if (E3_rd == E1_rs2 && E1_uses_rs2) begin
-                E1_forward_b = 1'b1;
-                E1_forward_b_data = E3_alu_result;
-            end
-        end
-
-        // Priority 2: Stage 10 result (available in M1_alu_result)
-        if (M1_reg_write && (M1_rd != 5'b0)) begin
-            if (M1_rd == E1_rs1 && !E1_forward_a) begin
+            else if (E3_reg_write && !E3_mem_read && (E3_rd != 5'b0) && (E3_rd == E1_rs1)) begin
                 E1_forward_a = 1'b1;
-                E1_forward_a_data = M1_alu_result;
+                E1_forward_a_data = E3_forward_data;
             end
-            if (M1_rd == E1_rs2 && E1_uses_rs2 && !E1_forward_b) begin
-                E1_forward_b = 1'b1;
-                E1_forward_b_data = M1_alu_result;
-            end
-        end
-
-        // Priority 3: Stage 11 result (available in M_alu_result)
-        if (M_reg_write && (M_rd != 5'b0)) begin
-            if (M_rd == E1_rs1 && !E1_forward_a) begin
+            else if (M1_reg_write && !M1_mem_read && (M1_rd != 5'b0) && (M1_rd == E1_rs1)) begin
                 E1_forward_a = 1'b1;
-                E1_forward_a_data = M_alu_result;
+                E1_forward_a_data = M1_forward_data;
             end
-            if (M_rd == E1_rs2 && E1_uses_rs2 && !E1_forward_b) begin
-                E1_forward_b = 1'b1;
-                E1_forward_b_data = M_alu_result;
+            else if (M_reg_write && (M_rd != 5'b0) && (M_rd == E1_rs1)) begin
+                E1_forward_a = 1'b1;
+                E1_forward_a_data = M_forward_data;
             end
-        end
-
-        // Priority 4: WB Stage result (available in W_write_data)
-        if (W_reg_write && (W_rd != 5'b0)) begin
-            if (W_rd == E1_rs1 && !E1_forward_a) begin
+            else if (W_reg_write && (W_rd != 5'b0) && (W_rd == E1_rs1)) begin
                 E1_forward_a = 1'b1;
                 E1_forward_a_data = W_write_data;
             end
-            if (W_rd == E1_rs2 && E1_uses_rs2 && !E1_forward_b) begin
+        end
+
+        // RS2 Forwarding Logic
+        if (E1_uses_rs2) begin
+            if (E2_reg_write && !E2_mem_read && (E2_rd != 5'b0) && (E2_rd == E1_rs2)) begin
+                E1_forward_b = 1'b1;
+                E1_forward_b_data = E2_forward_data;
+            end
+            else if (E3_reg_write && !E3_mem_read && (E3_rd != 5'b0) && (E3_rd == E1_rs2)) begin
+                E1_forward_b = 1'b1;
+                E1_forward_b_data = E3_forward_data;
+            end
+            else if (M1_reg_write && !M1_mem_read && (M1_rd != 5'b0) && (M1_rd == E1_rs2)) begin
+                E1_forward_b = 1'b1;
+                E1_forward_b_data = M1_forward_data;
+            end
+            else if (M_reg_write && (M_rd != 5'b0) && (M_rd == E1_rs2)) begin
+                E1_forward_b = 1'b1;
+                E1_forward_b_data = M_forward_data;
+            end
+            else if (W_reg_write && (W_rd != 5'b0) && (W_rd == E1_rs2)) begin
                 E1_forward_b = 1'b1;
                 E1_forward_b_data = W_write_data;
             end

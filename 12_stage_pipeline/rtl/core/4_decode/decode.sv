@@ -4,15 +4,8 @@ Responsible for decoding instructions and updating registers.
 
 
 module decode(
-    input logic clk,
-    input logic en,
     input logic [31:0] pc,
     input logic [31:0] instruction,
-
-    // Write-back interface
-    input logic reg_write_wb,
-    input logic [4:0] rd_wb,
-    input logic [31:0] write_data_wb,
 
     // Outputs to execute stage
     output logic [31:0] immediate,
@@ -22,6 +15,7 @@ module decode(
     output logic [31:0] pc_out,
 
     // Control signals
+    output logic uses_rs1,
     output logic uses_rs2,
     output logic [3:0] alu_op,
     output logic alu_src_a,
@@ -56,6 +50,7 @@ control ctrl (
     .instruction(instruction),
 
     // Execution control
+    .uses_rs1(uses_rs1),
     .uses_rs2(uses_rs2),
     .alu_op(alu_op),
     .alu_src_a(alu_src_a),

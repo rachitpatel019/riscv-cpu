@@ -13,8 +13,6 @@ module EX1_EX2(
     input logic [2:0] branch_type_in,
 
     input logic reg_write_in,
-    input logic [4:0] rs1_in,
-    input logic [4:0] rs2_in,
     input logic [4:0] rd_in,
 
     input logic [31:0] operand_a_in,
@@ -36,8 +34,6 @@ module EX1_EX2(
     output logic [2:0] branch_type_out,
 
     output logic reg_write_out,
-    output logic [4:0] rs1_out,
-    output logic [4:0] rs2_out,
     output logic [4:0] rd_out,
 
     output logic [31:0] operand_a_out,
@@ -60,8 +56,6 @@ always_ff @(posedge clk) begin
         jump_out <= 0;
         branch_type_out <= 3'b0;
         reg_write_out <= 0;
-        rs1_out <= 5'b0;
-        rs2_out <= 5'b0;
         rd_out <= 5'b0;
         operand_a_out <= 32'b0;
         operand_b_out <= 32'b0;
@@ -80,8 +74,6 @@ always_ff @(posedge clk) begin
         jump_out <= jump_out;
         branch_type_out <= branch_type_out;
         reg_write_out <= reg_write_out;
-        rs1_out <= rs1_out;
-        rs2_out <= rs2_out;
         rd_out <= rd_out;
         operand_a_out <= operand_a_out;
         operand_b_out <= operand_b_out;
@@ -100,8 +92,6 @@ always_ff @(posedge clk) begin
         jump_out <= jump_in;
         branch_type_out <= branch_type_in;
         reg_write_out <= reg_write_in;
-        rs1_out <= rs1_in;
-        rs2_out <= rs2_in;
         rd_out <= rd_in;
         operand_a_out <= operand_a_in;
         operand_b_out <= operand_b_in;

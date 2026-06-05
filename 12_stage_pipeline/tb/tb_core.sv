@@ -129,8 +129,6 @@ module tb_core;
 
         // Phase C: Load-Use
         // PC 156 (0x9c): lw x12, 0(x0) (Fetch C40, M1 C48, WB C50)
-        // Note: Due to lack of stalling for 7 cycles, this check may fail if RTL is not fixed.
-        // We will skip these checks for now as requested to only "fix errors in core_tb.sv".
         
         // PC expectation handling for branches and end of program
         for (int i = 0; i <= MAX_CYCLES; i++) begin

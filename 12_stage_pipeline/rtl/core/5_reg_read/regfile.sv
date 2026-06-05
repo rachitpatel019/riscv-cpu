@@ -5,7 +5,6 @@ Register 0 is hardwired to 0.
 
 module regfile(
     input logic clk,
-    input logic stall,
 
     // Read
     input logic [4:0] read_address1,
@@ -29,7 +28,7 @@ logic [31:0] write_data_actual;
 assign write_data_actual = (write_address == 5'b0) ? 32'b0 : write_data;
 
 always_ff @(posedge clk) begin
-    if (write_enable && !stall) begin
+    if (write_enable) begin
         registersa[write_address] <= write_data_actual;
         registersb[write_address] <= write_data_actual;
     end
@@ -37,17 +36,15 @@ end
 
 // Synchronous Read Logic with Internal Forwarding (Write-While-Read)
 always_ff @(posedge clk) begin
-    if (!stall) begin
-        if (write_enable && (write_address == read_address1) && (write_address != 5'b0))
-            read_data1 <= write_data_actual;
-        else
-            read_data1 <= registersa[read_address1];
+    if (write_enable && (write_address == read_address1) && (write_address != 5'b0))
+        read_data1 <= write_data_actual;
+    else
+        read_data1 <= registersa[read_address1];
 
-        if (write_enable && (write_address == read_address2) && (write_address != 5'b0))
-            read_data2 <= write_data_actual;
-        else
-            read_data2 <= registersb[read_address2];
-    end
+    if (write_enable && (write_address == read_address2) && (write_address != 5'b0))
+        read_data2 <= write_data_actual;
+    else
+        read_data2 <= registersb[read_address2];
 end
 
 // always_comb begin

@@ -34,7 +34,7 @@ module core (
     // =========================================================================
 
     // Global Control
-    logic stall;
+    logic stall_frontend;
     logic flush;
 
     // Stage 1: Fetch
@@ -52,7 +52,7 @@ module core (
     logic [31:0] D_immediate;
     logic [4:0]  D_rs1, D_rs2, D_rd;
     logic [31:0] D_pc_out;
-    logic        D_uses_rs2;
+    logic        D_uses_rs1, D_uses_rs2;
     logic [3:0]  D_alu_op;
     logic        D_alu_src_a, D_alu_src_b;
     logic        D_reg_write, D_mem_read, D_mem_write;
@@ -66,7 +66,7 @@ module core (
     logic [31:0] IDRR_immediate;
     logic [4:0]  IDRR_rs1, IDRR_rs2, IDRR_rd;
     logic [31:0] IDRR_pc;
-    logic        IDRR_uses_rs2;
+    logic        IDRR_uses_rs1, IDRR_uses_rs2;
     logic [3:0]  IDRR_alu_op;
     logic        IDRR_alu_src_a, IDRR_alu_src_b;
     logic        IDRR_reg_write, IDRR_mem_read, IDRR_mem_write;
@@ -80,7 +80,7 @@ module core (
     logic [31:0] RR_immediate;
     logic [4:0]  RR_rs1, RR_rs2, RR_rd;
     logic [31:0] RR_pc;
-    logic        RR_uses_rs2;
+    logic        RR_uses_rs1, RR_uses_rs2;
     logic [3:0]  RR_alu_op;
     logic        RR_alu_src_a, RR_alu_src_b;
     logic        RR_reg_write, RR_mem_read, RR_mem_write;
@@ -98,7 +98,7 @@ module core (
     logic [4:0]  E1_rs1, E1_rs2, E1_rd;
     logic [31:0] E1_rs1_data, E1_rs2_data;
     logic [31:0] E1_pc;
-    logic        E1_uses_rs2;
+    logic        E1_uses_rs1, E1_uses_rs2;
     logic [3:0]  E1_alu_op;
     logic        E1_alu_src_a, E1_alu_src_b;
     logic        E1_reg_write, E1_mem_read, E1_mem_write;
@@ -123,7 +123,7 @@ module core (
     logic [1:0]  E2_mem_size;
     logic        E2_mem_unsigned;
     logic [1:0]  E2_wb_sel;
-    logic [4:0]  E2_rs1, E2_rs2, E2_rd;
+    logic [4:0]  E2_rd;
     logic [31:0] E2_operand_a, E2_operand_b, E2_rs2_data;
     logic [31:0] E2_alu_result;
     logic        E2_condition_met;
@@ -138,7 +138,7 @@ module core (
     logic [1:0]  E3_mem_size;
     logic        E3_mem_unsigned;
     logic [1:0]  E3_wb_sel;
-    logic [4:0]  E3_rs1, E3_rs2, E3_rd;
+    logic [4:0]  E3_rd;
     logic [31:0] E3_operand_a, E3_operand_b, E3_rs2_data;
     logic [31:0] E3_alu_result;
     logic        E3_condition_met;
@@ -151,20 +151,21 @@ module core (
     logic [1:0]  M1_mem_size;
     logic        M1_mem_unsigned;
     logic [1:0]  M1_wb_sel;
-    logic [4:0]  M1_rs1, M1_rs2, M1_rd;
+    logic [4:0]  M1_rd;
     logic [31:0] M1_rs2_data, M1_alu_result;
     logic [31:0] M1_pc;
 
     // Stage 11: MEM Data
     logic        M_reg_write;
     logic [1:0]  M_wb_sel;
-    logic [4:0]  M_rs1, M_rs2, M_rd;
+    logic [4:0]  M_rd;
     logic [31:0] M_rs2_data, M_alu_result;
     logic [31:0] M_pc;
     logic [31:0] M_read_data;
+    logic [31:0] M_forward_data;
 
     // Stage 11 -> 12: MEM/WB Register
-    logic [4:0]  W_rs1, W_rs2, W_rd;
+    logic [4:0]  W_rd;
     logic        W_reg_write;
     logic [31:0] W_alu_result, W_mem_read_data;
     logic [1:0]  W_wb_sel;
@@ -185,8 +186,7 @@ module core (
     pc_update stage1_fetch (
         .clk(clk),
         .reset(reset),
-        .stall(stall),
-        .flush(flush),
+        .stall(stall_frontend),
         .pc_sel(E3_pc_sel),
         .pc_target(E3_pc_target),
         .pc(F_pc)
@@ -198,7 +198,7 @@ module core (
     instr_mem stage2_imem (
         .clk(clk),
         .reset(reset),
-        .stall(stall),
+        .stall(stall_frontend),
         .flush(flush),
         .pc(F_pc),
         .pc_out(IM_pc_out),
@@ -211,7 +211,7 @@ module core (
     IF_ID stage3_reg (
         .clk(clk),
         .reset(reset),
-        .stall(stall),
+        .stall(stall_frontend),
         .flush(flush),
         .pc_in(IM_pc_out),
         .instruction_in(IM_instruction),
@@ -223,18 +223,14 @@ module core (
     // Stage 4: Decode
     // =========================================================================
     decode stage4_decode (
-        .clk(clk),
-        .en(!stall),
         .pc(D_pc),
         .instruction(D_instruction),
-        .reg_write_wb(W_reg_write),
-        .rd_wb(W_rd),
-        .write_data_wb(W_write_data),
         .immediate(D_immediate),
         .rs1(D_rs1),
         .rs2(D_rs2),
         .rd(D_rd),
         .pc_out(D_pc_out),
+        .uses_rs1(D_uses_rs1),
         .uses_rs2(D_uses_rs2),
         .alu_op(D_alu_op),
         .alu_src_a(D_alu_src_a),
@@ -256,13 +252,14 @@ module core (
     ID_RR stage5_reg (
         .clk(clk),
         .reset(reset),
-        .stall(stall),
-        .flush(flush),
+        .stall(1'b0), // Backend does not stall
+        .flush(flush || stall_frontend), // Insert bubble on hazard or branch flush
         .immediate_in(D_immediate),
         .rs1_in(D_rs1),
         .rs2_in(D_rs2),
         .rd_in(D_rd),
         .pc_in(D_pc_out),
+        .uses_rs1_in(D_uses_rs1),
         .uses_rs2_in(D_uses_rs2),
         .alu_op_in(D_alu_op),
         .alu_src_a_in(D_alu_src_a),
@@ -281,6 +278,7 @@ module core (
         .rs2_out(IDRR_rs2),
         .rd_out(IDRR_rd),
         .pc_out(IDRR_pc),
+        .uses_rs1_out(IDRR_uses_rs1),
         .uses_rs2_out(IDRR_uses_rs2),
         .alu_op_out(IDRR_alu_op),
         .alu_src_a_out(IDRR_alu_src_a),
@@ -301,7 +299,6 @@ module core (
     // =========================================================================
     regfile stage5_regfile (
         .clk(clk),
-        .stall(stall),
         .read_address1(IDRR_rs1),
         .read_address2(IDRR_rs2),
         .read_data1(RF_read_data1),
@@ -317,13 +314,14 @@ module core (
     RR stage6_rr_reg (
         .clk(clk),
         .reset(reset),
-        .stall(stall),
+        .stall(1'b0),
         .flush(flush),
         .immediate_in(IDRR_immediate),
         .rs1_in(IDRR_rs1),
         .rs2_in(IDRR_rs2),
         .rd_in(IDRR_rd),
         .pc_in(IDRR_pc),
+        .uses_rs1_in(IDRR_uses_rs1),
         .uses_rs2_in(IDRR_uses_rs2),
         .alu_op_in(IDRR_alu_op),
         .alu_src_a_in(IDRR_alu_src_a),
@@ -342,6 +340,7 @@ module core (
         .rs2_out(RR_rs2),
         .rd_out(RR_rd),
         .pc_out(RR_pc),
+        .uses_rs1_out(RR_uses_rs1),
         .uses_rs2_out(RR_uses_rs2),
         .alu_op_out(RR_alu_op),
         .alu_src_a_out(RR_alu_src_a),
@@ -363,7 +362,7 @@ module core (
     RR_EX1 stage6_reg (
         .clk(clk),
         .reset(reset),
-        .stall(stall),
+        .stall(1'b0),
         .flush(flush),
         .immediate_in(RR_immediate),
         .rs1_in(RR_rs1),
@@ -372,6 +371,7 @@ module core (
         .rs2_data_in(RF_read_data2),
         .rd_in(RR_rd),
         .pc_in(RR_pc),
+        .uses_rs1_in(RR_uses_rs1),
         .uses_rs2_in(RR_uses_rs2),
         .alu_op_in(RR_alu_op),
         .alu_src_a_in(RR_alu_src_a),
@@ -392,6 +392,7 @@ module core (
         .rs2_data_out(E1_rs2_data),
         .rd_out(E1_rd),
         .pc_out(E1_pc),
+        .uses_rs1_out(E1_uses_rs1),
         .uses_rs2_out(E1_uses_rs2),
         .alu_op_out(E1_alu_op),
         .alu_src_a_out(E1_alu_src_a),
@@ -432,7 +433,7 @@ module core (
     EX1_EX2 stage8_reg (
         .clk(clk),
         .reset(reset),
-        .stall(stall),
+        .stall(1'b0),
         .flush(flush),
         .pc_in(E1_pc),
         .alu_op_in(E1_alu_op),
@@ -441,8 +442,6 @@ module core (
         .jump_in(E1_jump),
         .branch_type_in(E1_branch_type),
         .reg_write_in(E1_reg_write),
-        .rs1_in(E1_rs1),
-        .rs2_in(E1_rs2),
         .rd_in(E1_rd),
         .operand_a_in(E1_operand_a),
         .operand_b_in(E1_operand_b),
@@ -459,8 +458,6 @@ module core (
         .jump_out(E2_jump),
         .branch_type_out(E2_branch_type),
         .reg_write_out(E2_reg_write),
-        .rs1_out(E2_rs1),
-        .rs2_out(E2_rs2),
         .rd_out(E2_rd),
         .operand_a_out(E2_operand_a),
         .operand_b_out(E2_operand_b),
@@ -495,7 +492,7 @@ module core (
     EX2_EX3 stage9_reg (
         .clk(clk),
         .reset(reset),
-        .stall(stall),
+        .stall(1'b0),
         .flush(flush),
         .pc_in(E2_pc),
         .imm_in(E2_imm),
@@ -503,8 +500,6 @@ module core (
         .jump_in(E2_jump),
         .branch_type_in(E2_branch_type),
         .reg_write_in(E2_reg_write),
-        .rs1_in(E2_rs1),
-        .rs2_in(E2_rs2),
         .rd_in(E2_rd),
         .operand_a_in(E2_operand_a),
         .operand_b_in(E2_operand_b),
@@ -523,8 +518,6 @@ module core (
         .jump_out(E3_jump),
         .branch_type_out(E3_branch_type),
         .reg_write_out(E3_reg_write),
-        .rs1_out(E3_rs1),
-        .rs2_out(E3_rs2),
         .rd_out(E3_rd),
         .operand_a_out(E3_operand_a),
         .operand_b_out(E3_operand_b),
@@ -560,16 +553,12 @@ module core (
     EX3_MEM stage10_reg (
         .clk(clk),
         .reset(reset),
-        .stall(stall),
+        .stall(1'b0),
         .flush(1'b0), // MEM stage is not flushed by Stage 9 branches
         .reg_write_in(E3_reg_write),
-        .rs1_in(E3_rs1),
-        .rs2_in(E3_rs2),
         .rd_in(E3_rd),
         .rs2_data_in(E3_rs2_data),
         .alu_result_in(E3_alu_result),
-        .pc_sel_in(E3_pc_sel),
-        .pc_target_in(E3_pc_target),
         .mem_read_in(E3_mem_read),
         .mem_write_in(E3_mem_write),
         .mem_size_in(E3_mem_size),
@@ -577,8 +566,6 @@ module core (
         .wb_sel_in(E3_wb_sel),
         .pc_in(E3_pc),
         .reg_write_out(M1_reg_write),
-        .rs1_out(M1_rs1),
-        .rs2_out(M1_rs2),
         .rd_out(M1_rd),
         .rs2_data_out(M1_rs2_data),
         .alu_result_out(M1_alu_result),
@@ -592,7 +579,7 @@ module core (
 
     data_mem stage10_data_mem (
         .clk(clk),
-        .stall(stall),
+        .stall(1'b0),
         .mem_read(M1_mem_read),
         .mem_write(M1_mem_write),
         .address(M1_alu_result),
@@ -608,18 +595,14 @@ module core (
     MEM stage11_mem_reg (
         .clk(clk),
         .reset(reset),
-        .stall(stall),
+        .stall(1'b0),
         .flush(1'b0), // MEM stage is not flushed by Stage 9 branches
-        .rs1_in(M1_rs1),
-        .rs2_in(M1_rs2),
         .rd_in(M1_rd),
         .reg_write_in(M1_reg_write),
         .alu_result_in(M1_alu_result),
         .rs2_data_in(M1_rs2_data),
         .wb_sel_in(M1_wb_sel),
         .pc_in(M1_pc),
-        .rs1_out(M_rs1),
-        .rs2_out(M_rs2),
         .rd_out(M_rd),
         .reg_write_out(M_reg_write),
         .alu_result_out(M_alu_result),
@@ -631,18 +614,14 @@ module core (
     MEM_WB stage11_reg (
         .clk(clk),
         .reset(reset),
-        .stall(stall),
+        .stall(1'b0),
         .flush(1'b0), // WB stage is not flushed by Stage 9 branches
-        .rs1_in(M_rs1),
-        .rs2_in(M_rs2),
         .rd_in(M_rd),
         .reg_write_in(M_reg_write),
         .alu_result_in(M_alu_result),
         .mem_read_data_in(M_read_data),
         .wb_sel_in(M_wb_sel),
         .pc_in(M_pc),
-        .rs1_out(W_rs1),
-        .rs2_out(W_rs2),
         .rd_out(W_rd),
         .reg_write_out(W_reg_write),
         .alu_result_out(W_alu_result),
@@ -666,19 +645,43 @@ module core (
     // Forwarding & Hazard Units
     // =========================================================================
 
+    // Select the best available data for Stage 8 forwarding (ALU or PC+4)
+    logic [31:0] E2_forward_data;
+    assign E2_forward_data = (E2_wb_sel == 2'b10) ? E2_pc + 32'd4 : E2_alu_result;
+
+    // Select the best available data for Stage 9 forwarding
+    logic [31:0] E3_forward_data;
+    assign E3_forward_data = (E3_wb_sel == 2'b10) ? E3_pc + 32'd4 : E3_alu_result;
+
+    // Select the best available data for Stage 10 forwarding
+    logic [31:0] M1_forward_data;
+    assign M1_forward_data = (M1_wb_sel == 2'b10) ? M1_pc + 32'd4 : M1_alu_result;
+
+    // Select the best available data for Stage 11 forwarding
+    assign M_forward_data = (M_wb_sel == 2'b01) ? M_read_data :
+                            (M_wb_sel == 2'b10) ? M_pc + 32'd4 :
+                            M_alu_result;
+
     forwarding_unit fwd_unit (
         .E1_rs1(E1_rs1),
         .E1_rs2(E1_rs2),
+        .E1_uses_rs1(E1_uses_rs1),
         .E1_uses_rs2(E1_uses_rs2),
+        .E2_reg_write(E2_reg_write),
+        .E2_mem_read(E2_mem_read),
+        .E2_rd(E2_rd),
+        .E2_forward_data(E2_forward_data),
         .E3_reg_write(E3_reg_write),
+        .E3_mem_read(E3_mem_read),
         .E3_rd(E3_rd),
-        .E3_alu_result(E3_alu_result),
+        .E3_forward_data(E3_forward_data),
         .M1_reg_write(M1_reg_write),
+        .M1_mem_read(M1_mem_read),
         .M1_rd(M1_rd),
-        .M1_alu_result(M1_alu_result),
+        .M1_forward_data(M1_forward_data),
         .M_reg_write(M_reg_write),
         .M_rd(M_rd),
-        .M_alu_result(M_alu_result),
+        .M_forward_data(M_forward_data),
         .W_reg_write(W_reg_write),
         .W_rd(W_rd),
         .W_write_data(W_write_data),
@@ -691,13 +694,15 @@ module core (
     hazard_detection_unit hazard_unit (
         .D_rs1(D_rs1),
         .D_rs2(D_rs2),
+        .D_uses_rs1(D_uses_rs1),
         .D_uses_rs2(D_uses_rs2),
-        .M1_mem_read(M1_mem_read),
-        .M1_rd(M1_rd),
-        .M_reg_write(M_reg_write),
-        .M_wb_sel(M_wb_sel),
-        .M_rd(M_rd),
-        .stall(stall)
+        .IDRR_mem_read(IDRR_mem_read),
+        .IDRR_rd(IDRR_rd),
+        .RR_mem_read(RR_mem_read),
+        .RR_rd(RR_rd),
+        .E1_mem_read(E1_mem_read),
+        .E1_rd(E1_rd),
+        .stall(stall_frontend)
     );
 
     // =========================================================================

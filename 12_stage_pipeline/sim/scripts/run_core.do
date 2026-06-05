@@ -27,6 +27,7 @@ vlog -sv \
     ../../rtl/core/7_ex1/data_sel.sv \
     ../../rtl/core/7_ex1/EX1_EX2.sv \
     ../../rtl/core/8_ex2/alu.sv \
+    ../../rtl/core/8_ex2/branch_eval.sv \
     ../../rtl/core/8_ex2/EX2_EX3.sv \
     ../../rtl/core/9_ex3/pc_target_calc.sv \
     ../../rtl/core/9_ex3/EX3_MEM.sv \

@@ -5,8 +5,6 @@ module MEM_WB(
     input logic stall,
     input logic flush,
 
-    input logic [4:0] rs1_in,
-    input logic [4:0] rs2_in,
     input logic [4:0] rd_in,
     input logic reg_write_in,
     input logic [31:0] alu_result_in,
@@ -14,8 +12,6 @@ module MEM_WB(
     input logic [1:0] wb_sel_in,
     input logic [31:0] pc_in,
 
-    output logic [4:0] rs1_out,
-    output logic [4:0] rs2_out,
     output logic [4:0] rd_out,
     output logic reg_write_out,
     output logic [31:0] alu_result_out,
@@ -26,8 +22,6 @@ module MEM_WB(
 
 always_ff @(posedge clk) begin
     if (reset || flush) begin
-        rs1_out <= 5'b0;
-        rs2_out <= 5'b0;
         rd_out <= 5'b0;
         reg_write_out <= 0;
         alu_result_out <= 32'b0;
@@ -36,8 +30,6 @@ always_ff @(posedge clk) begin
         pc_out <= 32'b0;
     end
     else if (stall) begin
-        rs1_out <= rs1_out;
-        rs2_out <= rs2_out;
         rd_out <= rd_out;
         reg_write_out <= reg_write_out;
         alu_result_out <= alu_result_out;
@@ -46,8 +38,6 @@ always_ff @(posedge clk) begin
         pc_out <= pc_out;
     end
     else begin
-        rs1_out <= rs1_in;
-        rs2_out <= rs2_in;
         rd_out <= rd_in;
         reg_write_out <= reg_write_in;
         alu_result_out <= alu_result_in;
