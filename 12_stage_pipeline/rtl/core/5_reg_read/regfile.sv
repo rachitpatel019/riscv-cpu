@@ -18,34 +18,22 @@ module regfile(
     input logic write_enable
 );
 
-/* To infer BRAM for a 2-Read, 1-Write memory, we duplicate the storage.
-   Each 'registers' array will be mapped to a separate M9K block. */
-(* ramstyle = "M9K" *) logic [31:0] registersa [31:0] = '{default: 32'b0};
-(* ramstyle = "M9K" *) logic [31:0] registersb [31:0] = '{default: 32'b0};
+/* To infer distributed RAM for asynchronous read, we can use a simple array. */
+logic [31:0] registers [31:0] = '{default: 32'b0};
 
 // Synchronous Write Logic
 logic [31:0] write_data_actual;
 assign write_data_actual = (write_address == 5'b0) ? 32'b0 : write_data;
 
 always_ff @(posedge clk) begin
-    if (write_enable) begin
-        registersa[write_address] <= write_data_actual;
-        registersb[write_address] <= write_data_actual;
+    if (write_enable && (write_address != 5'b0)) begin
+        registers[write_address] <= write_data_actual;
     end
 end
 
-// Synchronous Read Logic with Internal Forwarding (Write-While-Read)
-always_ff @(posedge clk) begin
-    if (write_enable && (write_address == read_address1) && (write_address != 5'b0))
-        read_data1 <= write_data_actual;
-    else
-        read_data1 <= registersa[read_address1];
-
-    if (write_enable && (write_address == read_address2) && (write_address != 5'b0))
-        read_data2 <= write_data_actual;
-    else
-        read_data2 <= registersb[read_address2];
-end
+// Asynchronous Read Logic with Internal Forwarding (Write-First)
+assign read_data1 = (write_enable && (write_address == read_address1) && (write_address != 5'b0)) ? write_data_actual : registers[read_address1];
+assign read_data2 = (write_enable && (write_address == read_address2) && (write_address != 5'b0)) ? write_data_actual : registers[read_address2];
 
 // always_comb begin
 //     // Port 1

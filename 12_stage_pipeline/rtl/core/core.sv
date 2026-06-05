@@ -295,12 +295,12 @@ module core (
     );
 
     // =========================================================================
-    // Stage 5/6: Register Read
+    // Stage 6: Register Read (Async)
     // =========================================================================
-    regfile stage5_regfile (
+    regfile stage6_regfile (
         .clk(clk),
-        .read_address1(IDRR_rs1),
-        .read_address2(IDRR_rs2),
+        .read_address1(RR_rs1),
+        .read_address2(RR_rs2),
         .read_data1(RF_read_data1),
         .read_data2(RF_read_data2),
         .write_address(W_rd),
