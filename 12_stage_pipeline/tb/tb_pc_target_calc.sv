@@ -13,6 +13,11 @@ module tb_pc_target_calc;
     logic [2:0] branch_type;
     logic [31:0] imm;
     logic [31:0] alu_result;
+    
+    // New ports
+    logic        condition_met_in;
+    logic [31:0] branch_target_in;
+
     logic pc_sel;
     logic [31:0] pc_target;
 
@@ -26,6 +31,19 @@ module tb_pc_target_calc;
         pc = i_pc; operand_a = i_op_a; operand_b = i_op_b;
         branch = i_branch; jump = i_jump; branch_type = i_br_type;
         imm = i_imm; alu_result = i_alu_res;
+        
+        // Emulate Stage 8 logic
+        case (i_br_type)
+            3'b000: condition_met_in = i_op_a == i_op_b;
+            3'b001: condition_met_in = i_op_a != i_op_b;
+            3'b100: condition_met_in = $signed(i_op_a) < $signed(i_op_b);
+            3'b101: condition_met_in = $signed(i_op_a) >= $signed(i_op_b);
+            3'b110: condition_met_in = i_op_a < i_op_b;
+            3'b111: condition_met_in = i_op_a >= i_op_b;
+            default: condition_met_in = 0;
+        endcase
+        branch_target_in = i_pc + i_imm;
+
         #1;
     endtask
 

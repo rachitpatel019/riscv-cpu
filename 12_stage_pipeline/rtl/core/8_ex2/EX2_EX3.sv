@@ -20,6 +20,10 @@ module EX2_EX3(
     input logic [31:0] operand_b_in,
     input logic [31:0] rs2_data_in,
     input logic [31:0] alu_result_in,
+    
+    // Optimized timing signals
+    input logic        condition_met_in,
+    input logic [31:0] branch_target_in,
 
     input logic mem_read_in,
     input logic mem_write_in,
@@ -43,6 +47,10 @@ module EX2_EX3(
     output logic [31:0] operand_b_out,
     output logic [31:0] rs2_data_out,
     output logic [31:0] alu_result_out,
+    
+    // Optimized timing signals
+    output logic        condition_met_out,
+    output logic [31:0] branch_target_out,
 
     output logic mem_read_out,
     output logic mem_write_out,
@@ -65,6 +73,8 @@ always_ff @(posedge clk) begin
         operand_b_out <= 32'b0;
         rs2_data_out <= 32'b0;
         alu_result_out <= 32'b0;
+        condition_met_out <= 0;
+        branch_target_out <= 32'b0;
         imm_out <= 32'b0;
         mem_read_out <= 0;
         mem_write_out <= 0;
@@ -85,6 +95,8 @@ always_ff @(posedge clk) begin
         operand_b_out <= operand_b_out;
         rs2_data_out <= rs2_data_out;
         alu_result_out <= alu_result_out;
+        condition_met_out <= condition_met_out;
+        branch_target_out <= branch_target_out;
         imm_out <= imm_out;
         mem_read_out <= mem_read_out;
         mem_write_out <= mem_write_out;
@@ -105,6 +117,8 @@ always_ff @(posedge clk) begin
         operand_b_out <= operand_b_in;
         rs2_data_out <= rs2_data_in;
         alu_result_out <= alu_result_in;
+        condition_met_out <= condition_met_in;
+        branch_target_out <= branch_target_in;
         imm_out <= imm_in;
         mem_read_out <= mem_read_in;
         mem_write_out <= mem_write_in;

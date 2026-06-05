@@ -126,6 +126,8 @@ module core (
     logic [4:0]  E2_rs1, E2_rs2, E2_rd;
     logic [31:0] E2_operand_a, E2_operand_b, E2_rs2_data;
     logic [31:0] E2_alu_result;
+    logic        E2_condition_met;
+    logic [31:0] E2_branch_target;
 
     // Stage 9: EX3 (Branch Eval)
     logic [31:0] E3_pc;
@@ -139,6 +141,8 @@ module core (
     logic [4:0]  E3_rs1, E3_rs2, E3_rd;
     logic [31:0] E3_operand_a, E3_operand_b, E3_rs2_data;
     logic [31:0] E3_alu_result;
+    logic        E3_condition_met;
+    logic [31:0] E3_branch_target;
     logic        E3_pc_sel;
     logic [31:0] E3_pc_target;
 
@@ -475,6 +479,16 @@ module core (
         .result(E2_alu_result)
     );
 
+    branch_eval stage8_branch (
+        .pc(E2_pc),
+        .imm(E2_imm),
+        .operand_a(E2_operand_a),
+        .operand_b(E2_operand_b),
+        .branch_type(E2_branch_type),
+        .condition_met(E2_condition_met),
+        .branch_target(E2_branch_target)
+    );
+
     // =========================================================================
     // Stage 9: EX3 (PC Target Calc)
     // =========================================================================
@@ -496,6 +510,8 @@ module core (
         .operand_b_in(E2_operand_b),
         .rs2_data_in(E2_rs2_data),
         .alu_result_in(E2_alu_result),
+        .condition_met_in(E2_condition_met),
+        .branch_target_in(E2_branch_target),
         .mem_read_in(E2_mem_read),
         .mem_write_in(E2_mem_write),
         .mem_size_in(E2_mem_size),
@@ -514,6 +530,8 @@ module core (
         .operand_b_out(E3_operand_b),
         .rs2_data_out(E3_rs2_data),
         .alu_result_out(E3_alu_result),
+        .condition_met_out(E3_condition_met),
+        .branch_target_out(E3_branch_target),
         .mem_read_out(E3_mem_read),
         .mem_write_out(E3_mem_write),
         .mem_size_out(E3_mem_size),
@@ -530,6 +548,8 @@ module core (
         .branch_type(E3_branch_type),
         .imm(E3_imm),
         .alu_result(E3_alu_result),
+        .condition_met_in(E3_condition_met),
+        .branch_target_in(E3_branch_target),
         .pc_sel(E3_pc_sel),
         .pc_target(E3_pc_target)
     );

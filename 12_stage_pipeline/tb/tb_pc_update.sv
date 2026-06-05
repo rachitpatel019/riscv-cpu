@@ -64,15 +64,17 @@ module tb_pc_update;
 
         // 1. Reset/Flush Priority
         drive_pc_update(1, 0, 0, 1, 32'h100); check_pc_update(32'h0);
-        drive_pc_update(0, 0, 1, 1, 32'h200); check_pc_update(32'h0);
+        // Note: Flush in this CPU doesn't reset PC, it flushes the pipeline.
+        // PC should follow pc_target if pc_sel is high during a flush (branch).
+        drive_pc_update(0, 0, 1, 1, 32'h200); check_pc_update(32'h200);
 
         // 2. Normal Execution
-        drive_pc_update(0, 0, 0, 0, 0); check_pc_update(32'h4);
-        drive_pc_update(0, 0, 0, 0, 0); check_pc_update(32'h8);
+        drive_pc_update(0, 0, 0, 0, 0); check_pc_update(32'h204);
+        drive_pc_update(0, 0, 0, 0, 0); check_pc_update(32'h208);
 
         // 3. Stall Behavior
-        drive_pc_update(0, 1, 0, 0, 0); check_pc_update(32'h8);
-        drive_pc_update(0, 1, 0, 1, 32'h300); check_pc_update(32'h8); // Stall priority over pc_sel
+        drive_pc_update(0, 1, 0, 0, 0); check_pc_update(32'h208);
+        drive_pc_update(0, 1, 0, 1, 32'h300); check_pc_update(32'h208); // Stall priority over pc_sel
 
         // 4. Branch/Jump Taken
         drive_pc_update(0, 0, 0, 1, 32'h400); check_pc_update(32'h400);

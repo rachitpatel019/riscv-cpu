@@ -28,6 +28,7 @@ vlog -work work ../../rtl/core/6_RR_EX1_REG/RR_EX1.sv
 vlog -work work ../../rtl/core/7_ex1/data_sel.sv
 vlog -work work ../../rtl/core/7_ex1/EX1_EX2.sv
 vlog -work work ../../rtl/core/8_ex2/alu.sv
+vlog -work work ../../rtl/core/8_ex2/branch_eval.sv
 vlog -work work ../../rtl/core/8_ex2/EX2_EX3.sv
 vlog -work work ../../rtl/core/9_ex3/EX3_MEM.sv
 vlog -work work ../../rtl/core/9_ex3/pc_target_calc.sv

@@ -12,6 +12,7 @@ $scripts = @(
     "run_regfile.do",
     "run_data_sel.do",
     "run_alu.do",
+    "run_branch_eval.do",
     "run_pc_target_calc.do",
     "run_data_mem.do",
     "run_writeback.do",

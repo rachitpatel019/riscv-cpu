@@ -51,23 +51,23 @@ module tb_instr_mem;
 
         $display("--- Starting instr_mem Tests ---");
 
-        // 1. Sequential Fetching (using program.hex values)
-        // 0: 00a00093
-        // 4: 01400113
-        // 8: 002081b3
-        drive_instr_mem(0, 0, 32'h0); check_instr_mem(32'h0, 32'h00a00093);
-        drive_instr_mem(0, 0, 32'h4); check_instr_mem(32'h4, 32'h01400113);
-        drive_instr_mem(0, 0, 32'h8); check_instr_mem(32'h8, 32'h002081b3);
+        // 1. Sequential Fetching (using current program.hex values)
+        // 0: 00100093 (addi x1, x0, 1)
+        // 4: 00000013 (nop)
+        // 8: 00000013 (nop)
+        drive_instr_mem(0, 0, 32'h0); check_instr_mem(32'h0, 32'h00100093);
+        drive_instr_mem(0, 0, 32'h4); check_instr_mem(32'h4, 32'h00000013);
+        drive_instr_mem(0, 0, 32'h8); check_instr_mem(32'h8, 32'h00000013);
 
         // 2. Stall Behavior
-        drive_instr_mem(1, 0, 32'hC); check_instr_mem(32'h8, 32'h002081b3); // Still 8
-        drive_instr_mem(1, 0, 32'h10); check_instr_mem(32'h8, 32'h002081b3);
+        drive_instr_mem(1, 0, 32'hC); check_instr_mem(32'h8, 32'h00000013); // Still 8
+        drive_instr_mem(1, 0, 32'h10); check_instr_mem(32'h8, 32'h00000013);
 
         // Resume
-        drive_instr_mem(0, 0, 32'hC); check_instr_mem(32'hC, 32'h00302023);
+        drive_instr_mem(0, 0, 32'hC); check_instr_mem(32'hC, 32'h00000013);
 
-        // 3. Unaligned/Out-of-Bounds
-        drive_instr_mem(0, 0, 32'h00000001); check_instr_mem(32'h00000001, 32'h00a00093); // PC[31:2] is 0
+        // 3. Flush Behavior
+        drive_instr_mem(0, 1, 32'h10); check_instr_mem(32'h0, 32'h00000013);
 
         $display("--- instr_mem Test Summary ---");
         $display("Total Tests: %d", tests_total);
