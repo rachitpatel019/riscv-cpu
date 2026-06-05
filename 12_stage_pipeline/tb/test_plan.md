@@ -1,12 +1,16 @@
-// =========================================================================
-// program.S / program.hex 
-// 12-Stage Pipeline Stress Test
-// =========================================================================
-// This file serves as both the assembly source and the hex machine code.
-// The left column contains the compiled hex for $readmemh("program.hex").
-// The right column contains the assembly instructions and comments.
-// =========================================================================
+# Master Testbench Generation Specification: `core_tb.sv`
 
+This document contains the complete specification, the required test program, and the exact prompt needed to generate a UVM-lite, cycle-by-cycle, white-box testbench for the 12-Stage RISC-V CPU.
+
+## 1. System Overview
+* **Target DUT:** `core.sv` (12-Stage RISC-V RV32I CPU)
+* **Testbench Style:** Single-file, UVM-Lite, cycle-by-cycle white-box checker.
+* **Test Program:** A custom stress-test assembly program (`program.hex`) designed to trigger Read-After-Write (RAW) hazards, structural hazards, Load-Use stalls, and pipeline flushes.
+
+## 2. Test Program (`program.hex`)
+The testbench must load the following compiled hex code into the instruction memory. Save the left column as `program.hex`, or directly initialize the memory array in the testbench `initial` block with these 32-bit values.
+
+```assembly
 // --- Phase A: Datapath & ALU Sanity Check ---
 00100093 // addi x1, x0, 1     // x1 = 1
 00000013 // nop 
@@ -18,7 +22,7 @@
 00000013 // nop 
 00000013 // nop 
 00000013 // nop 
-002081b3 // add  x3, x1, x2    // x3 = 3 (Sanity check basic EX)
+002081b3 // add  x3, x1, x2    // x3 = 3 
 00000013 // nop 
 00000013 // nop 
 00000013 // nop 

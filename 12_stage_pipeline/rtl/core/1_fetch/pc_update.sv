@@ -16,7 +16,7 @@ module pc_update (
 );
 
 always_ff @(posedge clk) begin
-    if (reset || flush) begin
+    if (reset) begin
         pc <= 32'b0;
     end
     else if (stall) begin

@@ -19,9 +19,9 @@ vlog -sv \
     ../../packages/alu_pkg.sv \
     ../../packages/decoder_pkg.sv \
     ../../rtl/core/1_fetch/pc_update.sv \
-    ../../tb/pc_update_tb.sv
+    ../../tb/tb_pc_update.sv
 
 # Run simulation
-vsim -batch -L work -voptargs="+acc" work.pc_update_tb
+vsim -batch -L work -voptargs="+acc" work.tb_pc_update
 run -all
 quit -f

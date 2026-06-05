@@ -5,7 +5,7 @@ file copy -force ../scripts/modelsim.ini modelsim.ini
 if {[file exists work]} { vdel -all }
 vlib work
 vmap work work
-vlog -sv ../../packages/alu_pkg.sv ../../packages/decoder_pkg.sv ../../rtl/core/12_wb/writeback.sv ../../tb/writeback_tb.sv
-vsim -batch -L work -voptargs=+acc work.writeback_tb
+vlog -sv ../../packages/alu_pkg.sv ../../packages/decoder_pkg.sv ../../rtl/core/12_wb/writeback.sv ../../tb/tb_writeback.sv
+vsim -batch -L work -voptargs=+acc work.tb_writeback
 run -all
 quit -f

@@ -1,10 +1,13 @@
 onerror {quit -f}
 onbreak {quit -f}
-cd [file normalize [file join [file dirname [info script]] ../logs]]
-file copy -force ../scripts/modelsim.ini modelsim.ini
-if {![file exists program.hex]} {
-    file copy -force ../program.hex program.hex
+# Create logs directory if it doesn't exist
+if {![file exists ../logs]} {
+    file mkdir ../logs
 }
+cd ../logs
+file copy -force ../scripts/modelsim.ini modelsim.ini
+# Always copy program.hex to ensure it's up to date
+file copy -force ../program.hex program.hex
 if {[file exists work]} { vdel -all }
 vlib work
 vmap work work
@@ -34,7 +37,7 @@ vlog -sv \
     ../../rtl/core/hazard_control/forwarding_unit.sv \
     ../../rtl/core/hazard_control/hazard_detection_unit.sv \
     ../../rtl/core/core.sv \
-    ../../tb/core_tb.sv
-vsim -batch -L work -voptargs=+acc work.core_tb
+    ../../tb/tb_core.sv
+vsim -batch -L work -voptargs=+acc work.tb_core
 run -all
 quit -f

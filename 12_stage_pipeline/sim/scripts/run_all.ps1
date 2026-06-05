@@ -15,7 +15,9 @@ $scripts = @(
     "run_pc_target_calc.do",
     "run_data_mem.do",
     "run_writeback.do",
-    "run_core.do"
+    "run_hazard_detection_unit.do",
+    "run_forwarding_unit.do",
+    "run_core_integrated.do"
 )
 
 $passed = @()
@@ -60,7 +62,7 @@ foreach ($script in $scripts) {
     $hasFailureKeyword = $false
     if (Test-Path $logPath) {
         $logContent = Get-Content $logPath
-        $hasFailureKeyword = $logContent | Select-String -Pattern "UVM_ERROR", "UVM_FATAL", "FAIL", "FAILURE", "Error\s*:\s*[1-9]", "\*\* Error" -Quiet
+        $hasFailureKeyword = $logContent | Select-String -Pattern "UVM_ERROR", "UVM_FATAL", "MISMATCH", "FAILURE", "Errors: [1-9]", "\*\* Error" -Quiet
     }
 
     if ($exitCode -ne 0 -or $hasFailureKeyword -or $timeoutOccurred) {

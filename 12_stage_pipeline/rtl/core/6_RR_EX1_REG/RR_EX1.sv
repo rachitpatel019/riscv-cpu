@@ -54,7 +54,7 @@ module RR_EX1 (
 );
 
 always_ff @(posedge clk) begin
-    if (reset || flush || stall) begin
+    if (reset || flush) begin
         // Outputs to execute stage
         immediate_out <= 32'b0;
         rs1_out <= 5'b0;
@@ -79,7 +79,7 @@ always_ff @(posedge clk) begin
         jump_out <= 1'b0;
         branch_type_out <= 3'b0;
     end
-    else begin
+    else if (!stall) begin
         // Outputs to execute stage
         immediate_out <= immediate_in;
         rs1_out <= rs1_in;

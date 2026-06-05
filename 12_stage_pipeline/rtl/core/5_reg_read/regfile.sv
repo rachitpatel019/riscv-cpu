@@ -35,11 +35,18 @@ always_ff @(posedge clk) begin
     end
 end
 
-// Synchronous Read Logic
+// Synchronous Read Logic with Internal Forwarding (Write-While-Read)
 always_ff @(posedge clk) begin
     if (!stall) begin
-        read_data1 <= registersa[read_address1];
-        read_data2 <= registersb[read_address2];
+        if (write_enable && (write_address == read_address1) && (write_address != 5'b0))
+            read_data1 <= write_data_actual;
+        else
+            read_data1 <= registersa[read_address1];
+
+        if (write_enable && (write_address == read_address2) && (write_address != 5'b0))
+            read_data2 <= write_data_actual;
+        else
+            read_data2 <= registersb[read_address2];
     end
 end
 
