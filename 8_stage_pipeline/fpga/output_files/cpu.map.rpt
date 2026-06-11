@@ -1,0 +1,1593 @@
+Analysis & Synthesis report for cpu
+Thu Jun 11 13:34:37 2026
+Quartus Prime Version 24.1std.0 Build 1077 03/04/2025 SC Lite Edition
+
+
+---------------------
+; Table of Contents ;
+---------------------
+  1. Legal Notice
+  2. Analysis & Synthesis Summary
+  3. Analysis & Synthesis Settings
+  4. Parallel Compilation
+  5. Analysis & Synthesis Source Files Read
+  6. Analysis & Synthesis Resource Usage Summary
+  7. Analysis & Synthesis Resource Utilization by Entity
+  8. Analysis & Synthesis RAM Summary
+  9. Registers Removed During Synthesis
+ 10. Removed Registers Triggering Further Register Optimizations
+ 11. General Register Statistics
+ 12. Inverted Register Statistics
+ 13. Physical Synthesis Netlist Optimizations
+ 14. Registers Packed Into Inferred Megafunctions
+ 15. Registers Added for RAM Pass-Through Logic
+ 16. Multiplexer Restructuring Statistics (No Restructuring Performed)
+ 17. Source assignments for core:cpu_core|data_mem:stage8_data_mem|altsyncram:memory_rtl_0|altsyncram_ek91:auto_generated
+ 18. Source assignments for core:cpu_core|regfile:stage4_regfile|altsyncram:registers_rtl_0|altsyncram_8vf1:auto_generated
+ 19. Source assignments for core:cpu_core|regfile:stage4_regfile|altsyncram:registers_rtl_1|altsyncram_8vf1:auto_generated
+ 20. Source assignments for core:cpu_core|instr_mem:stage2_imem|altsyncram:instruction_memory_rtl_0|altsyncram_op81:auto_generated
+ 21. Parameter Settings for Inferred Entity Instance: core:cpu_core|data_mem:stage8_data_mem|altsyncram:memory_rtl_0
+ 22. Parameter Settings for Inferred Entity Instance: core:cpu_core|regfile:stage4_regfile|altsyncram:registers_rtl_0
+ 23. Parameter Settings for Inferred Entity Instance: core:cpu_core|regfile:stage4_regfile|altsyncram:registers_rtl_1
+ 24. Parameter Settings for Inferred Entity Instance: core:cpu_core|instr_mem:stage2_imem|altsyncram:instruction_memory_rtl_0
+ 25. altsyncram Parameter Settings by Entity Instance
+ 26. Port Connectivity Checks: "core:cpu_core|data_mem:stage8_data_mem"
+ 27. Port Connectivity Checks: "core:cpu_core|MEM_WB:stage7_mem_wb_reg"
+ 28. Port Connectivity Checks: "core:cpu_core|EX2_EX3:stage6_ex2_ex3_reg"
+ 29. Port Connectivity Checks: "core:cpu_core|EX1_EX2:stage5_ex1_ex2_reg"
+ 30. Port Connectivity Checks: "core:cpu_core|RR_EX1:stage4_rr_ex1_reg"
+ 31. Port Connectivity Checks: "core:cpu_core|ID_RR:stage3_id_rr_reg"
+ 32. Port Connectivity Checks: "core:cpu_core"
+ 33. Post-Synthesis Netlist Statistics for Top Partition
+ 34. Elapsed Time Per Partition
+ 35. Analysis & Synthesis Messages
+
+
+
+----------------
+; Legal Notice ;
+----------------
+Copyright (C) 2025  Altera Corporation. All rights reserved.
+Your use of Altera Corporation's design tools, logic functions 
+and other software and tools, and any partner logic 
+functions, and any output files from any of the foregoing 
+(including device programming or simulation files), and any 
+associated documentation or information are expressly subject 
+to the terms and conditions of the Altera Program License 
+Subscription Agreement, the Altera Quartus Prime License Agreement,
+the Altera IP License Agreement, or other applicable license
+agreement, including, without limitation, that your use is for
+the sole purpose of programming logic devices manufactured by
+Altera and sold by Altera or its authorized distributors.  Please
+refer to the Altera Software License Subscription Agreements 
+on the Quartus Prime software download page.
+
+
+
++--------------------------------------------------------------------------------------+
+; Analysis & Synthesis Summary                                                         ;
++------------------------------------+-------------------------------------------------+
+; Analysis & Synthesis Status        ; Successful - Thu Jun 11 13:34:37 2026           ;
+; Quartus Prime Version              ; 24.1std.0 Build 1077 03/04/2025 SC Lite Edition ;
+; Revision Name                      ; cpu                                             ;
+; Top-level Entity Name              ; top                                             ;
+; Family                             ; MAX 10                                          ;
+; Total logic elements               ; 2,629                                           ;
+;     Total combinational functions  ; 2,476                                           ;
+;     Dedicated logic registers      ; 910                                             ;
+; Total registers                    ; 910                                             ;
+; Total pins                         ; 65                                              ;
+; Total virtual pins                 ; 0                                               ;
+; Total memory bits                  ; 18,432                                          ;
+; Embedded Multiplier 9-bit elements ; 0                                               ;
+; Total PLLs                         ; 0                                               ;
+; UFM blocks                         ; 0                                               ;
+; ADC blocks                         ; 0                                               ;
++------------------------------------+-------------------------------------------------+
+
+
++------------------------------------------------------------------------------------------------------------+
+; Analysis & Synthesis Settings                                                                              ;
++------------------------------------------------------------------+--------------------+--------------------+
+; Option                                                           ; Setting            ; Default Value      ;
++------------------------------------------------------------------+--------------------+--------------------+
+; Device                                                           ; 10M50DAF484C7G     ;                    ;
+; Top-level entity name                                            ; top                ; cpu                ;
+; Family name                                                      ; MAX 10             ; Cyclone V          ;
+; Restructure Multiplexers                                         ; Off                ; Auto               ;
+; Use smart compilation                                            ; Off                ; Off                ;
+; Enable parallel Assembler and Timing Analyzer during compilation ; On                 ; On                 ;
+; Enable compact report table                                      ; Off                ; Off                ;
+; Create Debugging Nodes for IP Cores                              ; Off                ; Off                ;
+; Preserve fewer node names                                        ; On                 ; On                 ;
+; Intel FPGA IP Evaluation Mode                                    ; Enable             ; Enable             ;
+; Verilog Version                                                  ; Verilog_2001       ; Verilog_2001       ;
+; VHDL Version                                                     ; VHDL_1993          ; VHDL_1993          ;
+; State Machine Processing                                         ; Auto               ; Auto               ;
+; Safe State Machine                                               ; Off                ; Off                ;
+; Extract Verilog State Machines                                   ; On                 ; On                 ;
+; Extract VHDL State Machines                                      ; On                 ; On                 ;
+; Ignore Verilog initial constructs                                ; Off                ; Off                ;
+; Iteration limit for constant Verilog loops                       ; 5000               ; 5000               ;
+; Iteration limit for non-constant Verilog loops                   ; 250                ; 250                ;
+; Add Pass-Through Logic to Inferred RAMs                          ; On                 ; On                 ;
+; Infer RAMs from Raw Logic                                        ; On                 ; On                 ;
+; Parallel Synthesis                                               ; On                 ; On                 ;
+; DSP Block Balancing                                              ; Auto               ; Auto               ;
+; NOT Gate Push-Back                                               ; On                 ; On                 ;
+; Power-Up Don't Care                                              ; On                 ; On                 ;
+; Remove Redundant Logic Cells                                     ; Off                ; Off                ;
+; Remove Duplicate Registers                                       ; On                 ; On                 ;
+; Ignore CARRY Buffers                                             ; Off                ; Off                ;
+; Ignore CASCADE Buffers                                           ; Off                ; Off                ;
+; Ignore GLOBAL Buffers                                            ; Off                ; Off                ;
+; Ignore ROW GLOBAL Buffers                                        ; Off                ; Off                ;
+; Ignore LCELL Buffers                                             ; Off                ; Off                ;
+; Ignore SOFT Buffers                                              ; On                 ; On                 ;
+; Limit AHDL Integers to 32 Bits                                   ; Off                ; Off                ;
+; Optimization Technique                                           ; Balanced           ; Balanced           ;
+; Carry Chain Length                                               ; 70                 ; 70                 ;
+; Auto Carry Chains                                                ; On                 ; On                 ;
+; Auto Open-Drain Pins                                             ; On                 ; On                 ;
+; Perform WYSIWYG Primitive Resynthesis                            ; Off                ; Off                ;
+; Auto ROM Replacement                                             ; On                 ; On                 ;
+; Auto RAM Replacement                                             ; On                 ; On                 ;
+; Auto DSP Block Replacement                                       ; On                 ; On                 ;
+; Auto Shift Register Replacement                                  ; Auto               ; Auto               ;
+; Allow Shift Register Merging across Hierarchies                  ; Auto               ; Auto               ;
+; Auto Clock Enable Replacement                                    ; On                 ; On                 ;
+; Strict RAM Replacement                                           ; Off                ; Off                ;
+; Allow Synchronous Control Signals                                ; On                 ; On                 ;
+; Force Use of Synchronous Clear Signals                           ; Off                ; Off                ;
+; Auto RAM Block Balancing                                         ; On                 ; On                 ;
+; Auto RAM to Logic Cell Conversion                                ; Off                ; Off                ;
+; Auto Resource Sharing                                            ; Off                ; Off                ;
+; Allow Any RAM Size For Recognition                               ; Off                ; Off                ;
+; Allow Any ROM Size For Recognition                               ; Off                ; Off                ;
+; Allow Any Shift Register Size For Recognition                    ; Off                ; Off                ;
+; Use LogicLock Constraints during Resource Balancing              ; On                 ; On                 ;
+; Ignore translate_off and synthesis_off directives                ; Off                ; Off                ;
+; Timing-Driven Synthesis                                          ; On                 ; On                 ;
+; Report Parameter Settings                                        ; On                 ; On                 ;
+; Report Source Assignments                                        ; On                 ; On                 ;
+; Report Connectivity Checks                                       ; On                 ; On                 ;
+; Ignore Maximum Fan-Out Assignments                               ; Off                ; Off                ;
+; Synchronization Register Chain Length                            ; 2                  ; 2                  ;
+; Power Optimization During Synthesis                              ; Normal compilation ; Normal compilation ;
+; HDL message level                                                ; Level2             ; Level2             ;
+; Suppress Register Optimization Related Messages                  ; Off                ; Off                ;
+; Number of Removed Registers Reported in Synthesis Report         ; 5000               ; 5000               ;
+; Number of Swept Nodes Reported in Synthesis Report               ; 5000               ; 5000               ;
+; Number of Inverted Registers Reported in Synthesis Report        ; 100                ; 100                ;
+; Clock MUX Protection                                             ; On                 ; On                 ;
+; Auto Gated Clock Conversion                                      ; Off                ; Off                ;
+; Block Design Naming                                              ; Auto               ; Auto               ;
+; SDC constraint protection                                        ; Off                ; Off                ;
+; Synthesis Effort                                                 ; Auto               ; Auto               ;
+; Shift Register Replacement - Allow Asynchronous Clear Signal     ; On                 ; On                 ;
+; Pre-Mapping Resynthesis Optimization                             ; Off                ; Off                ;
+; Analysis & Synthesis Message Level                               ; Medium             ; Medium             ;
+; Disable Register Merging Across Hierarchies                      ; Auto               ; Auto               ;
+; Resource Aware Inference For Block RAM                           ; On                 ; On                 ;
++------------------------------------------------------------------+--------------------+--------------------+
+
+
++------------------------------------------+
+; Parallel Compilation                     ;
++----------------------------+-------------+
+; Processors                 ; Number      ;
++----------------------------+-------------+
+; Number detected on machine ; 16          ;
+; Maximum allowed            ; 16          ;
+;                            ;             ;
+; Average used               ; 1.01        ;
+; Maximum used               ; 16          ;
+;                            ;             ;
+; Usage by Processor         ; % Time Used ;
+;     Processor 1            ; 100.0%      ;
+;     Processor 2            ;   0.1%      ;
+;     Processor 3            ;   0.1%      ;
+;     Processor 4            ;   0.1%      ;
+;     Processor 5            ;   0.1%      ;
+;     Processor 6            ;   0.1%      ;
+;     Processor 7            ;   0.1%      ;
+;     Processor 8            ;   0.1%      ;
+;     Processors 9-16        ;   0.1%      ;
++----------------------------+-------------+
+
+
++---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+; Analysis & Synthesis Source Files Read                                                                                                                                                                                                      ;
++-----------------------------------------------------+-----------------+-------------------------------------------------------+---------------------------------------------------------------------------------------------------+---------+
+; File Name with User-Entered Path                    ; Used in Netlist ; File Type                                             ; File Name with Absolute Path                                                                      ; Library ;
++-----------------------------------------------------+-----------------+-------------------------------------------------------+---------------------------------------------------------------------------------------------------+---------+
+; ../packages/alu_pkg.sv                              ; yes             ; User SystemVerilog HDL File                           ; C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/packages/alu_pkg.sv                              ;         ;
+; ../packages/decoder_pkg.sv                          ; yes             ; User SystemVerilog HDL File                           ; C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/packages/decoder_pkg.sv                          ;         ;
+; ../rtl/core/core.sv                                 ; yes             ; User SystemVerilog HDL File                           ; C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/rtl/core/core.sv                                 ;         ;
+; ../rtl/core/1_fetch/pc_update.sv                    ; yes             ; User SystemVerilog HDL File                           ; C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/rtl/core/1_fetch/pc_update.sv                    ;         ;
+; ../rtl/core/2_imem/instr_mem.sv                     ; yes             ; User SystemVerilog HDL File                           ; C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/rtl/core/2_imem/instr_mem.sv                     ;         ;
+; ../rtl/core/3_decode/IF_ID.sv                       ; yes             ; User SystemVerilog HDL File                           ; C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/rtl/core/3_decode/IF_ID.sv                       ;         ;
+; ../rtl/core/3_decode/control.sv                     ; yes             ; User SystemVerilog HDL File                           ; C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/rtl/core/3_decode/control.sv                     ;         ;
+; ../rtl/core/3_decode/decode.sv                      ; yes             ; User SystemVerilog HDL File                           ; C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/rtl/core/3_decode/decode.sv                      ;         ;
+; ../rtl/core/3_decode/ID_RR.sv                       ; yes             ; User SystemVerilog HDL File                           ; C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/rtl/core/3_decode/ID_RR.sv                       ;         ;
+; ../rtl/core/3_decode/imm_gen.sv                     ; yes             ; User SystemVerilog HDL File                           ; C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/rtl/core/3_decode/imm_gen.sv                     ;         ;
+; ../rtl/core/4_reg_read/regfile.sv                   ; yes             ; User SystemVerilog HDL File                           ; C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/rtl/core/4_reg_read/regfile.sv                   ;         ;
+; ../rtl/core/4_reg_read/RR_EX1.sv                    ; yes             ; User SystemVerilog HDL File                           ; C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/rtl/core/4_reg_read/RR_EX1.sv                    ;         ;
+; ../rtl/core/5_ex1/data_sel.sv                       ; yes             ; User SystemVerilog HDL File                           ; C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/rtl/core/5_ex1/data_sel.sv                       ;         ;
+; ../rtl/core/5_ex1/EX1_EX2.sv                        ; yes             ; User SystemVerilog HDL File                           ; C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/rtl/core/5_ex1/EX1_EX2.sv                        ;         ;
+; ../rtl/core/6_ex2/alu.sv                            ; yes             ; User SystemVerilog HDL File                           ; C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/rtl/core/6_ex2/alu.sv                            ;         ;
+; ../rtl/core/6_ex2/branch_eval.sv                    ; yes             ; User SystemVerilog HDL File                           ; C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/rtl/core/6_ex2/branch_eval.sv                    ;         ;
+; ../rtl/core/6_ex2/EX2_EX3.sv                        ; yes             ; User SystemVerilog HDL File                           ; C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/rtl/core/6_ex2/EX2_EX3.sv                        ;         ;
+; ../rtl/core/7_ex3_mem/pc_target_calc.sv             ; yes             ; User SystemVerilog HDL File                           ; C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/rtl/core/7_ex3_mem/pc_target_calc.sv             ;         ;
+; ../rtl/core/7_ex3_mem/MEM_WB.sv                     ; yes             ; User SystemVerilog HDL File                           ; C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/rtl/core/7_ex3_mem/MEM_WB.sv                     ;         ;
+; ../rtl/core/8_wb/data_mem.sv                        ; yes             ; User SystemVerilog HDL File                           ; C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/rtl/core/8_wb/data_mem.sv                        ;         ;
+; ../rtl/core/8_wb/writeback.sv                       ; yes             ; User SystemVerilog HDL File                           ; C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/rtl/core/8_wb/writeback.sv                       ;         ;
+; ../rtl/core/hazard_control/forwarding_unit.sv       ; yes             ; User SystemVerilog HDL File                           ; C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/rtl/core/hazard_control/forwarding_unit.sv       ;         ;
+; ../rtl/core/hazard_control/hazard_detection_unit.sv ; yes             ; User SystemVerilog HDL File                           ; C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/rtl/core/hazard_control/hazard_detection_unit.sv ;         ;
+; top.sv                                              ; yes             ; User SystemVerilog HDL File                           ; C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/fpga/top.sv                                      ;         ;
+; program.hex                                         ; yes             ; User Hexadecimal (Intel-Format) File                  ; C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/fpga/program.hex                                 ;         ;
+; altsyncram.tdf                                      ; yes             ; Megafunction                                          ; c:/altera_lite/24.1std/quartus/libraries/megafunctions/altsyncram.tdf                             ;         ;
+; stratix_ram_block.inc                               ; yes             ; Megafunction                                          ; c:/altera_lite/24.1std/quartus/libraries/megafunctions/stratix_ram_block.inc                      ;         ;
+; lpm_mux.inc                                         ; yes             ; Megafunction                                          ; c:/altera_lite/24.1std/quartus/libraries/megafunctions/lpm_mux.inc                                ;         ;
+; lpm_decode.inc                                      ; yes             ; Megafunction                                          ; c:/altera_lite/24.1std/quartus/libraries/megafunctions/lpm_decode.inc                             ;         ;
+; aglobal241.inc                                      ; yes             ; Megafunction                                          ; c:/altera_lite/24.1std/quartus/libraries/megafunctions/aglobal241.inc                             ;         ;
+; a_rdenreg.inc                                       ; yes             ; Megafunction                                          ; c:/altera_lite/24.1std/quartus/libraries/megafunctions/a_rdenreg.inc                              ;         ;
+; altrom.inc                                          ; yes             ; Megafunction                                          ; c:/altera_lite/24.1std/quartus/libraries/megafunctions/altrom.inc                                 ;         ;
+; altram.inc                                          ; yes             ; Megafunction                                          ; c:/altera_lite/24.1std/quartus/libraries/megafunctions/altram.inc                                 ;         ;
+; altdpram.inc                                        ; yes             ; Megafunction                                          ; c:/altera_lite/24.1std/quartus/libraries/megafunctions/altdpram.inc                               ;         ;
+; db/altsyncram_ek91.tdf                              ; yes             ; Auto-Generated Megafunction                           ; C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/fpga/db/altsyncram_ek91.tdf                      ;         ;
+; db/altsyncram_8vf1.tdf                              ; yes             ; Auto-Generated Megafunction                           ; C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/fpga/db/altsyncram_8vf1.tdf                      ;         ;
+; db/cpu.ram0_regfile_4c9f4da2.hdl.mif                ; yes             ; Auto-Generated Auto-Found Memory Initialization File  ; C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/fpga/db/cpu.ram0_regfile_4c9f4da2.hdl.mif        ;         ;
+; db/altsyncram_op81.tdf                              ; yes             ; Auto-Generated Megafunction                           ; C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/fpga/db/altsyncram_op81.tdf                      ;         ;
+; db/cpu.ram0_instr_mem_8ff0214b.hdl.mif              ; yes             ; Auto-Generated Auto-Found Memory Initialization File  ; C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/fpga/db/cpu.ram0_instr_mem_8ff0214b.hdl.mif      ;         ;
++-----------------------------------------------------+-----------------+-------------------------------------------------------+---------------------------------------------------------------------------------------------------+---------+
+
+
++-----------------------------------------------------+
+; Analysis & Synthesis Resource Usage Summary         ;
++---------------------------------------------+-------+
+; Resource                                    ; Usage ;
++---------------------------------------------+-------+
+; Estimated Total logic elements              ; 2,629 ;
+;                                             ;       ;
+; Total combinational functions               ; 2476  ;
+; Logic element usage by number of LUT inputs ;       ;
+;     -- 4 input functions                    ; 1168  ;
+;     -- 3 input functions                    ; 647   ;
+;     -- <=2 input functions                  ; 661   ;
+;                                             ;       ;
+; Logic elements by mode                      ;       ;
+;     -- normal mode                          ; 2207  ;
+;     -- arithmetic mode                      ; 269   ;
+;                                             ;       ;
+; Total registers                             ; 910   ;
+;     -- Dedicated logic registers            ; 910   ;
+;     -- I/O registers                        ; 0     ;
+;                                             ;       ;
+; I/O pins                                    ; 65    ;
+; Total memory bits                           ; 18432 ;
+;                                             ;       ;
+; Embedded Multiplier 9-bit elements          ; 0     ;
+;                                             ;       ;
+; Maximum fan-out node                        ; clk   ;
+; Maximum fan-out                             ; 1038  ;
+; Total fan-out                               ; 11748 ;
+; Average fan-out                             ; 3.22  ;
++---------------------------------------------+-------+
+
+
++----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+; Analysis & Synthesis Resource Utilization by Entity                                                                                                                                                                                                                                                                                                      ;
++------------------------------------------------+---------------------+---------------------------+-------------+------------+--------------+---------+-----------+------+--------------+------------+-------------------------------------------------------------------------------------------------------------+-----------------------+--------------+
+; Compilation Hierarchy Node                     ; Combinational ALUTs ; Dedicated Logic Registers ; Memory Bits ; UFM Blocks ; DSP Elements ; DSP 9x9 ; DSP 18x18 ; Pins ; Virtual Pins ; ADC blocks ; Full Hierarchy Name                                                                                         ; Entity Name           ; Library Name ;
++------------------------------------------------+---------------------+---------------------------+-------------+------------+--------------+---------+-----------+------+--------------+------------+-------------------------------------------------------------------------------------------------------------+-----------------------+--------------+
+; |top                                           ; 2476 (2)            ; 910 (0)                   ; 18432       ; 0          ; 0            ; 0       ; 0         ; 65   ; 0            ; 0          ; |top                                                                                                        ; top                   ; work         ;
+;    |core:cpu_core|                             ; 2432 (91)           ; 910 (0)                   ; 18432       ; 0          ; 0            ; 0       ; 0         ; 0    ; 0            ; 0          ; |top|core:cpu_core                                                                                          ; core                  ; work         ;
+;       |EX1_EX2:stage5_ex1_ex2_reg|             ; 112 (112)           ; 173 (173)                 ; 0           ; 0          ; 0            ; 0       ; 0         ; 0    ; 0            ; 0          ; |top|core:cpu_core|EX1_EX2:stage5_ex1_ex2_reg                                                               ; EX1_EX2               ; work         ;
+;       |EX2_EX3:stage6_ex2_ex3_reg|             ; 145 (145)           ; 138 (138)                 ; 0           ; 0          ; 0            ; 0       ; 0         ; 0    ; 0            ; 0          ; |top|core:cpu_core|EX2_EX3:stage6_ex2_ex3_reg                                                               ; EX2_EX3               ; work         ;
+;       |ID_RR:stage3_id_rr_reg|                 ; 112 (112)           ; 93 (93)                   ; 0           ; 0          ; 0            ; 0       ; 0         ; 0    ; 0            ; 0          ; |top|core:cpu_core|ID_RR:stage3_id_rr_reg                                                                   ; ID_RR                 ; work         ;
+;       |IF_ID:stage3_if_id_reg|                 ; 121 (121)           ; 62 (62)                   ; 0           ; 0          ; 0            ; 0       ; 0         ; 0    ; 0            ; 0          ; |top|core:cpu_core|IF_ID:stage3_if_id_reg                                                                   ; IF_ID                 ; work         ;
+;       |MEM_WB:stage7_mem_wb_reg|               ; 70 (70)             ; 70 (70)                   ; 0           ; 0          ; 0            ; 0       ; 0         ; 0    ; 0            ; 0          ; |top|core:cpu_core|MEM_WB:stage7_mem_wb_reg                                                                 ; MEM_WB                ; work         ;
+;       |RR_EX1:stage4_rr_ex1_reg|               ; 157 (157)           ; 157 (157)                 ; 0           ; 0          ; 0            ; 0       ; 0         ; 0    ; 0            ; 0          ; |top|core:cpu_core|RR_EX1:stage4_rr_ex1_reg                                                                 ; RR_EX1                ; work         ;
+;       |alu:stage6_alu|                         ; 699 (699)           ; 0 (0)                     ; 0           ; 0          ; 0            ; 0       ; 0         ; 0    ; 0            ; 0          ; |top|core:cpu_core|alu:stage6_alu                                                                           ; alu                   ; work         ;
+;       |branch_eval:stage6_branch_eval|         ; 24 (24)             ; 0 (0)                     ; 0           ; 0          ; 0            ; 0       ; 0         ; 0    ; 0            ; 0          ; |top|core:cpu_core|branch_eval:stage6_branch_eval                                                           ; branch_eval           ; work         ;
+;       |data_mem:stage8_data_mem|               ; 42 (42)             ; 6 (6)                     ; 8192        ; 0          ; 0            ; 0       ; 0         ; 0    ; 0            ; 0          ; |top|core:cpu_core|data_mem:stage8_data_mem                                                                 ; data_mem              ; work         ;
+;          |altsyncram:memory_rtl_0|             ; 0 (0)               ; 0 (0)                     ; 8192        ; 0          ; 0            ; 0       ; 0         ; 0    ; 0            ; 0          ; |top|core:cpu_core|data_mem:stage8_data_mem|altsyncram:memory_rtl_0                                         ; altsyncram            ; work         ;
+;             |altsyncram_ek91:auto_generated|   ; 0 (0)               ; 0 (0)                     ; 8192        ; 0          ; 0            ; 0       ; 0         ; 0    ; 0            ; 0          ; |top|core:cpu_core|data_mem:stage8_data_mem|altsyncram:memory_rtl_0|altsyncram_ek91:auto_generated          ; altsyncram_ek91       ; work         ;
+;       |data_sel:stage5_data_sel|               ; 300 (300)           ; 0 (0)                     ; 0           ; 0          ; 0            ; 0       ; 0         ; 0    ; 0            ; 0          ; |top|core:cpu_core|data_sel:stage5_data_sel                                                                 ; data_sel              ; work         ;
+;       |decode:stage3_decode|                   ; 77 (0)              ; 0 (0)                     ; 0           ; 0          ; 0            ; 0       ; 0         ; 0    ; 0            ; 0          ; |top|core:cpu_core|decode:stage3_decode                                                                     ; decode                ; work         ;
+;          |control:ctrl|                        ; 15 (15)             ; 0 (0)                     ; 0           ; 0          ; 0            ; 0       ; 0         ; 0    ; 0            ; 0          ; |top|core:cpu_core|decode:stage3_decode|control:ctrl                                                        ; control               ; work         ;
+;          |imm_gen:ig|                          ; 62 (62)             ; 0 (0)                     ; 0           ; 0          ; 0            ; 0       ; 0         ; 0    ; 0            ; 0          ; |top|core:cpu_core|decode:stage3_decode|imm_gen:ig                                                          ; imm_gen               ; work         ;
+;       |forwarding_unit:fwd_unit|               ; 34 (34)             ; 0 (0)                     ; 0           ; 0          ; 0            ; 0       ; 0         ; 0    ; 0            ; 0          ; |top|core:cpu_core|forwarding_unit:fwd_unit                                                                 ; forwarding_unit       ; work         ;
+;       |hazard_detection_unit:hazard_unit|      ; 39 (39)             ; 0 (0)                     ; 0           ; 0          ; 0            ; 0       ; 0         ; 0    ; 0            ; 0          ; |top|core:cpu_core|hazard_detection_unit:hazard_unit                                                        ; hazard_detection_unit ; work         ;
+;       |instr_mem:stage2_imem|                  ; 1 (1)               ; 31 (31)                   ; 8192        ; 0          ; 0            ; 0       ; 0         ; 0    ; 0            ; 0          ; |top|core:cpu_core|instr_mem:stage2_imem                                                                    ; instr_mem             ; work         ;
+;          |altsyncram:instruction_memory_rtl_0| ; 0 (0)               ; 0 (0)                     ; 8192        ; 0          ; 0            ; 0       ; 0         ; 0    ; 0            ; 0          ; |top|core:cpu_core|instr_mem:stage2_imem|altsyncram:instruction_memory_rtl_0                                ; altsyncram            ; work         ;
+;             |altsyncram_op81:auto_generated|   ; 0 (0)               ; 0 (0)                     ; 8192        ; 0          ; 0            ; 0       ; 0         ; 0    ; 0            ; 0          ; |top|core:cpu_core|instr_mem:stage2_imem|altsyncram:instruction_memory_rtl_0|altsyncram_op81:auto_generated ; altsyncram_op81       ; work         ;
+;       |pc_update:stage1_fetch|                 ; 91 (91)             ; 30 (30)                   ; 0           ; 0          ; 0            ; 0       ; 0         ; 0    ; 0            ; 0          ; |top|core:cpu_core|pc_update:stage1_fetch                                                                   ; pc_update             ; work         ;
+;       |regfile:stage4_regfile|                 ; 112 (112)           ; 150 (150)                 ; 2048        ; 0          ; 0            ; 0       ; 0         ; 0    ; 0            ; 0          ; |top|core:cpu_core|regfile:stage4_regfile                                                                   ; regfile               ; work         ;
+;          |altsyncram:registers_rtl_0|          ; 0 (0)               ; 0 (0)                     ; 1024        ; 0          ; 0            ; 0       ; 0         ; 0    ; 0            ; 0          ; |top|core:cpu_core|regfile:stage4_regfile|altsyncram:registers_rtl_0                                        ; altsyncram            ; work         ;
+;             |altsyncram_8vf1:auto_generated|   ; 0 (0)               ; 0 (0)                     ; 1024        ; 0          ; 0            ; 0       ; 0         ; 0    ; 0            ; 0          ; |top|core:cpu_core|regfile:stage4_regfile|altsyncram:registers_rtl_0|altsyncram_8vf1:auto_generated         ; altsyncram_8vf1       ; work         ;
+;          |altsyncram:registers_rtl_1|          ; 0 (0)               ; 0 (0)                     ; 1024        ; 0          ; 0            ; 0       ; 0         ; 0    ; 0            ; 0          ; |top|core:cpu_core|regfile:stage4_regfile|altsyncram:registers_rtl_1                                        ; altsyncram            ; work         ;
+;             |altsyncram_8vf1:auto_generated|   ; 0 (0)               ; 0 (0)                     ; 1024        ; 0          ; 0            ; 0       ; 0         ; 0    ; 0            ; 0          ; |top|core:cpu_core|regfile:stage4_regfile|altsyncram:registers_rtl_1|altsyncram_8vf1:auto_generated         ; altsyncram_8vf1       ; work         ;
+;       |writeback:stage8_wb|                    ; 205 (205)           ; 0 (0)                     ; 0           ; 0          ; 0            ; 0       ; 0         ; 0    ; 0            ; 0          ; |top|core:cpu_core|writeback:stage8_wb                                                                      ; writeback             ; work         ;
+;    |seven_seg_decoder:h0|                      ; 7 (7)               ; 0 (0)                     ; 0           ; 0          ; 0            ; 0       ; 0         ; 0    ; 0            ; 0          ; |top|seven_seg_decoder:h0                                                                                   ; seven_seg_decoder     ; work         ;
+;    |seven_seg_decoder:h1|                      ; 7 (7)               ; 0 (0)                     ; 0           ; 0          ; 0            ; 0       ; 0         ; 0    ; 0            ; 0          ; |top|seven_seg_decoder:h1                                                                                   ; seven_seg_decoder     ; work         ;
+;    |seven_seg_decoder:h2|                      ; 7 (7)               ; 0 (0)                     ; 0           ; 0          ; 0            ; 0       ; 0         ; 0    ; 0            ; 0          ; |top|seven_seg_decoder:h2                                                                                   ; seven_seg_decoder     ; work         ;
+;    |seven_seg_decoder:h3|                      ; 7 (7)               ; 0 (0)                     ; 0           ; 0          ; 0            ; 0       ; 0         ; 0    ; 0            ; 0          ; |top|seven_seg_decoder:h3                                                                                   ; seven_seg_decoder     ; work         ;
+;    |seven_seg_decoder:h4|                      ; 7 (7)               ; 0 (0)                     ; 0           ; 0          ; 0            ; 0       ; 0         ; 0    ; 0            ; 0          ; |top|seven_seg_decoder:h4                                                                                   ; seven_seg_decoder     ; work         ;
+;    |seven_seg_decoder:h5|                      ; 7 (7)               ; 0 (0)                     ; 0           ; 0          ; 0            ; 0       ; 0         ; 0    ; 0            ; 0          ; |top|seven_seg_decoder:h5                                                                                   ; seven_seg_decoder     ; work         ;
++------------------------------------------------+---------------------+---------------------------+-------------+------------+--------------+---------+-----------+------+--------------+------------+-------------------------------------------------------------------------------------------------------------+-----------------------+--------------+
+Note: For table entries with two numbers listed, the numbers in parentheses indicate the number of resources of the given type used by the specific entity alone. The numbers listed outside of parentheses indicate the total resources of the given type used by the specific entity and all of its sub-entities in the hierarchy.
+
+
++---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+; Analysis & Synthesis RAM Summary                                                                                                                                                                                                                        ;
++-------------------------------------------------------------------------------------------------------------------+------+------------------+--------------+--------------+--------------+--------------+------+----------------------------------------+
+; Name                                                                                                              ; Type ; Mode             ; Port A Depth ; Port A Width ; Port B Depth ; Port B Width ; Size ; MIF                                    ;
++-------------------------------------------------------------------------------------------------------------------+------+------------------+--------------+--------------+--------------+--------------+------+----------------------------------------+
+; core:cpu_core|data_mem:stage8_data_mem|altsyncram:memory_rtl_0|altsyncram_ek91:auto_generated|ALTSYNCRAM          ; M9K  ; Single Port      ; 256          ; 32           ; --           ; --           ; 8192 ; None                                   ;
+; core:cpu_core|instr_mem:stage2_imem|altsyncram:instruction_memory_rtl_0|altsyncram_op81:auto_generated|ALTSYNCRAM ; M9K  ; ROM              ; 256          ; 32           ; --           ; --           ; 8192 ; db/cpu.ram0_instr_mem_8ff0214b.hdl.mif ;
+; core:cpu_core|regfile:stage4_regfile|altsyncram:registers_rtl_0|altsyncram_8vf1:auto_generated|ALTSYNCRAM         ; AUTO ; Simple Dual Port ; 32           ; 32           ; 32           ; 32           ; 1024 ; db/cpu.ram0_regfile_4c9f4da2.hdl.mif   ;
+; core:cpu_core|regfile:stage4_regfile|altsyncram:registers_rtl_1|altsyncram_8vf1:auto_generated|ALTSYNCRAM         ; AUTO ; Simple Dual Port ; 32           ; 32           ; 32           ; 32           ; 1024 ; db/cpu.ram0_regfile_4c9f4da2.hdl.mif   ;
++-------------------------------------------------------------------------------------------------------------------+------+------------------+--------------+--------------+--------------+--------------+------+----------------------------------------+
+
+
++-------------------------------------------------------------------------------------------------------------------------------------+
+; Registers Removed During Synthesis                                                                                                  ;
++-----------------------------------------------------------+-------------------------------------------------------------------------+
+; Register name                                             ; Reason for Removal                                                      ;
++-----------------------------------------------------------+-------------------------------------------------------------------------+
+; core:cpu_core|MEM_WB:stage7_mem_wb_reg|pc_out[1]          ; Merged with core:cpu_core|MEM_WB:stage7_mem_wb_reg|pc_out[0]            ;
+; core:cpu_core|EX2_EX3:stage6_ex2_ex3_reg|pc_out[1]        ; Merged with core:cpu_core|EX2_EX3:stage6_ex2_ex3_reg|pc_out[0]          ;
+; core:cpu_core|EX2_EX3:stage6_ex2_ex3_reg|wb_sel_out[1]    ; Merged with core:cpu_core|EX2_EX3:stage6_ex2_ex3_reg|jump_out           ;
+; core:cpu_core|EX2_EX3:stage6_ex2_ex3_reg|wb_sel_out[0]    ; Merged with core:cpu_core|EX2_EX3:stage6_ex2_ex3_reg|mem_read_out       ;
+; core:cpu_core|EX1_EX2:stage5_ex1_ex2_reg|pc_out[1]        ; Merged with core:cpu_core|EX1_EX2:stage5_ex1_ex2_reg|pc_out[0]          ;
+; core:cpu_core|EX1_EX2:stage5_ex1_ex2_reg|wb_sel_out[1]    ; Merged with core:cpu_core|EX1_EX2:stage5_ex1_ex2_reg|jump_out           ;
+; core:cpu_core|EX1_EX2:stage5_ex1_ex2_reg|wb_sel_out[0]    ; Merged with core:cpu_core|EX1_EX2:stage5_ex1_ex2_reg|mem_read_out       ;
+; core:cpu_core|EX1_EX2:stage5_ex1_ex2_reg|mem_size_out[1]  ; Merged with core:cpu_core|EX1_EX2:stage5_ex1_ex2_reg|branch_type_out[1] ;
+; core:cpu_core|EX1_EX2:stage5_ex1_ex2_reg|mem_size_out[0]  ; Merged with core:cpu_core|EX1_EX2:stage5_ex1_ex2_reg|branch_type_out[0] ;
+; core:cpu_core|EX1_EX2:stage5_ex1_ex2_reg|mem_unsigned_out ; Merged with core:cpu_core|EX1_EX2:stage5_ex1_ex2_reg|branch_type_out[2] ;
+; core:cpu_core|RR_EX1:stage4_rr_ex1_reg|pc_out[1]          ; Merged with core:cpu_core|RR_EX1:stage4_rr_ex1_reg|pc_out[0]            ;
+; core:cpu_core|RR_EX1:stage4_rr_ex1_reg|wb_sel_out[1]      ; Merged with core:cpu_core|RR_EX1:stage4_rr_ex1_reg|jump_out             ;
+; core:cpu_core|RR_EX1:stage4_rr_ex1_reg|wb_sel_out[0]      ; Merged with core:cpu_core|RR_EX1:stage4_rr_ex1_reg|mem_read_out         ;
+; core:cpu_core|RR_EX1:stage4_rr_ex1_reg|mem_size_out[1]    ; Merged with core:cpu_core|RR_EX1:stage4_rr_ex1_reg|branch_type_out[1]   ;
+; core:cpu_core|RR_EX1:stage4_rr_ex1_reg|mem_size_out[0]    ; Merged with core:cpu_core|RR_EX1:stage4_rr_ex1_reg|branch_type_out[0]   ;
+; core:cpu_core|RR_EX1:stage4_rr_ex1_reg|mem_unsigned_out   ; Merged with core:cpu_core|RR_EX1:stage4_rr_ex1_reg|branch_type_out[2]   ;
+; core:cpu_core|ID_RR:stage3_id_rr_reg|pc_out[1]            ; Merged with core:cpu_core|ID_RR:stage3_id_rr_reg|pc_out[0]              ;
+; core:cpu_core|ID_RR:stage3_id_rr_reg|wb_sel_out[1]        ; Merged with core:cpu_core|ID_RR:stage3_id_rr_reg|jump_out               ;
+; core:cpu_core|ID_RR:stage3_id_rr_reg|wb_sel_out[0]        ; Merged with core:cpu_core|ID_RR:stage3_id_rr_reg|mem_read_out           ;
+; core:cpu_core|ID_RR:stage3_id_rr_reg|mem_size_out[1]      ; Merged with core:cpu_core|ID_RR:stage3_id_rr_reg|branch_type_out[1]     ;
+; core:cpu_core|ID_RR:stage3_id_rr_reg|mem_size_out[0]      ; Merged with core:cpu_core|ID_RR:stage3_id_rr_reg|branch_type_out[0]     ;
+; core:cpu_core|ID_RR:stage3_id_rr_reg|mem_unsigned_out     ; Merged with core:cpu_core|ID_RR:stage3_id_rr_reg|branch_type_out[2]     ;
+; core:cpu_core|IF_ID:stage3_if_id_reg|pc_out[1]            ; Merged with core:cpu_core|IF_ID:stage3_if_id_reg|pc_out[0]              ;
+; core:cpu_core|instr_mem:stage2_imem|pc_reg[1]             ; Merged with core:cpu_core|instr_mem:stage2_imem|pc_reg[0]               ;
+; core:cpu_core|pc_update:stage1_fetch|pc[1]                ; Merged with core:cpu_core|pc_update:stage1_fetch|pc[0]                  ;
+; core:cpu_core|pc_update:stage1_fetch|pc[0]                ; Stuck at GND due to stuck port data_in                                  ;
+; core:cpu_core|instr_mem:stage2_imem|pc_reg[0]             ; Stuck at GND due to stuck port data_in                                  ;
+; core:cpu_core|IF_ID:stage3_if_id_reg|pc_out[0]            ; Stuck at GND due to stuck port data_in                                  ;
+; core:cpu_core|ID_RR:stage3_id_rr_reg|pc_out[0]            ; Stuck at GND due to stuck port data_in                                  ;
+; core:cpu_core|RR_EX1:stage4_rr_ex1_reg|pc_out[0]          ; Stuck at GND due to stuck port data_in                                  ;
+; core:cpu_core|EX1_EX2:stage5_ex1_ex2_reg|pc_out[0]        ; Stuck at GND due to stuck port data_in                                  ;
+; core:cpu_core|EX2_EX3:stage6_ex2_ex3_reg|pc_out[0]        ; Stuck at GND due to stuck port data_in                                  ;
+; core:cpu_core|MEM_WB:stage7_mem_wb_reg|pc_out[0]          ; Stuck at GND due to stuck port data_in                                  ;
+; core:cpu_core|EX1_EX2:stage5_ex1_ex2_reg|imm_out[0,1]     ; Lost fanout                                                             ;
+; Total Number of Removed Registers = 35                    ;                                                                         ;
++-----------------------------------------------------------+-------------------------------------------------------------------------+
+
+
++---------------------------------------------------------------------------------------------------------------------------+
+; Removed Registers Triggering Further Register Optimizations                                                               ;
++--------------------------------------------+---------------------------+--------------------------------------------------+
+; Register name                              ; Reason for Removal        ; Registers Removed due to This Register           ;
++--------------------------------------------+---------------------------+--------------------------------------------------+
+; core:cpu_core|pc_update:stage1_fetch|pc[0] ; Stuck at GND              ; core:cpu_core|instr_mem:stage2_imem|pc_reg[0],   ;
+;                                            ; due to stuck port data_in ; core:cpu_core|IF_ID:stage3_if_id_reg|pc_out[0],  ;
+;                                            ;                           ; core:cpu_core|ID_RR:stage3_id_rr_reg|pc_out[0],  ;
+;                                            ;                           ; core:cpu_core|RR_EX1:stage4_rr_ex1_reg|pc_out[0] ;
++--------------------------------------------+---------------------------+--------------------------------------------------+
+
+
++------------------------------------------------------+
+; General Register Statistics                          ;
++----------------------------------------------+-------+
+; Statistic                                    ; Value ;
++----------------------------------------------+-------+
+; Total registers                              ; 910   ;
+; Number of registers using Synchronous Clear  ; 189   ;
+; Number of registers using Synchronous Load   ; 99    ;
+; Number of registers using Asynchronous Clear ; 0     ;
+; Number of registers using Asynchronous Load  ; 0     ;
+; Number of registers using Clock Enable       ; 60    ;
+; Number of registers using Preset             ; 0     ;
++----------------------------------------------+-------+
+
+
++---------------------------------------------------------------------------+
+; Inverted Register Statistics                                              ;
++-----------------------------------------------------------------+---------+
+; Inverted Register                                               ; Fan out ;
++-----------------------------------------------------------------+---------+
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[12] ; 1       ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[16] ; 1       ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[16] ; 1       ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[12] ; 1       ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[14] ; 1       ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[14] ; 1       ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[20] ; 1       ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[18] ; 1       ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[22] ; 1       ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[20] ; 1       ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[18] ; 1       ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[30] ; 1       ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[28] ; 1       ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[26] ; 1       ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[24] ; 1       ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[46] ; 1       ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[44] ; 1       ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[42] ; 1       ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[40] ; 1       ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[38] ; 1       ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[36] ; 1       ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[34] ; 1       ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[32] ; 1       ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[62] ; 1       ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[60] ; 1       ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[58] ; 1       ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[56] ; 1       ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[54] ; 1       ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[52] ; 1       ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[50] ; 1       ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[48] ; 1       ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[74] ; 1       ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[72] ; 1       ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[70] ; 1       ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[68] ; 1       ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[66] ; 1       ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[64] ; 1       ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[22] ; 1       ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[24] ; 1       ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[26] ; 1       ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[28] ; 1       ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[30] ; 1       ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[44] ; 1       ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[74] ; 1       ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[72] ; 1       ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[70] ; 1       ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[68] ; 1       ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[66] ; 1       ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[64] ; 1       ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[62] ; 1       ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[60] ; 1       ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[58] ; 1       ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[56] ; 1       ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[54] ; 1       ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[52] ; 1       ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[50] ; 1       ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[48] ; 1       ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[46] ; 1       ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[42] ; 1       ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[40] ; 1       ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[38] ; 1       ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[36] ; 1       ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[34] ; 1       ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[32] ; 1       ;
+; Total number of inverted registers = 64                         ;         ;
++-----------------------------------------------------------------+---------+
+
+
++------------------------------------------------------------------------------------------------------------+
+; Physical Synthesis Netlist Optimizations                                                                   ;
++---------------------------------------------------------------------------+----------+---------------------+
+; Node                                                                      ; Action   ; Reason              ;
++---------------------------------------------------------------------------+----------+---------------------+
+; core:cpu_core|Add0~60                                                     ; Modified ; Timing optimization ;
+; core:cpu_core|Add0~61                                                     ; Modified ; Timing optimization ;
+; core:cpu_core|Add0~120                                                    ; Modified ; Timing optimization ;
+; core:cpu_core|Add1~0                                                      ; Modified ; Timing optimization ;
+; core:cpu_core|Add1~1                                                      ; Modified ; Timing optimization ;
+; core:cpu_core|MEM_WB:stage7_mem_wb_reg|alu_result_out~2                   ; Modified ; Timing optimization ;
+; core:cpu_core|data_mem:stage8_data_mem|Mux1~0                             ; Deleted  ; Timing optimization ;
+; core:cpu_core|data_mem:stage8_data_mem|Mux1~1                             ; Deleted  ; Timing optimization ;
+; core:cpu_core|data_mem:stage8_data_mem|Mux2~0                             ; Deleted  ; Timing optimization ;
+; core:cpu_core|data_mem:stage8_data_mem|Mux2~1                             ; Deleted  ; Timing optimization ;
+; core:cpu_core|data_mem:stage8_data_mem|Mux3~0                             ; Deleted  ; Timing optimization ;
+; core:cpu_core|data_mem:stage8_data_mem|Mux3~1                             ; Deleted  ; Timing optimization ;
+; core:cpu_core|data_mem:stage8_data_mem|Mux4~0                             ; Deleted  ; Timing optimization ;
+; core:cpu_core|data_mem:stage8_data_mem|Mux4~1                             ; Deleted  ; Timing optimization ;
+; core:cpu_core|data_mem:stage8_data_mem|Mux5~0                             ; Deleted  ; Timing optimization ;
+; core:cpu_core|data_mem:stage8_data_mem|Mux5~1                             ; Deleted  ; Timing optimization ;
+; core:cpu_core|data_mem:stage8_data_mem|Mux7~0                             ; Deleted  ; Timing optimization ;
+; core:cpu_core|data_mem:stage8_data_mem|Mux7~1                             ; Deleted  ; Timing optimization ;
+; core:cpu_core|data_mem:stage8_data_mem|Mux39~0                            ; Deleted  ; Timing optimization ;
+; core:cpu_core|data_mem:stage8_data_mem|Mux39~1                            ; Modified ; Timing optimization ;
+; core:cpu_core|data_mem:stage8_data_mem|Mux39~1_RESYN108_BDD109            ; Created  ; Timing optimization ;
+; core:cpu_core|data_mem:stage8_data_mem|Mux39~1_RESYN110_BDD111            ; Created  ; Timing optimization ;
+; core:cpu_core|data_mem:stage8_data_mem|Mux39~1_RESYN112_BDD113            ; Created  ; Timing optimization ;
+; core:cpu_core|data_mem:stage8_data_mem|Mux39~1_RESYN114_BDD115            ; Created  ; Timing optimization ;
+; core:cpu_core|data_mem:stage8_data_mem|Mux39~1_RESYN116_BDD117            ; Created  ; Timing optimization ;
+; core:cpu_core|data_mem:stage8_data_mem|Mux39~1_RESYN118_BDD119            ; Created  ; Timing optimization ;
+; core:cpu_core|data_sel:stage5_data_sel|operand_a~71                       ; Modified ; Timing optimization ;
+; core:cpu_core|data_sel:stage5_data_sel|operand_a~78                       ; Deleted  ; Timing optimization ;
+; core:cpu_core|data_sel:stage5_data_sel|operand_a~79                       ; Modified ; Timing optimization ;
+; core:cpu_core|data_sel:stage5_data_sel|operand_a~79_RESYN4_BDD5           ; Created  ; Timing optimization ;
+; core:cpu_core|data_sel:stage5_data_sel|operand_b[0]~2                     ; Deleted  ; Timing optimization ;
+; core:cpu_core|data_sel:stage5_data_sel|operand_b[0]~3                     ; Modified ; Timing optimization ;
+; core:cpu_core|data_sel:stage5_data_sel|operand_b[0]~3_RESYN0_BDD1         ; Created  ; Timing optimization ;
+; core:cpu_core|data_sel:stage5_data_sel|operand_b[0]~3_RESYN2_BDD3         ; Created  ; Timing optimization ;
+; core:cpu_core|data_sel:stage5_data_sel|rs2_data_out[0]~76                 ; Deleted  ; Timing optimization ;
+; core:cpu_core|data_sel:stage5_data_sel|rs2_data_out[2]~80                 ; Modified ; Timing optimization ;
+; core:cpu_core|data_sel:stage5_data_sel|rs2_data_out[2]~80_RESYN100_BDD101 ; Created  ; Timing optimization ;
+; core:cpu_core|data_sel:stage5_data_sel|rs2_data_out[2]~80_RESYN102_BDD103 ; Created  ; Timing optimization ;
+; core:cpu_core|data_sel:stage5_data_sel|rs2_data_out[2]~170                ; Deleted  ; Timing optimization ;
+; core:cpu_core|data_sel:stage5_data_sel|rs2_data_out[5]~90                 ; Modified ; Timing optimization ;
+; core:cpu_core|data_sel:stage5_data_sel|rs2_data_out[5]~90_RESYN104_BDD105 ; Created  ; Timing optimization ;
+; core:cpu_core|data_sel:stage5_data_sel|rs2_data_out[5]~90_RESYN106_BDD107 ; Created  ; Timing optimization ;
+; core:cpu_core|data_sel:stage5_data_sel|rs2_data_out[5]~176                ; Deleted  ; Timing optimization ;
+; core:cpu_core|data_sel:stage5_data_sel|rs2_data_out[6]~92                 ; Deleted  ; Timing optimization ;
+; core:cpu_core|data_sel:stage5_data_sel|rs2_data_out[6]~93                 ; Deleted  ; Timing optimization ;
+; core:cpu_core|data_sel:stage5_data_sel|rs2_data_out[6]~94                 ; Modified ; Timing optimization ;
+; core:cpu_core|data_sel:stage5_data_sel|rs2_data_out[6]~94_RESYN6_BDD7     ; Created  ; Timing optimization ;
+; core:cpu_core|data_sel:stage5_data_sel|rs2_data_out[6]~94_RESYN8_BDD9     ; Created  ; Timing optimization ;
+; core:cpu_core|data_sel:stage5_data_sel|rs2_data_out[6]~94_RESYN10_BDD11   ; Created  ; Timing optimization ;
+; core:cpu_core|data_sel:stage5_data_sel|rs2_data_out[6]~177                ; Deleted  ; Timing optimization ;
+; core:cpu_core|data_sel:stage5_data_sel|rs2_data_out[7]~95                 ; Deleted  ; Timing optimization ;
+; core:cpu_core|data_sel:stage5_data_sel|rs2_data_out[7]~96                 ; Deleted  ; Timing optimization ;
+; core:cpu_core|data_sel:stage5_data_sel|rs2_data_out[7]~97                 ; Modified ; Timing optimization ;
+; core:cpu_core|data_sel:stage5_data_sel|rs2_data_out[7]~97_RESYN12_BDD13   ; Created  ; Timing optimization ;
+; core:cpu_core|data_sel:stage5_data_sel|rs2_data_out[7]~97_RESYN14_BDD15   ; Created  ; Timing optimization ;
+; core:cpu_core|data_sel:stage5_data_sel|rs2_data_out[7]~97_RESYN16_BDD17   ; Created  ; Timing optimization ;
+; core:cpu_core|data_sel:stage5_data_sel|rs2_data_out[7]~178                ; Deleted  ; Timing optimization ;
+; core:cpu_core|pc_update:stage1_fetch|Add0~1                               ; Modified ; Timing optimization ;
+; core:cpu_core|pc_update:stage1_fetch|Add0~2                               ; Modified ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~61                                 ; Modified ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~62                                 ; Deleted  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~63                                 ; Deleted  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~64                                 ; Modified ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~64_RESYN120_BDD121                 ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~64_RESYN122_BDD123                 ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~64_RESYN124_BDD125                 ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~64_RESYN126_BDD127                 ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~64_RESYN128_BDD129                 ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~64_RESYN130_BDD131                 ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~64_RESYN132_BDD133                 ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~64_RESYN134_BDD135                 ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~64_RESYN136_BDD137                 ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~67                                 ; Deleted  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~68                                 ; Modified ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~68_RESYN18_BDD19                   ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~68_RESYN20_BDD21                   ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~68_RESYN22_BDD23                   ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~68_RESYN24_BDD25                   ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~68_RESYN26_BDD27                   ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~72                                 ; Deleted  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~73                                 ; Modified ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~73_RESYN28_BDD29                   ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~73_RESYN30_BDD31                   ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~73_RESYN32_BDD33                   ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~73_RESYN34_BDD35                   ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~73_RESYN36_BDD37                   ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~77                                 ; Deleted  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~78                                 ; Modified ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~78_RESYN138_BDD139                 ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~78_RESYN140_BDD141                 ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~78_RESYN142_BDD143                 ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~78_RESYN144_BDD145                 ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~78_RESYN146_BDD147                 ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~78_RESYN148_BDD149                 ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~78_RESYN150_BDD151                 ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~82                                 ; Deleted  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~83                                 ; Modified ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~83_RESYN152_BDD153                 ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~83_RESYN154_BDD155                 ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~83_RESYN156_BDD157                 ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~83_RESYN158_BDD159                 ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~83_RESYN160_BDD161                 ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~83_RESYN162_BDD163                 ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~83_RESYN164_BDD165                 ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~92                                 ; Deleted  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~93                                 ; Deleted  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~94                                 ; Modified ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~94_RESYN38_BDD39                   ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~94_RESYN40_BDD41                   ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~94_RESYN42_BDD43                   ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~94_RESYN44_BDD45                   ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~97                                 ; Deleted  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~98                                 ; Deleted  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~99                                 ; Modified ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~99_RESYN46_BDD47                   ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~99_RESYN48_BDD49                   ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~99_RESYN50_BDD51                   ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~99_RESYN52_BDD53                   ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~102                                ; Deleted  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~103                                ; Deleted  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~104                                ; Modified ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~104_RESYN54_BDD55                  ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~104_RESYN56_BDD57                  ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~104_RESYN58_BDD59                  ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~104_RESYN60_BDD61                  ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~107                                ; Deleted  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~108                                ; Deleted  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~109                                ; Modified ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~109_RESYN62_BDD63                  ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~109_RESYN64_BDD65                  ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~109_RESYN66_BDD67                  ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~109_RESYN68_BDD69                  ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~112                                ; Deleted  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~113                                ; Deleted  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~114                                ; Modified ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~114_RESYN70_BDD71                  ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~114_RESYN72_BDD73                  ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~114_RESYN74_BDD75                  ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~114_RESYN76_BDD77                  ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~117                                ; Deleted  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~118                                ; Deleted  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~119                                ; Modified ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~119_RESYN78_BDD79                  ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~119_RESYN80_BDD81                  ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~119_RESYN82_BDD83                  ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~119_RESYN84_BDD85                  ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~122                                ; Deleted  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~123                                ; Deleted  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~124                                ; Modified ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~124_RESYN86_BDD87                  ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~124_RESYN88_BDD89                  ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~124_RESYN90_BDD91                  ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~124_RESYN92_BDD93                  ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~127                                ; Deleted  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~128                                ; Modified ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~128_RESYN94_BDD95                  ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~128_RESYN96_BDD97                  ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~128_RESYN98_BDD99                  ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~135                                ; Deleted  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~136                                ; Modified ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~136_RESYN166_BDD167                ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~136_RESYN168_BDD169                ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~136_RESYN170_BDD171                ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~143                                ; Modified ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~143_RESYN172_BDD173                ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~143_RESYN174_BDD175                ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~143_RESYN176_BDD177                ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~147                                ; Modified ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~147_RESYN178_BDD179                ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~147_RESYN180_BDD181                ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~147_RESYN182_BDD183                ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~151                                ; Modified ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~151_RESYN184_BDD185                ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~151_RESYN186_BDD187                ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~151_RESYN188_BDD189                ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~155                                ; Modified ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~155_RESYN190_BDD191                ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~155_RESYN192_BDD193                ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~155_RESYN194_BDD195                ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~159                                ; Modified ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~159_RESYN196_BDD197                ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~159_RESYN198_BDD199                ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~159_RESYN200_BDD201                ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~165                                ; Modified ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~165_RESYN202_BDD203                ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~165_RESYN204_BDD205                ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~165_RESYN206_BDD207                ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~167                                ; Modified ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~167_RESYN208_BDD209                ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~167_RESYN210_BDD211                ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~167_RESYN212_BDD213                ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~181                                ; Modified ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~181_RESYN214_BDD215                ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~181_RESYN216_BDD217                ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~181_RESYN218_BDD219                ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~187                                ; Modified ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~187_RESYN220_BDD221                ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~187_RESYN222_BDD223                ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~187_RESYN224_BDD225                ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~189                                ; Modified ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~189_RESYN226_BDD227                ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~189_RESYN228_BDD229                ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~189_RESYN230_BDD231                ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~191                                ; Modified ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~191_RESYN232_BDD233                ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~191_RESYN234_BDD235                ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~191_RESYN236_BDD237                ; Created  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~193                                ; Deleted  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~199                                ; Deleted  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~200                                ; Deleted  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~201                                ; Deleted  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~202                                ; Deleted  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~203                                ; Deleted  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~204                                ; Deleted  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~205                                ; Deleted  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~206                                ; Deleted  ; Timing optimization ;
+; core:cpu_core|writeback:stage8_wb|Add0~208                                ; Deleted  ; Timing optimization ;
+; seven_seg_decoder:h0|WideOr0~0                                            ; Deleted  ; Timing optimization ;
+; seven_seg_decoder:h0|WideOr0~0_wirecell                                   ; Modified ; Timing optimization ;
+; seven_seg_decoder:h1|WideOr0~0                                            ; Deleted  ; Timing optimization ;
+; seven_seg_decoder:h1|WideOr0~0_wirecell                                   ; Modified ; Timing optimization ;
+; seven_seg_decoder:h2|WideOr0~0                                            ; Deleted  ; Timing optimization ;
+; seven_seg_decoder:h2|WideOr0~0_wirecell                                   ; Modified ; Timing optimization ;
+; seven_seg_decoder:h3|WideOr0~0                                            ; Deleted  ; Timing optimization ;
+; seven_seg_decoder:h3|WideOr0~0_wirecell                                   ; Modified ; Timing optimization ;
+; seven_seg_decoder:h4|WideOr0~0                                            ; Deleted  ; Timing optimization ;
+; seven_seg_decoder:h4|WideOr0~0_wirecell                                   ; Modified ; Timing optimization ;
+; seven_seg_decoder:h5|WideOr0~0                                            ; Deleted  ; Timing optimization ;
+; seven_seg_decoder:h5|WideOr0~0_wirecell                                   ; Modified ; Timing optimization ;
++---------------------------------------------------------------------------+----------+---------------------+
+
+
++----------------------------------------------------------------------------------------------------------------------------------+
+; Registers Packed Into Inferred Megafunctions                                                                                     ;
++------------------------------------------------------------+--------------------------------------------------------------+------+
+; Register Name                                              ; Megafunction                                                 ; Type ;
++------------------------------------------------------------+--------------------------------------------------------------+------+
+; core:cpu_core|data_mem:stage8_data_mem|current_word[0..31] ; core:cpu_core|data_mem:stage8_data_mem|memory_rtl_0          ; RAM  ;
+; core:cpu_core|instr_mem:stage2_imem|instr_reg[0..31]       ; core:cpu_core|instr_mem:stage2_imem|instruction_memory_rtl_0 ; RAM  ;
++------------------------------------------------------------+--------------------------------------------------------------+------+
+
+
++------------------------------------------------------------------------------------------------------------------------+
+; Registers Added for RAM Pass-Through Logic                                                                             ;
++-----------------------------------------------------------------+------------------------------------------------------+
+; Register Name                                                   ; RAM Name                                             ;
++-----------------------------------------------------------------+------------------------------------------------------+
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[0]  ; core:cpu_core|regfile:stage4_regfile|registers_rtl_0 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[1]  ; core:cpu_core|regfile:stage4_regfile|registers_rtl_0 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[2]  ; core:cpu_core|regfile:stage4_regfile|registers_rtl_0 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[3]  ; core:cpu_core|regfile:stage4_regfile|registers_rtl_0 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[4]  ; core:cpu_core|regfile:stage4_regfile|registers_rtl_0 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[5]  ; core:cpu_core|regfile:stage4_regfile|registers_rtl_0 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[6]  ; core:cpu_core|regfile:stage4_regfile|registers_rtl_0 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[7]  ; core:cpu_core|regfile:stage4_regfile|registers_rtl_0 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[8]  ; core:cpu_core|regfile:stage4_regfile|registers_rtl_0 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[9]  ; core:cpu_core|regfile:stage4_regfile|registers_rtl_0 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[10] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_0 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[11] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_0 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[12] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_0 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[13] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_0 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[14] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_0 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[15] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_0 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[16] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_0 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[17] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_0 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[18] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_0 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[19] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_0 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[20] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_0 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[21] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_0 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[22] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_0 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[23] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_0 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[24] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_0 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[25] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_0 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[26] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_0 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[27] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_0 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[28] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_0 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[29] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_0 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[30] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_0 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[31] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_0 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[32] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_0 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[33] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_0 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[34] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_0 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[35] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_0 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[36] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_0 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[37] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_0 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[38] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_0 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[39] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_0 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[40] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_0 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[41] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_0 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[42] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_0 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[43] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_0 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[44] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_0 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[45] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_0 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[46] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_0 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[47] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_0 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[48] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_0 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[49] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_0 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[50] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_0 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[51] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_0 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[52] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_0 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[53] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_0 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[54] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_0 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[55] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_0 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[56] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_0 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[57] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_0 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[58] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_0 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[59] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_0 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[60] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_0 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[61] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_0 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[62] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_0 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[63] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_0 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[64] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_0 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[65] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_0 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[66] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_0 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[67] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_0 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[68] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_0 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[69] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_0 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[70] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_0 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[71] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_0 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[72] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_0 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[73] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_0 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_0_bypass[74] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_0 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[0]  ; core:cpu_core|regfile:stage4_regfile|registers_rtl_1 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[1]  ; core:cpu_core|regfile:stage4_regfile|registers_rtl_1 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[2]  ; core:cpu_core|regfile:stage4_regfile|registers_rtl_1 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[3]  ; core:cpu_core|regfile:stage4_regfile|registers_rtl_1 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[4]  ; core:cpu_core|regfile:stage4_regfile|registers_rtl_1 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[5]  ; core:cpu_core|regfile:stage4_regfile|registers_rtl_1 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[6]  ; core:cpu_core|regfile:stage4_regfile|registers_rtl_1 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[7]  ; core:cpu_core|regfile:stage4_regfile|registers_rtl_1 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[8]  ; core:cpu_core|regfile:stage4_regfile|registers_rtl_1 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[9]  ; core:cpu_core|regfile:stage4_regfile|registers_rtl_1 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[10] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_1 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[11] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_1 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[12] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_1 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[13] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_1 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[14] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_1 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[15] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_1 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[16] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_1 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[17] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_1 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[18] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_1 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[19] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_1 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[20] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_1 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[21] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_1 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[22] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_1 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[23] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_1 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[24] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_1 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[25] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_1 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[26] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_1 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[27] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_1 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[28] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_1 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[29] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_1 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[30] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_1 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[31] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_1 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[32] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_1 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[33] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_1 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[34] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_1 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[35] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_1 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[36] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_1 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[37] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_1 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[38] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_1 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[39] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_1 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[40] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_1 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[41] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_1 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[42] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_1 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[43] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_1 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[44] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_1 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[45] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_1 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[46] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_1 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[47] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_1 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[48] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_1 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[49] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_1 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[50] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_1 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[51] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_1 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[52] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_1 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[53] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_1 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[54] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_1 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[55] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_1 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[56] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_1 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[57] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_1 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[58] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_1 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[59] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_1 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[60] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_1 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[61] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_1 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[62] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_1 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[63] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_1 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[64] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_1 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[65] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_1 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[66] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_1 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[67] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_1 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[68] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_1 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[69] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_1 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[70] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_1 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[71] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_1 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[72] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_1 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[73] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_1 ;
+; core:cpu_core|regfile:stage4_regfile|registers_rtl_1_bypass[74] ; core:cpu_core|regfile:stage4_regfile|registers_rtl_1 ;
++-----------------------------------------------------------------+------------------------------------------------------+
+
+
++-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+; Multiplexer Restructuring Statistics (No Restructuring Performed)                                                                                                             ;
++--------------------+-----------+---------------+----------------------+------------------------+------------+-----------------------------------------------------------------+
+; Multiplexer Inputs ; Bus Width ; Baseline Area ; Area if Restructured ; Saving if Restructured ; Registered ; Example Multiplexer Output                                      ;
++--------------------+-----------+---------------+----------------------+------------------------+------------+-----------------------------------------------------------------+
+; 3:1                ; 32 bits   ; 64 LEs        ; 64 LEs               ; 0 LEs                  ; Yes        ; |top|core:cpu_core|EX1_EX2:stage5_ex1_ex2_reg|operand_b_out[1]  ;
+; 3:1                ; 6 bits    ; 12 LEs        ; 6 LEs                ; 6 LEs                  ; Yes        ; |top|core:cpu_core|ID_RR:stage3_id_rr_reg|immediate_out[5]      ;
+; 4:1                ; 62 bits   ; 124 LEs       ; 62 LEs               ; 62 LEs                 ; Yes        ; |top|core:cpu_core|IF_ID:stage3_if_id_reg|pc_out[9]             ;
+; 6:1                ; 30 bits   ; 120 LEs       ; 60 LEs               ; 60 LEs                 ; Yes        ; |top|core:cpu_core|pc_update:stage1_fetch|pc[24]                ;
+; 8:1                ; 2 bits    ; 10 LEs        ; 8 LEs                ; 2 LEs                  ; Yes        ; |top|core:cpu_core|EX1_EX2:stage5_ex1_ex2_reg|operand_a_out[0]  ;
+; 8:1                ; 30 bits   ; 150 LEs       ; 120 LEs              ; 30 LEs                 ; Yes        ; |top|core:cpu_core|EX1_EX2:stage5_ex1_ex2_reg|operand_a_out[31] ;
+; 129:1              ; 4 bits    ; 344 LEs       ; 8 LEs                ; 336 LEs                ; Yes        ; |top|core:cpu_core|ID_RR:stage3_id_rr_reg|immediate_out[1]      ;
+; 129:1              ; 11 bits   ; 946 LEs       ; 22 LEs               ; 924 LEs                ; Yes        ; |top|core:cpu_core|ID_RR:stage3_id_rr_reg|immediate_out[28]     ;
+; 129:1              ; 8 bits    ; 688 LEs       ; 16 LEs               ; 672 LEs                ; Yes        ; |top|core:cpu_core|ID_RR:stage3_id_rr_reg|immediate_out[14]     ;
+; 135:1              ; 2 bits    ; 180 LEs       ; 22 LEs               ; 158 LEs                ; Yes        ; |top|core:cpu_core|ID_RR:stage3_id_rr_reg|alu_op_out[1]         ;
+; 8:1                ; 17 bits   ; 85 LEs        ; 51 LEs               ; 34 LEs                 ; No         ; |top|core:cpu_core|writeback:stage8_wb|Mux15                    ;
+; 6:1                ; 32 bits   ; 128 LEs       ; 96 LEs               ; 32 LEs                 ; No         ; |top|core:cpu_core|data_sel:stage5_data_sel|rs2_data_out[2]     ;
+; 9:1                ; 8 bits    ; 48 LEs        ; 24 LEs               ; 24 LEs                 ; No         ; |top|core:cpu_core|writeback:stage8_wb|Mux23                    ;
+; 12:1               ; 2 bits    ; 16 LEs        ; 8 LEs                ; 8 LEs                  ; No         ; |top|core:cpu_core|writeback:stage8_wb|Mux30                    ;
+; 12:1               ; 5 bits    ; 40 LEs        ; 20 LEs               ; 20 LEs                 ; No         ; |top|core:cpu_core|writeback:stage8_wb|Mux26                    ;
+; 19:1               ; 8 bits    ; 96 LEs        ; 64 LEs               ; 32 LEs                 ; No         ; |top|core:cpu_core|alu:stage6_alu|Mux17                         ;
+; 20:1               ; 7 bits    ; 91 LEs        ; 70 LEs               ; 21 LEs                 ; No         ; |top|core:cpu_core|alu:stage6_alu|Mux10                         ;
+; 20:1               ; 4 bits    ; 52 LEs        ; 40 LEs               ; 12 LEs                 ; No         ; |top|core:cpu_core|alu:stage6_alu|Mux26                         ;
+; 21:1               ; 4 bits    ; 56 LEs        ; 40 LEs               ; 16 LEs                 ; No         ; |top|core:cpu_core|alu:stage6_alu|Mux5                          ;
+; 21:1               ; 2 bits    ; 28 LEs        ; 20 LEs               ; 8 LEs                  ; No         ; |top|core:cpu_core|alu:stage6_alu|Mux28                         ;
+; 22:1               ; 2 bits    ; 28 LEs        ; 20 LEs               ; 8 LEs                  ; No         ; |top|core:cpu_core|alu:stage6_alu|Mux2                          ;
++--------------------+-----------+---------------+----------------------+------------------------+------------+-----------------------------------------------------------------+
+
+
++----------------------------------------------------------------------------------------------------------------------+
+; Source assignments for core:cpu_core|data_mem:stage8_data_mem|altsyncram:memory_rtl_0|altsyncram_ek91:auto_generated ;
++---------------------------------+--------------------+------+--------------------------------------------------------+
+; Assignment                      ; Value              ; From ; To                                                     ;
++---------------------------------+--------------------+------+--------------------------------------------------------+
+; OPTIMIZE_POWER_DURING_SYNTHESIS ; NORMAL_COMPILATION ; -    ; -                                                      ;
++---------------------------------+--------------------+------+--------------------------------------------------------+
+
+
++-----------------------------------------------------------------------------------------------------------------------+
+; Source assignments for core:cpu_core|regfile:stage4_regfile|altsyncram:registers_rtl_0|altsyncram_8vf1:auto_generated ;
++---------------------------------+--------------------+------+---------------------------------------------------------+
+; Assignment                      ; Value              ; From ; To                                                      ;
++---------------------------------+--------------------+------+---------------------------------------------------------+
+; OPTIMIZE_POWER_DURING_SYNTHESIS ; NORMAL_COMPILATION ; -    ; -                                                       ;
++---------------------------------+--------------------+------+---------------------------------------------------------+
+
+
++-----------------------------------------------------------------------------------------------------------------------+
+; Source assignments for core:cpu_core|regfile:stage4_regfile|altsyncram:registers_rtl_1|altsyncram_8vf1:auto_generated ;
++---------------------------------+--------------------+------+---------------------------------------------------------+
+; Assignment                      ; Value              ; From ; To                                                      ;
++---------------------------------+--------------------+------+---------------------------------------------------------+
+; OPTIMIZE_POWER_DURING_SYNTHESIS ; NORMAL_COMPILATION ; -    ; -                                                       ;
++---------------------------------+--------------------+------+---------------------------------------------------------+
+
+
++-------------------------------------------------------------------------------------------------------------------------------+
+; Source assignments for core:cpu_core|instr_mem:stage2_imem|altsyncram:instruction_memory_rtl_0|altsyncram_op81:auto_generated ;
++---------------------------------+--------------------+------+-----------------------------------------------------------------+
+; Assignment                      ; Value              ; From ; To                                                              ;
++---------------------------------+--------------------+------+-----------------------------------------------------------------+
+; OPTIMIZE_POWER_DURING_SYNTHESIS ; NORMAL_COMPILATION ; -    ; -                                                               ;
++---------------------------------+--------------------+------+-----------------------------------------------------------------+
+
+
++-----------------------------------------------------------------------------------------------------------------+
+; Parameter Settings for Inferred Entity Instance: core:cpu_core|data_mem:stage8_data_mem|altsyncram:memory_rtl_0 ;
++------------------------------------+----------------------+-----------------------------------------------------+
+; Parameter Name                     ; Value                ; Type                                                ;
++------------------------------------+----------------------+-----------------------------------------------------+
+; BYTE_SIZE_BLOCK                    ; 8                    ; Untyped                                             ;
+; AUTO_CARRY_CHAINS                  ; ON                   ; AUTO_CARRY                                          ;
+; IGNORE_CARRY_BUFFERS               ; OFF                  ; IGNORE_CARRY                                        ;
+; AUTO_CASCADE_CHAINS                ; ON                   ; AUTO_CASCADE                                        ;
+; IGNORE_CASCADE_BUFFERS             ; OFF                  ; IGNORE_CASCADE                                      ;
+; WIDTH_BYTEENA                      ; 1                    ; Untyped                                             ;
+; OPERATION_MODE                     ; SINGLE_PORT          ; Untyped                                             ;
+; WIDTH_A                            ; 32                   ; Untyped                                             ;
+; WIDTHAD_A                          ; 8                    ; Untyped                                             ;
+; NUMWORDS_A                         ; 256                  ; Untyped                                             ;
+; OUTDATA_REG_A                      ; UNREGISTERED         ; Untyped                                             ;
+; ADDRESS_ACLR_A                     ; NONE                 ; Untyped                                             ;
+; OUTDATA_ACLR_A                     ; NONE                 ; Untyped                                             ;
+; WRCONTROL_ACLR_A                   ; NONE                 ; Untyped                                             ;
+; INDATA_ACLR_A                      ; NONE                 ; Untyped                                             ;
+; BYTEENA_ACLR_A                     ; NONE                 ; Untyped                                             ;
+; WIDTH_B                            ; 1                    ; Untyped                                             ;
+; WIDTHAD_B                          ; 1                    ; Untyped                                             ;
+; NUMWORDS_B                         ; 1                    ; Untyped                                             ;
+; INDATA_REG_B                       ; CLOCK1               ; Untyped                                             ;
+; WRCONTROL_WRADDRESS_REG_B          ; CLOCK1               ; Untyped                                             ;
+; RDCONTROL_REG_B                    ; CLOCK1               ; Untyped                                             ;
+; ADDRESS_REG_B                      ; CLOCK1               ; Untyped                                             ;
+; OUTDATA_REG_B                      ; UNREGISTERED         ; Untyped                                             ;
+; BYTEENA_REG_B                      ; CLOCK1               ; Untyped                                             ;
+; INDATA_ACLR_B                      ; NONE                 ; Untyped                                             ;
+; WRCONTROL_ACLR_B                   ; NONE                 ; Untyped                                             ;
+; ADDRESS_ACLR_B                     ; NONE                 ; Untyped                                             ;
+; OUTDATA_ACLR_B                     ; NONE                 ; Untyped                                             ;
+; RDCONTROL_ACLR_B                   ; NONE                 ; Untyped                                             ;
+; BYTEENA_ACLR_B                     ; NONE                 ; Untyped                                             ;
+; WIDTH_BYTEENA_A                    ; 1                    ; Untyped                                             ;
+; WIDTH_BYTEENA_B                    ; 1                    ; Untyped                                             ;
+; RAM_BLOCK_TYPE                     ; M9K                  ; Untyped                                             ;
+; BYTE_SIZE                          ; 8                    ; Untyped                                             ;
+; READ_DURING_WRITE_MODE_MIXED_PORTS ; DONT_CARE            ; Untyped                                             ;
+; READ_DURING_WRITE_MODE_PORT_A      ; OLD_DATA             ; Untyped                                             ;
+; READ_DURING_WRITE_MODE_PORT_B      ; NEW_DATA_NO_NBE_READ ; Untyped                                             ;
+; INIT_FILE                          ; UNUSED               ; Untyped                                             ;
+; INIT_FILE_LAYOUT                   ; PORT_A               ; Untyped                                             ;
+; MAXIMUM_DEPTH                      ; 0                    ; Untyped                                             ;
+; CLOCK_ENABLE_INPUT_A               ; NORMAL               ; Untyped                                             ;
+; CLOCK_ENABLE_INPUT_B               ; NORMAL               ; Untyped                                             ;
+; CLOCK_ENABLE_OUTPUT_A              ; NORMAL               ; Untyped                                             ;
+; CLOCK_ENABLE_OUTPUT_B              ; NORMAL               ; Untyped                                             ;
+; CLOCK_ENABLE_CORE_A                ; USE_INPUT_CLKEN      ; Untyped                                             ;
+; CLOCK_ENABLE_CORE_B                ; USE_INPUT_CLKEN      ; Untyped                                             ;
+; ENABLE_ECC                         ; FALSE                ; Untyped                                             ;
+; ECC_PIPELINE_STAGE_ENABLED         ; FALSE                ; Untyped                                             ;
+; WIDTH_ECCSTATUS                    ; 3                    ; Untyped                                             ;
+; DEVICE_FAMILY                      ; MAX 10               ; Untyped                                             ;
+; CBXI_PARAMETER                     ; altsyncram_ek91      ; Untyped                                             ;
++------------------------------------+----------------------+-----------------------------------------------------+
+Note: In order to hide this table in the UI and the text report file, please set the "Show Parameter Settings in Synthesis Report" option in "Analysis and Synthesis Settings -> More Settings" to "Off".
+
+
++------------------------------------------------------------------------------------------------------------------+
+; Parameter Settings for Inferred Entity Instance: core:cpu_core|regfile:stage4_regfile|altsyncram:registers_rtl_0 ;
++------------------------------------+--------------------------------------+--------------------------------------+
+; Parameter Name                     ; Value                                ; Type                                 ;
++------------------------------------+--------------------------------------+--------------------------------------+
+; BYTE_SIZE_BLOCK                    ; 8                                    ; Untyped                              ;
+; AUTO_CARRY_CHAINS                  ; ON                                   ; AUTO_CARRY                           ;
+; IGNORE_CARRY_BUFFERS               ; OFF                                  ; IGNORE_CARRY                         ;
+; AUTO_CASCADE_CHAINS                ; ON                                   ; AUTO_CASCADE                         ;
+; IGNORE_CASCADE_BUFFERS             ; OFF                                  ; IGNORE_CASCADE                       ;
+; WIDTH_BYTEENA                      ; 1                                    ; Untyped                              ;
+; OPERATION_MODE                     ; DUAL_PORT                            ; Untyped                              ;
+; WIDTH_A                            ; 32                                   ; Untyped                              ;
+; WIDTHAD_A                          ; 5                                    ; Untyped                              ;
+; NUMWORDS_A                         ; 32                                   ; Untyped                              ;
+; OUTDATA_REG_A                      ; UNREGISTERED                         ; Untyped                              ;
+; ADDRESS_ACLR_A                     ; NONE                                 ; Untyped                              ;
+; OUTDATA_ACLR_A                     ; NONE                                 ; Untyped                              ;
+; WRCONTROL_ACLR_A                   ; NONE                                 ; Untyped                              ;
+; INDATA_ACLR_A                      ; NONE                                 ; Untyped                              ;
+; BYTEENA_ACLR_A                     ; NONE                                 ; Untyped                              ;
+; WIDTH_B                            ; 32                                   ; Untyped                              ;
+; WIDTHAD_B                          ; 5                                    ; Untyped                              ;
+; NUMWORDS_B                         ; 32                                   ; Untyped                              ;
+; INDATA_REG_B                       ; CLOCK1                               ; Untyped                              ;
+; WRCONTROL_WRADDRESS_REG_B          ; CLOCK1                               ; Untyped                              ;
+; RDCONTROL_REG_B                    ; CLOCK1                               ; Untyped                              ;
+; ADDRESS_REG_B                      ; CLOCK0                               ; Untyped                              ;
+; OUTDATA_REG_B                      ; UNREGISTERED                         ; Untyped                              ;
+; BYTEENA_REG_B                      ; CLOCK1                               ; Untyped                              ;
+; INDATA_ACLR_B                      ; NONE                                 ; Untyped                              ;
+; WRCONTROL_ACLR_B                   ; NONE                                 ; Untyped                              ;
+; ADDRESS_ACLR_B                     ; NONE                                 ; Untyped                              ;
+; OUTDATA_ACLR_B                     ; NONE                                 ; Untyped                              ;
+; RDCONTROL_ACLR_B                   ; NONE                                 ; Untyped                              ;
+; BYTEENA_ACLR_B                     ; NONE                                 ; Untyped                              ;
+; WIDTH_BYTEENA_A                    ; 1                                    ; Untyped                              ;
+; WIDTH_BYTEENA_B                    ; 1                                    ; Untyped                              ;
+; RAM_BLOCK_TYPE                     ; AUTO                                 ; Untyped                              ;
+; BYTE_SIZE                          ; 8                                    ; Untyped                              ;
+; READ_DURING_WRITE_MODE_MIXED_PORTS ; DONT_CARE                            ; Untyped                              ;
+; READ_DURING_WRITE_MODE_PORT_A      ; NEW_DATA_NO_NBE_READ                 ; Untyped                              ;
+; READ_DURING_WRITE_MODE_PORT_B      ; NEW_DATA_NO_NBE_READ                 ; Untyped                              ;
+; INIT_FILE                          ; db/cpu.ram0_regfile_4c9f4da2.hdl.mif ; Untyped                              ;
+; INIT_FILE_LAYOUT                   ; PORT_A                               ; Untyped                              ;
+; MAXIMUM_DEPTH                      ; 0                                    ; Untyped                              ;
+; CLOCK_ENABLE_INPUT_A               ; NORMAL                               ; Untyped                              ;
+; CLOCK_ENABLE_INPUT_B               ; NORMAL                               ; Untyped                              ;
+; CLOCK_ENABLE_OUTPUT_A              ; NORMAL                               ; Untyped                              ;
+; CLOCK_ENABLE_OUTPUT_B              ; NORMAL                               ; Untyped                              ;
+; CLOCK_ENABLE_CORE_A                ; USE_INPUT_CLKEN                      ; Untyped                              ;
+; CLOCK_ENABLE_CORE_B                ; USE_INPUT_CLKEN                      ; Untyped                              ;
+; ENABLE_ECC                         ; FALSE                                ; Untyped                              ;
+; ECC_PIPELINE_STAGE_ENABLED         ; FALSE                                ; Untyped                              ;
+; WIDTH_ECCSTATUS                    ; 3                                    ; Untyped                              ;
+; DEVICE_FAMILY                      ; MAX 10                               ; Untyped                              ;
+; CBXI_PARAMETER                     ; altsyncram_8vf1                      ; Untyped                              ;
++------------------------------------+--------------------------------------+--------------------------------------+
+Note: In order to hide this table in the UI and the text report file, please set the "Show Parameter Settings in Synthesis Report" option in "Analysis and Synthesis Settings -> More Settings" to "Off".
+
+
++------------------------------------------------------------------------------------------------------------------+
+; Parameter Settings for Inferred Entity Instance: core:cpu_core|regfile:stage4_regfile|altsyncram:registers_rtl_1 ;
++------------------------------------+--------------------------------------+--------------------------------------+
+; Parameter Name                     ; Value                                ; Type                                 ;
++------------------------------------+--------------------------------------+--------------------------------------+
+; BYTE_SIZE_BLOCK                    ; 8                                    ; Untyped                              ;
+; AUTO_CARRY_CHAINS                  ; ON                                   ; AUTO_CARRY                           ;
+; IGNORE_CARRY_BUFFERS               ; OFF                                  ; IGNORE_CARRY                         ;
+; AUTO_CASCADE_CHAINS                ; ON                                   ; AUTO_CASCADE                         ;
+; IGNORE_CASCADE_BUFFERS             ; OFF                                  ; IGNORE_CASCADE                       ;
+; WIDTH_BYTEENA                      ; 1                                    ; Untyped                              ;
+; OPERATION_MODE                     ; DUAL_PORT                            ; Untyped                              ;
+; WIDTH_A                            ; 32                                   ; Untyped                              ;
+; WIDTHAD_A                          ; 5                                    ; Untyped                              ;
+; NUMWORDS_A                         ; 32                                   ; Untyped                              ;
+; OUTDATA_REG_A                      ; UNREGISTERED                         ; Untyped                              ;
+; ADDRESS_ACLR_A                     ; NONE                                 ; Untyped                              ;
+; OUTDATA_ACLR_A                     ; NONE                                 ; Untyped                              ;
+; WRCONTROL_ACLR_A                   ; NONE                                 ; Untyped                              ;
+; INDATA_ACLR_A                      ; NONE                                 ; Untyped                              ;
+; BYTEENA_ACLR_A                     ; NONE                                 ; Untyped                              ;
+; WIDTH_B                            ; 32                                   ; Untyped                              ;
+; WIDTHAD_B                          ; 5                                    ; Untyped                              ;
+; NUMWORDS_B                         ; 32                                   ; Untyped                              ;
+; INDATA_REG_B                       ; CLOCK1                               ; Untyped                              ;
+; WRCONTROL_WRADDRESS_REG_B          ; CLOCK1                               ; Untyped                              ;
+; RDCONTROL_REG_B                    ; CLOCK1                               ; Untyped                              ;
+; ADDRESS_REG_B                      ; CLOCK0                               ; Untyped                              ;
+; OUTDATA_REG_B                      ; UNREGISTERED                         ; Untyped                              ;
+; BYTEENA_REG_B                      ; CLOCK1                               ; Untyped                              ;
+; INDATA_ACLR_B                      ; NONE                                 ; Untyped                              ;
+; WRCONTROL_ACLR_B                   ; NONE                                 ; Untyped                              ;
+; ADDRESS_ACLR_B                     ; NONE                                 ; Untyped                              ;
+; OUTDATA_ACLR_B                     ; NONE                                 ; Untyped                              ;
+; RDCONTROL_ACLR_B                   ; NONE                                 ; Untyped                              ;
+; BYTEENA_ACLR_B                     ; NONE                                 ; Untyped                              ;
+; WIDTH_BYTEENA_A                    ; 1                                    ; Untyped                              ;
+; WIDTH_BYTEENA_B                    ; 1                                    ; Untyped                              ;
+; RAM_BLOCK_TYPE                     ; AUTO                                 ; Untyped                              ;
+; BYTE_SIZE                          ; 8                                    ; Untyped                              ;
+; READ_DURING_WRITE_MODE_MIXED_PORTS ; DONT_CARE                            ; Untyped                              ;
+; READ_DURING_WRITE_MODE_PORT_A      ; NEW_DATA_NO_NBE_READ                 ; Untyped                              ;
+; READ_DURING_WRITE_MODE_PORT_B      ; NEW_DATA_NO_NBE_READ                 ; Untyped                              ;
+; INIT_FILE                          ; db/cpu.ram0_regfile_4c9f4da2.hdl.mif ; Untyped                              ;
+; INIT_FILE_LAYOUT                   ; PORT_A                               ; Untyped                              ;
+; MAXIMUM_DEPTH                      ; 0                                    ; Untyped                              ;
+; CLOCK_ENABLE_INPUT_A               ; NORMAL                               ; Untyped                              ;
+; CLOCK_ENABLE_INPUT_B               ; NORMAL                               ; Untyped                              ;
+; CLOCK_ENABLE_OUTPUT_A              ; NORMAL                               ; Untyped                              ;
+; CLOCK_ENABLE_OUTPUT_B              ; NORMAL                               ; Untyped                              ;
+; CLOCK_ENABLE_CORE_A                ; USE_INPUT_CLKEN                      ; Untyped                              ;
+; CLOCK_ENABLE_CORE_B                ; USE_INPUT_CLKEN                      ; Untyped                              ;
+; ENABLE_ECC                         ; FALSE                                ; Untyped                              ;
+; ECC_PIPELINE_STAGE_ENABLED         ; FALSE                                ; Untyped                              ;
+; WIDTH_ECCSTATUS                    ; 3                                    ; Untyped                              ;
+; DEVICE_FAMILY                      ; MAX 10                               ; Untyped                              ;
+; CBXI_PARAMETER                     ; altsyncram_8vf1                      ; Untyped                              ;
++------------------------------------+--------------------------------------+--------------------------------------+
+Note: In order to hide this table in the UI and the text report file, please set the "Show Parameter Settings in Synthesis Report" option in "Analysis and Synthesis Settings -> More Settings" to "Off".
+
+
++--------------------------------------------------------------------------------------------------------------------------+
+; Parameter Settings for Inferred Entity Instance: core:cpu_core|instr_mem:stage2_imem|altsyncram:instruction_memory_rtl_0 ;
++------------------------------------+----------------------------------------+--------------------------------------------+
+; Parameter Name                     ; Value                                  ; Type                                       ;
++------------------------------------+----------------------------------------+--------------------------------------------+
+; BYTE_SIZE_BLOCK                    ; 8                                      ; Untyped                                    ;
+; AUTO_CARRY_CHAINS                  ; ON                                     ; AUTO_CARRY                                 ;
+; IGNORE_CARRY_BUFFERS               ; OFF                                    ; IGNORE_CARRY                               ;
+; AUTO_CASCADE_CHAINS                ; ON                                     ; AUTO_CASCADE                               ;
+; IGNORE_CASCADE_BUFFERS             ; OFF                                    ; IGNORE_CASCADE                             ;
+; WIDTH_BYTEENA                      ; 1                                      ; Untyped                                    ;
+; OPERATION_MODE                     ; ROM                                    ; Untyped                                    ;
+; WIDTH_A                            ; 32                                     ; Untyped                                    ;
+; WIDTHAD_A                          ; 8                                      ; Untyped                                    ;
+; NUMWORDS_A                         ; 256                                    ; Untyped                                    ;
+; OUTDATA_REG_A                      ; UNREGISTERED                           ; Untyped                                    ;
+; ADDRESS_ACLR_A                     ; NONE                                   ; Untyped                                    ;
+; OUTDATA_ACLR_A                     ; NONE                                   ; Untyped                                    ;
+; WRCONTROL_ACLR_A                   ; NONE                                   ; Untyped                                    ;
+; INDATA_ACLR_A                      ; NONE                                   ; Untyped                                    ;
+; BYTEENA_ACLR_A                     ; NONE                                   ; Untyped                                    ;
+; WIDTH_B                            ; 1                                      ; Untyped                                    ;
+; WIDTHAD_B                          ; 1                                      ; Untyped                                    ;
+; NUMWORDS_B                         ; 1                                      ; Untyped                                    ;
+; INDATA_REG_B                       ; CLOCK1                                 ; Untyped                                    ;
+; WRCONTROL_WRADDRESS_REG_B          ; CLOCK1                                 ; Untyped                                    ;
+; RDCONTROL_REG_B                    ; CLOCK1                                 ; Untyped                                    ;
+; ADDRESS_REG_B                      ; CLOCK1                                 ; Untyped                                    ;
+; OUTDATA_REG_B                      ; UNREGISTERED                           ; Untyped                                    ;
+; BYTEENA_REG_B                      ; CLOCK1                                 ; Untyped                                    ;
+; INDATA_ACLR_B                      ; NONE                                   ; Untyped                                    ;
+; WRCONTROL_ACLR_B                   ; NONE                                   ; Untyped                                    ;
+; ADDRESS_ACLR_B                     ; NONE                                   ; Untyped                                    ;
+; OUTDATA_ACLR_B                     ; NONE                                   ; Untyped                                    ;
+; RDCONTROL_ACLR_B                   ; NONE                                   ; Untyped                                    ;
+; BYTEENA_ACLR_B                     ; NONE                                   ; Untyped                                    ;
+; WIDTH_BYTEENA_A                    ; 1                                      ; Untyped                                    ;
+; WIDTH_BYTEENA_B                    ; 1                                      ; Untyped                                    ;
+; RAM_BLOCK_TYPE                     ; M9K                                    ; Untyped                                    ;
+; BYTE_SIZE                          ; 8                                      ; Untyped                                    ;
+; READ_DURING_WRITE_MODE_MIXED_PORTS ; DONT_CARE                              ; Untyped                                    ;
+; READ_DURING_WRITE_MODE_PORT_A      ; NEW_DATA_NO_NBE_READ                   ; Untyped                                    ;
+; READ_DURING_WRITE_MODE_PORT_B      ; NEW_DATA_NO_NBE_READ                   ; Untyped                                    ;
+; INIT_FILE                          ; db/cpu.ram0_instr_mem_8ff0214b.hdl.mif ; Untyped                                    ;
+; INIT_FILE_LAYOUT                   ; PORT_A                                 ; Untyped                                    ;
+; MAXIMUM_DEPTH                      ; 0                                      ; Untyped                                    ;
+; CLOCK_ENABLE_INPUT_A               ; NORMAL                                 ; Untyped                                    ;
+; CLOCK_ENABLE_INPUT_B               ; NORMAL                                 ; Untyped                                    ;
+; CLOCK_ENABLE_OUTPUT_A              ; NORMAL                                 ; Untyped                                    ;
+; CLOCK_ENABLE_OUTPUT_B              ; NORMAL                                 ; Untyped                                    ;
+; CLOCK_ENABLE_CORE_A                ; USE_INPUT_CLKEN                        ; Untyped                                    ;
+; CLOCK_ENABLE_CORE_B                ; USE_INPUT_CLKEN                        ; Untyped                                    ;
+; ENABLE_ECC                         ; FALSE                                  ; Untyped                                    ;
+; ECC_PIPELINE_STAGE_ENABLED         ; FALSE                                  ; Untyped                                    ;
+; WIDTH_ECCSTATUS                    ; 3                                      ; Untyped                                    ;
+; DEVICE_FAMILY                      ; MAX 10                                 ; Untyped                                    ;
+; CBXI_PARAMETER                     ; altsyncram_op81                        ; Untyped                                    ;
++------------------------------------+----------------------------------------+--------------------------------------------+
+Note: In order to hide this table in the UI and the text report file, please set the "Show Parameter Settings in Synthesis Report" option in "Analysis and Synthesis Settings -> More Settings" to "Off".
+
+
++---------------------------------------------------------------------------------------------------------------------+
+; altsyncram Parameter Settings by Entity Instance                                                                    ;
++-------------------------------------------+-------------------------------------------------------------------------+
+; Name                                      ; Value                                                                   ;
++-------------------------------------------+-------------------------------------------------------------------------+
+; Number of entity instances                ; 4                                                                       ;
+; Entity Instance                           ; core:cpu_core|data_mem:stage8_data_mem|altsyncram:memory_rtl_0          ;
+;     -- OPERATION_MODE                     ; SINGLE_PORT                                                             ;
+;     -- WIDTH_A                            ; 32                                                                      ;
+;     -- NUMWORDS_A                         ; 256                                                                     ;
+;     -- OUTDATA_REG_A                      ; UNREGISTERED                                                            ;
+;     -- WIDTH_B                            ; 1                                                                       ;
+;     -- NUMWORDS_B                         ; 1                                                                       ;
+;     -- ADDRESS_REG_B                      ; CLOCK1                                                                  ;
+;     -- OUTDATA_REG_B                      ; UNREGISTERED                                                            ;
+;     -- RAM_BLOCK_TYPE                     ; M9K                                                                     ;
+;     -- READ_DURING_WRITE_MODE_MIXED_PORTS ; DONT_CARE                                                               ;
+; Entity Instance                           ; core:cpu_core|regfile:stage4_regfile|altsyncram:registers_rtl_0         ;
+;     -- OPERATION_MODE                     ; DUAL_PORT                                                               ;
+;     -- WIDTH_A                            ; 32                                                                      ;
+;     -- NUMWORDS_A                         ; 32                                                                      ;
+;     -- OUTDATA_REG_A                      ; UNREGISTERED                                                            ;
+;     -- WIDTH_B                            ; 32                                                                      ;
+;     -- NUMWORDS_B                         ; 32                                                                      ;
+;     -- ADDRESS_REG_B                      ; CLOCK0                                                                  ;
+;     -- OUTDATA_REG_B                      ; UNREGISTERED                                                            ;
+;     -- RAM_BLOCK_TYPE                     ; AUTO                                                                    ;
+;     -- READ_DURING_WRITE_MODE_MIXED_PORTS ; DONT_CARE                                                               ;
+; Entity Instance                           ; core:cpu_core|regfile:stage4_regfile|altsyncram:registers_rtl_1         ;
+;     -- OPERATION_MODE                     ; DUAL_PORT                                                               ;
+;     -- WIDTH_A                            ; 32                                                                      ;
+;     -- NUMWORDS_A                         ; 32                                                                      ;
+;     -- OUTDATA_REG_A                      ; UNREGISTERED                                                            ;
+;     -- WIDTH_B                            ; 32                                                                      ;
+;     -- NUMWORDS_B                         ; 32                                                                      ;
+;     -- ADDRESS_REG_B                      ; CLOCK0                                                                  ;
+;     -- OUTDATA_REG_B                      ; UNREGISTERED                                                            ;
+;     -- RAM_BLOCK_TYPE                     ; AUTO                                                                    ;
+;     -- READ_DURING_WRITE_MODE_MIXED_PORTS ; DONT_CARE                                                               ;
+; Entity Instance                           ; core:cpu_core|instr_mem:stage2_imem|altsyncram:instruction_memory_rtl_0 ;
+;     -- OPERATION_MODE                     ; ROM                                                                     ;
+;     -- WIDTH_A                            ; 32                                                                      ;
+;     -- NUMWORDS_A                         ; 256                                                                     ;
+;     -- OUTDATA_REG_A                      ; UNREGISTERED                                                            ;
+;     -- WIDTH_B                            ; 1                                                                       ;
+;     -- NUMWORDS_B                         ; 1                                                                       ;
+;     -- ADDRESS_REG_B                      ; CLOCK1                                                                  ;
+;     -- OUTDATA_REG_B                      ; UNREGISTERED                                                            ;
+;     -- RAM_BLOCK_TYPE                     ; M9K                                                                     ;
+;     -- READ_DURING_WRITE_MODE_MIXED_PORTS ; DONT_CARE                                                               ;
++-------------------------------------------+-------------------------------------------------------------------------+
+
+
++--------------------------------------------------------------------+
+; Port Connectivity Checks: "core:cpu_core|data_mem:stage8_data_mem" ;
++-------+-------+----------+-----------------------------------------+
+; Port  ; Type  ; Severity ; Details                                 ;
++-------+-------+----------+-----------------------------------------+
+; stall ; Input ; Info     ; Stuck at GND                            ;
++-------+-------+----------+-----------------------------------------+
+
+
++--------------------------------------------------------------------+
+; Port Connectivity Checks: "core:cpu_core|MEM_WB:stage7_mem_wb_reg" ;
++-------------------+--------+----------+----------------------------+
+; Port              ; Type   ; Severity ; Details                    ;
++-------------------+--------+----------+----------------------------+
+; stall             ; Input  ; Info     ; Stuck at GND               ;
+; flush             ; Input  ; Info     ; Stuck at GND               ;
+; mem_read_data_in  ; Input  ; Info     ; Stuck at GND               ;
+; mem_read_data_out ; Output ; Info     ; Explicitly unconnected     ;
++-------------------+--------+----------+----------------------------+
+
+
++----------------------------------------------------------------------+
+; Port Connectivity Checks: "core:cpu_core|EX2_EX3:stage6_ex2_ex3_reg" ;
++-------+-------+----------+-------------------------------------------+
+; Port  ; Type  ; Severity ; Details                                   ;
++-------+-------+----------+-------------------------------------------+
+; stall ; Input ; Info     ; Stuck at GND                              ;
++-------+-------+----------+-------------------------------------------+
+
+
++----------------------------------------------------------------------+
+; Port Connectivity Checks: "core:cpu_core|EX1_EX2:stage5_ex1_ex2_reg" ;
++-------+-------+----------+-------------------------------------------+
+; Port  ; Type  ; Severity ; Details                                   ;
++-------+-------+----------+-------------------------------------------+
+; stall ; Input ; Info     ; Stuck at GND                              ;
++-------+-------+----------+-------------------------------------------+
+
+
++--------------------------------------------------------------------+
+; Port Connectivity Checks: "core:cpu_core|RR_EX1:stage4_rr_ex1_reg" ;
++-------+-------+----------+-----------------------------------------+
+; Port  ; Type  ; Severity ; Details                                 ;
++-------+-------+----------+-----------------------------------------+
+; stall ; Input ; Info     ; Stuck at GND                            ;
++-------+-------+----------+-----------------------------------------+
+
+
++------------------------------------------------------------------+
+; Port Connectivity Checks: "core:cpu_core|ID_RR:stage3_id_rr_reg" ;
++-------+-------+----------+---------------------------------------+
+; Port  ; Type  ; Severity ; Details                               ;
++-------+-------+----------+---------------------------------------+
+; stall ; Input ; Info     ; Stuck at GND                          ;
++-------+-------+----------+---------------------------------------+
+
+
++--------------------------------------------------------------------------------------------------------------------------------------+
+; Port Connectivity Checks: "core:cpu_core"                                                                                            ;
++----------------------------+--------+----------+-------------------------------------------------------------------------------------+
+; Port                       ; Type   ; Severity ; Details                                                                             ;
++----------------------------+--------+----------+-------------------------------------------------------------------------------------+
+; out_pc[31..10]             ; Output ; Info     ; Connected to dangling logic. Logic that only feeds a dangling port will be removed. ;
+; out_writeback_data[31..24] ; Output ; Info     ; Connected to dangling logic. Logic that only feeds a dangling port will be removed. ;
+; out_reg_write              ; Output ; Info     ; Connected to dangling logic. Logic that only feeds a dangling port will be removed. ;
+; out_alu_result             ; Output ; Info     ; Connected to dangling logic. Logic that only feeds a dangling port will be removed. ;
++----------------------------+--------+----------+-------------------------------------------------------------------------------------+
+
+
++-----------------------------------------------------+
+; Post-Synthesis Netlist Statistics for Top Partition ;
++-----------------------+-----------------------------+
+; Type                  ; Count                       ;
++-----------------------+-----------------------------+
+; boundary_port         ; 65                          ;
+; cycloneiii_ff         ; 910                         ;
+;     ENA               ; 30                          ;
+;     ENA SCLR          ; 30                          ;
+;     SCLR              ; 63                          ;
+;     SCLR SLD          ; 96                          ;
+;     SLD               ; 3                           ;
+;     plain             ; 688                         ;
+; cycloneiii_lcell_comb ; 2476                        ;
+;     arith             ; 269                         ;
+;         2 data inputs ; 116                         ;
+;         3 data inputs ; 153                         ;
+;     normal            ; 2207                        ;
+;         0 data inputs ; 1                           ;
+;         1 data inputs ; 4                           ;
+;         2 data inputs ; 540                         ;
+;         3 data inputs ; 494                         ;
+;         4 data inputs ; 1168                        ;
+; cycloneiii_ram_block  ; 128                         ;
+;                       ;                             ;
+; Max LUT depth         ; 12.00                       ;
+; Average LUT depth     ; 5.69                        ;
++-----------------------+-----------------------------+
+
+
++-------------------------------+
+; Elapsed Time Per Partition    ;
++----------------+--------------+
+; Partition Name ; Elapsed Time ;
++----------------+--------------+
+; Top            ; 00:00:06     ;
++----------------+--------------+
+
+
++-------------------------------+
+; Analysis & Synthesis Messages ;
++-------------------------------+
+Info: *******************************************************************
+Info: Running Quartus Prime Analysis & Synthesis
+    Info: Version 24.1std.0 Build 1077 03/04/2025 SC Lite Edition
+    Info: Processing started: Thu Jun 11 13:34:25 2026
+Info: Command: quartus_map --read_settings_files=on --write_settings_files=off cpu -c cpu
+Info (16303): Aggressive Performance optimization mode selected -- timing performance will be prioritized at the potential cost of increased logic area and compilation time
+Warning (18236): Number of processors has not been specified which may cause overloading on shared machines.  Set the global assignment NUM_PARALLEL_PROCESSORS in your QSF to an appropriate value for best performance.
+Info (20030): Parallel compilation is enabled and will use 16 of the 16 processors detected
+Info (12021): Found 1 design units, including 0 entities, in source file /rachit/risc-v_cpu/riscv-cpu/12_stage_pipeline/packages/alu_pkg.sv
+    Info (12022): Found design unit 1: alu_package (SystemVerilog) File: C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/packages/alu_pkg.sv Line: 1
+Info (12021): Found 1 design units, including 0 entities, in source file /rachit/risc-v_cpu/riscv-cpu/12_stage_pipeline/packages/decoder_pkg.sv
+    Info (12022): Found design unit 1: decoder_package (SystemVerilog) File: C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/packages/decoder_pkg.sv Line: 1
+Info (12021): Found 1 design units, including 1 entities, in source file /rachit/risc-v_cpu/riscv-cpu/12_stage_pipeline/rtl/core/core.sv
+    Info (12023): Found entity 1: core File: C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/rtl/core/core.sv Line: 17
+Info (12021): Found 1 design units, including 1 entities, in source file /rachit/risc-v_cpu/riscv-cpu/12_stage_pipeline/rtl/core/1_fetch/pc_update.sv
+    Info (12023): Found entity 1: pc_update File: C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/rtl/core/1_fetch/pc_update.sv Line: 5
+Info (12021): Found 1 design units, including 1 entities, in source file /rachit/risc-v_cpu/riscv-cpu/12_stage_pipeline/rtl/core/2_imem/instr_mem.sv
+    Info (12023): Found entity 1: instr_mem File: C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/rtl/core/2_imem/instr_mem.sv Line: 6
+Info (12021): Found 1 design units, including 1 entities, in source file /rachit/risc-v_cpu/riscv-cpu/12_stage_pipeline/rtl/core/3_decode/if_id.sv
+    Info (12023): Found entity 1: IF_ID File: C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/rtl/core/3_decode/IF_ID.sv Line: 1
+Info (12021): Found 1 design units, including 1 entities, in source file /rachit/risc-v_cpu/riscv-cpu/12_stage_pipeline/rtl/core/3_decode/control.sv
+    Info (12023): Found entity 1: control File: C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/rtl/core/3_decode/control.sv Line: 3
+Info (12021): Found 1 design units, including 1 entities, in source file /rachit/risc-v_cpu/riscv-cpu/12_stage_pipeline/rtl/core/3_decode/decode.sv
+    Info (12023): Found entity 1: decode File: C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/rtl/core/3_decode/decode.sv Line: 6
+Info (12021): Found 1 design units, including 1 entities, in source file /rachit/risc-v_cpu/riscv-cpu/12_stage_pipeline/rtl/core/3_decode/id_rr.sv
+    Info (12023): Found entity 1: ID_RR File: C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/rtl/core/3_decode/ID_RR.sv Line: 1
+Info (12021): Found 1 design units, including 1 entities, in source file /rachit/risc-v_cpu/riscv-cpu/12_stage_pipeline/rtl/core/3_decode/imm_gen.sv
+    Info (12023): Found entity 1: imm_gen File: C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/rtl/core/3_decode/imm_gen.sv Line: 3
+Info (12021): Found 1 design units, including 1 entities, in source file /rachit/risc-v_cpu/riscv-cpu/12_stage_pipeline/rtl/core/4_reg_read/regfile.sv
+    Info (12023): Found entity 1: regfile File: C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/rtl/core/4_reg_read/regfile.sv Line: 6
+Info (12021): Found 1 design units, including 1 entities, in source file /rachit/risc-v_cpu/riscv-cpu/12_stage_pipeline/rtl/core/4_reg_read/rr_ex1.sv
+    Info (12023): Found entity 1: RR_EX1 File: C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/rtl/core/4_reg_read/RR_EX1.sv Line: 1
+Info (12021): Found 1 design units, including 1 entities, in source file /rachit/risc-v_cpu/riscv-cpu/12_stage_pipeline/rtl/core/5_ex1/data_sel.sv
+    Info (12023): Found entity 1: data_sel File: C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/rtl/core/5_ex1/data_sel.sv Line: 1
+Info (12021): Found 1 design units, including 1 entities, in source file /rachit/risc-v_cpu/riscv-cpu/12_stage_pipeline/rtl/core/5_ex1/ex1_ex2.sv
+    Info (12023): Found entity 1: EX1_EX2 File: C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/rtl/core/5_ex1/EX1_EX2.sv Line: 1
+Info (12021): Found 1 design units, including 1 entities, in source file /rachit/risc-v_cpu/riscv-cpu/12_stage_pipeline/rtl/core/6_ex2/alu.sv
+    Info (12023): Found entity 1: alu File: C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/rtl/core/6_ex2/alu.sv Line: 3
+Info (12021): Found 1 design units, including 1 entities, in source file /rachit/risc-v_cpu/riscv-cpu/12_stage_pipeline/rtl/core/6_ex2/branch_eval.sv
+    Info (12023): Found entity 1: branch_eval File: C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/rtl/core/6_ex2/branch_eval.sv Line: 8
+Info (12021): Found 1 design units, including 1 entities, in source file /rachit/risc-v_cpu/riscv-cpu/12_stage_pipeline/rtl/core/6_ex2/ex2_ex3.sv
+    Info (12023): Found entity 1: EX2_EX3 File: C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/rtl/core/6_ex2/EX2_EX3.sv Line: 1
+Info (12021): Found 1 design units, including 1 entities, in source file /rachit/risc-v_cpu/riscv-cpu/12_stage_pipeline/rtl/core/7_ex3_mem/pc_target_calc.sv
+    Info (12023): Found entity 1: pc_target_calc File: C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/rtl/core/7_ex3_mem/pc_target_calc.sv Line: 1
+Info (12021): Found 1 design units, including 1 entities, in source file /rachit/risc-v_cpu/riscv-cpu/12_stage_pipeline/rtl/core/7_ex3_mem/mem_wb.sv
+    Info (12023): Found entity 1: MEM_WB File: C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/rtl/core/7_ex3_mem/MEM_WB.sv Line: 1
+Info (12021): Found 1 design units, including 1 entities, in source file /rachit/risc-v_cpu/riscv-cpu/12_stage_pipeline/rtl/core/8_wb/data_mem.sv
+    Info (12023): Found entity 1: data_mem File: C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/rtl/core/8_wb/data_mem.sv Line: 4
+Info (12021): Found 1 design units, including 1 entities, in source file /rachit/risc-v_cpu/riscv-cpu/12_stage_pipeline/rtl/core/8_wb/writeback.sv
+    Info (12023): Found entity 1: writeback File: C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/rtl/core/8_wb/writeback.sv Line: 3
+Info (12021): Found 1 design units, including 1 entities, in source file /rachit/risc-v_cpu/riscv-cpu/12_stage_pipeline/rtl/core/hazard_control/forwarding_unit.sv
+    Info (12023): Found entity 1: forwarding_unit File: C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/rtl/core/hazard_control/forwarding_unit.sv Line: 10
+Info (12021): Found 1 design units, including 1 entities, in source file /rachit/risc-v_cpu/riscv-cpu/12_stage_pipeline/rtl/core/hazard_control/hazard_detection_unit.sv
+    Info (12023): Found entity 1: hazard_detection_unit File: C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/rtl/core/hazard_control/hazard_detection_unit.sv Line: 11
+Info (12021): Found 2 design units, including 2 entities, in source file top.sv
+    Info (12023): Found entity 1: top File: C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/fpga/top.sv Line: 1
+    Info (12023): Found entity 2: seven_seg_decoder File: C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/fpga/top.sv Line: 54
+Info (12127): Elaborating entity "top" for the top level hierarchy
+Info (12128): Elaborating entity "core" for hierarchy "core:cpu_core" File: C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/fpga/top.sv Line: 39
+Warning (10036): Verilog HDL or VHDL warning at core.sv(508): object "M_fwd_val" assigned a value but never read File: C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/rtl/core/core.sv Line: 508
+Info (12128): Elaborating entity "pc_update" for hierarchy "core:cpu_core|pc_update:stage1_fetch" File: C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/rtl/core/core.sv Line: 155
+Info (12128): Elaborating entity "instr_mem" for hierarchy "core:cpu_core|instr_mem:stage2_imem" File: C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/rtl/core/core.sv Line: 168
+Warning (10850): Verilog HDL warning at instr_mem.sv(27): number of words (127) in memory file does not match the number of elements in the address range [0:255] File: C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/rtl/core/2_imem/instr_mem.sv Line: 27
+Warning (10030): Net "instruction_memory.data_a" at instr_mem.sv(19) has no driver or initial value, using a default initial value '0' File: C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/rtl/core/2_imem/instr_mem.sv Line: 19
+Warning (10030): Net "instruction_memory.waddr_a" at instr_mem.sv(19) has no driver or initial value, using a default initial value '0' File: C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/rtl/core/2_imem/instr_mem.sv Line: 19
+Warning (10030): Net "instruction_memory.we_a" at instr_mem.sv(19) has no driver or initial value, using a default initial value '0' File: C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/rtl/core/2_imem/instr_mem.sv Line: 19
+Info (12128): Elaborating entity "IF_ID" for hierarchy "core:cpu_core|IF_ID:stage3_if_id_reg" File: C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/rtl/core/core.sv Line: 182
+Info (12128): Elaborating entity "decode" for hierarchy "core:cpu_core|decode:stage3_decode" File: C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/rtl/core/core.sv Line: 206
+Info (12128): Elaborating entity "imm_gen" for hierarchy "core:cpu_core|decode:stage3_decode|imm_gen:ig" File: C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/rtl/core/3_decode/decode.sv Line: 47
+Info (12128): Elaborating entity "control" for hierarchy "core:cpu_core|decode:stage3_decode|control:ctrl" File: C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/rtl/core/3_decode/decode.sv Line: 71
+Info (12128): Elaborating entity "ID_RR" for hierarchy "core:cpu_core|ID_RR:stage3_id_rr_reg" File: C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/rtl/core/core.sv Line: 252
+Info (12128): Elaborating entity "regfile" for hierarchy "core:cpu_core|regfile:stage4_regfile" File: C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/rtl/core/core.sv Line: 266
+Info (12128): Elaborating entity "RR_EX1" for hierarchy "core:cpu_core|RR_EX1:stage4_rr_ex1_reg" File: C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/rtl/core/core.sv Line: 315
+Info (12128): Elaborating entity "data_sel" for hierarchy "core:cpu_core|data_sel:stage5_data_sel" File: C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/rtl/core/core.sv Line: 334
+Info (12128): Elaborating entity "EX1_EX2" for hierarchy "core:cpu_core|EX1_EX2:stage5_ex1_ex2_reg" File: C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/rtl/core/core.sv Line: 373
+Info (12128): Elaborating entity "alu" for hierarchy "core:cpu_core|alu:stage6_alu" File: C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/rtl/core/core.sv Line: 383
+Info (12128): Elaborating entity "branch_eval" for hierarchy "core:cpu_core|branch_eval:stage6_branch_eval" File: C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/rtl/core/core.sv Line: 393
+Info (12128): Elaborating entity "EX2_EX3" for hierarchy "core:cpu_core|EX2_EX3:stage6_ex2_ex3_reg" File: C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/rtl/core/core.sv Line: 436
+Info (12128): Elaborating entity "pc_target_calc" for hierarchy "core:cpu_core|pc_target_calc:stage7_calc" File: C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/rtl/core/core.sv Line: 454
+Info (12128): Elaborating entity "MEM_WB" for hierarchy "core:cpu_core|MEM_WB:stage7_mem_wb_reg" File: C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/rtl/core/core.sv Line: 478
+Info (12128): Elaborating entity "data_mem" for hierarchy "core:cpu_core|data_mem:stage8_data_mem" File: C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/rtl/core/core.sv Line: 493
+Info (12128): Elaborating entity "writeback" for hierarchy "core:cpu_core|writeback:stage8_wb" File: C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/rtl/core/core.sv Line: 501
+Info (12128): Elaborating entity "forwarding_unit" for hierarchy "core:cpu_core|forwarding_unit:fwd_unit" File: C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/rtl/core/core.sv Line: 533
+Info (12128): Elaborating entity "hazard_detection_unit" for hierarchy "core:cpu_core|hazard_detection_unit:hazard_unit" File: C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/rtl/core/core.sv Line: 550
+Info (12128): Elaborating entity "seven_seg_decoder" for hierarchy "seven_seg_decoder:h0" File: C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/fpga/top.sv Line: 45
+Warning (19016): Clock multiplexers are found and protected
+    Warning (19017): Found clock multiplexer clk File: C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/fpga/top.sv Line: 16
+Warning (276020): Inferred RAM node "core:cpu_core|regfile:stage4_regfile|registers_rtl_0" from synchronous design logic.  Pass-through logic has been added to match the read-during-write behavior of the original design.
+Warning (276020): Inferred RAM node "core:cpu_core|regfile:stage4_regfile|registers_rtl_1" from synchronous design logic.  Pass-through logic has been added to match the read-during-write behavior of the original design.
+Info (19000): Inferred 4 megafunctions from design logic
+    Info (276029): Inferred altsyncram megafunction from the following design logic: "core:cpu_core|data_mem:stage8_data_mem|memory_rtl_0" 
+        Info (286033): Parameter OPERATION_MODE set to SINGLE_PORT
+        Info (286033): Parameter WIDTH_A set to 32
+        Info (286033): Parameter WIDTHAD_A set to 8
+        Info (286033): Parameter NUMWORDS_A set to 256
+        Info (286033): Parameter OUTDATA_REG_A set to UNREGISTERED
+        Info (286033): Parameter ADDRESS_ACLR_A set to NONE
+        Info (286033): Parameter OUTDATA_ACLR_A set to NONE
+        Info (286033): Parameter READ_DURING_WRITE_MODE_PORT_A set to OLD_DATA
+        Info (286033): Parameter INDATA_ACLR_A set to NONE
+        Info (286033): Parameter WRCONTROL_ACLR_A set to NONE
+        Info (286033): Parameter RAM_BLOCK_TYPE set to M9K
+    Info (276029): Inferred altsyncram megafunction from the following design logic: "core:cpu_core|regfile:stage4_regfile|registers_rtl_0" 
+        Info (286033): Parameter OPERATION_MODE set to DUAL_PORT
+        Info (286033): Parameter WIDTH_A set to 32
+        Info (286033): Parameter WIDTHAD_A set to 5
+        Info (286033): Parameter NUMWORDS_A set to 32
+        Info (286033): Parameter WIDTH_B set to 32
+        Info (286033): Parameter WIDTHAD_B set to 5
+        Info (286033): Parameter NUMWORDS_B set to 32
+        Info (286033): Parameter ADDRESS_ACLR_A set to NONE
+        Info (286033): Parameter OUTDATA_REG_B set to UNREGISTERED
+        Info (286033): Parameter ADDRESS_ACLR_B set to NONE
+        Info (286033): Parameter OUTDATA_ACLR_B set to NONE
+        Info (286033): Parameter ADDRESS_REG_B set to CLOCK0
+        Info (286033): Parameter INDATA_ACLR_A set to NONE
+        Info (286033): Parameter WRCONTROL_ACLR_A set to NONE
+        Info (286033): Parameter INIT_FILE set to db/cpu.ram0_regfile_4c9f4da2.hdl.mif
+    Info (276029): Inferred altsyncram megafunction from the following design logic: "core:cpu_core|regfile:stage4_regfile|registers_rtl_1" 
+        Info (286033): Parameter OPERATION_MODE set to DUAL_PORT
+        Info (286033): Parameter WIDTH_A set to 32
+        Info (286033): Parameter WIDTHAD_A set to 5
+        Info (286033): Parameter NUMWORDS_A set to 32
+        Info (286033): Parameter WIDTH_B set to 32
+        Info (286033): Parameter WIDTHAD_B set to 5
+        Info (286033): Parameter NUMWORDS_B set to 32
+        Info (286033): Parameter ADDRESS_ACLR_A set to NONE
+        Info (286033): Parameter OUTDATA_REG_B set to UNREGISTERED
+        Info (286033): Parameter ADDRESS_ACLR_B set to NONE
+        Info (286033): Parameter OUTDATA_ACLR_B set to NONE
+        Info (286033): Parameter ADDRESS_REG_B set to CLOCK0
+        Info (286033): Parameter INDATA_ACLR_A set to NONE
+        Info (286033): Parameter WRCONTROL_ACLR_A set to NONE
+        Info (286033): Parameter INIT_FILE set to db/cpu.ram0_regfile_4c9f4da2.hdl.mif
+    Info (276029): Inferred altsyncram megafunction from the following design logic: "core:cpu_core|instr_mem:stage2_imem|instruction_memory_rtl_0" 
+        Info (286033): Parameter OPERATION_MODE set to ROM
+        Info (286033): Parameter WIDTH_A set to 32
+        Info (286033): Parameter WIDTHAD_A set to 8
+        Info (286033): Parameter NUMWORDS_A set to 256
+        Info (286033): Parameter OUTDATA_REG_A set to UNREGISTERED
+        Info (286033): Parameter ADDRESS_ACLR_A set to NONE
+        Info (286033): Parameter OUTDATA_ACLR_A set to NONE
+        Info (286033): Parameter INDATA_ACLR_A set to NONE
+        Info (286033): Parameter WRCONTROL_ACLR_A set to NONE
+        Info (286033): Parameter RAM_BLOCK_TYPE set to M9K
+        Info (286033): Parameter INIT_FILE set to db/cpu.ram0_instr_mem_8ff0214b.hdl.mif
+Info (12130): Elaborated megafunction instantiation "core:cpu_core|data_mem:stage8_data_mem|altsyncram:memory_rtl_0"
+Info (12133): Instantiated megafunction "core:cpu_core|data_mem:stage8_data_mem|altsyncram:memory_rtl_0" with the following parameter:
+    Info (12134): Parameter "OPERATION_MODE" = "SINGLE_PORT"
+    Info (12134): Parameter "WIDTH_A" = "32"
+    Info (12134): Parameter "WIDTHAD_A" = "8"
+    Info (12134): Parameter "NUMWORDS_A" = "256"
+    Info (12134): Parameter "OUTDATA_REG_A" = "UNREGISTERED"
+    Info (12134): Parameter "ADDRESS_ACLR_A" = "NONE"
+    Info (12134): Parameter "OUTDATA_ACLR_A" = "NONE"
+    Info (12134): Parameter "READ_DURING_WRITE_MODE_PORT_A" = "OLD_DATA"
+    Info (12134): Parameter "INDATA_ACLR_A" = "NONE"
+    Info (12134): Parameter "WRCONTROL_ACLR_A" = "NONE"
+    Info (12134): Parameter "RAM_BLOCK_TYPE" = "M9K"
+Info (12021): Found 1 design units, including 1 entities, in source file db/altsyncram_ek91.tdf
+    Info (12023): Found entity 1: altsyncram_ek91 File: C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/fpga/db/altsyncram_ek91.tdf Line: 28
+Info (12130): Elaborated megafunction instantiation "core:cpu_core|regfile:stage4_regfile|altsyncram:registers_rtl_0"
+Info (12133): Instantiated megafunction "core:cpu_core|regfile:stage4_regfile|altsyncram:registers_rtl_0" with the following parameter:
+    Info (12134): Parameter "OPERATION_MODE" = "DUAL_PORT"
+    Info (12134): Parameter "WIDTH_A" = "32"
+    Info (12134): Parameter "WIDTHAD_A" = "5"
+    Info (12134): Parameter "NUMWORDS_A" = "32"
+    Info (12134): Parameter "WIDTH_B" = "32"
+    Info (12134): Parameter "WIDTHAD_B" = "5"
+    Info (12134): Parameter "NUMWORDS_B" = "32"
+    Info (12134): Parameter "ADDRESS_ACLR_A" = "NONE"
+    Info (12134): Parameter "OUTDATA_REG_B" = "UNREGISTERED"
+    Info (12134): Parameter "ADDRESS_ACLR_B" = "NONE"
+    Info (12134): Parameter "OUTDATA_ACLR_B" = "NONE"
+    Info (12134): Parameter "ADDRESS_REG_B" = "CLOCK0"
+    Info (12134): Parameter "INDATA_ACLR_A" = "NONE"
+    Info (12134): Parameter "WRCONTROL_ACLR_A" = "NONE"
+    Info (12134): Parameter "INIT_FILE" = "db/cpu.ram0_regfile_4c9f4da2.hdl.mif"
+Info (12021): Found 1 design units, including 1 entities, in source file db/altsyncram_8vf1.tdf
+    Info (12023): Found entity 1: altsyncram_8vf1 File: C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/fpga/db/altsyncram_8vf1.tdf Line: 28
+Info (12130): Elaborated megafunction instantiation "core:cpu_core|instr_mem:stage2_imem|altsyncram:instruction_memory_rtl_0"
+Info (12133): Instantiated megafunction "core:cpu_core|instr_mem:stage2_imem|altsyncram:instruction_memory_rtl_0" with the following parameter:
+    Info (12134): Parameter "OPERATION_MODE" = "ROM"
+    Info (12134): Parameter "WIDTH_A" = "32"
+    Info (12134): Parameter "WIDTHAD_A" = "8"
+    Info (12134): Parameter "NUMWORDS_A" = "256"
+    Info (12134): Parameter "OUTDATA_REG_A" = "UNREGISTERED"
+    Info (12134): Parameter "ADDRESS_ACLR_A" = "NONE"
+    Info (12134): Parameter "OUTDATA_ACLR_A" = "NONE"
+    Info (12134): Parameter "INDATA_ACLR_A" = "NONE"
+    Info (12134): Parameter "WRCONTROL_ACLR_A" = "NONE"
+    Info (12134): Parameter "RAM_BLOCK_TYPE" = "M9K"
+    Info (12134): Parameter "INIT_FILE" = "db/cpu.ram0_instr_mem_8ff0214b.hdl.mif"
+Info (12021): Found 1 design units, including 1 entities, in source file db/altsyncram_op81.tdf
+    Info (12023): Found entity 1: altsyncram_op81 File: C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/fpga/db/altsyncram_op81.tdf Line: 28
+Warning (13024): Output pins are stuck at VCC or GND
+    Warning (13410): Pin "LEDR[0]" is stuck at GND File: C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/fpga/top.sv Line: 5
+    Warning (13410): Pin "LEDR[1]" is stuck at GND File: C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/fpga/top.sv Line: 5
+Info (286030): Timing-Driven Synthesis is running
+Info (17049): 2 registers lost all their fanouts during netlist optimizations.
+Info (128000): Starting physical synthesis optimizations for speed
+Info (332104): Reading SDC File: 'cpu.sdc'
+Info (332151): Clock uncertainty is not calculated until you update the timing netlist.
+Info (332154): The derive_clock_uncertainty command did not apply clock uncertainty to any clock-to-clock transfers.
+Info (332129): Detected timing requirements -- optimizing circuit to achieve only the specified requirements
+Info (332111): Found 1 clocks
+    Info (332111):   Period   Clock Name
+    Info (332111): ======== ============
+    Info (332111):    9.100 MAX10_CLK1_50
+Info (128002): Starting physical synthesis algorithm register retiming
+Info (128003): Physical synthesis algorithm register retiming complete: estimated slack improvement of 0 ps
+Info (128002): Starting physical synthesis algorithm combinational resynthesis using boolean division
+Info (128003): Physical synthesis algorithm combinational resynthesis using boolean division complete: estimated slack improvement of 999 ps
+Info (128001): Physical synthesis optimizations for speed complete: elapsed time is 00:00:02
+Info (16010): Generating hard_block partition "hard_block:auto_generated_inst"
+    Info (16011): Adding 0 node(s), including 0 DDIO, 0 PLL, 0 transceiver and 0 LCELL
+Warning (21074): Design contains 9 input pin(s) that do not drive logic
+    Warning (15610): No output dependent on input pin "SW[0]" File: C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/fpga/top.sv Line: 4
+    Warning (15610): No output dependent on input pin "SW[1]" File: C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/fpga/top.sv Line: 4
+    Warning (15610): No output dependent on input pin "SW[2]" File: C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/fpga/top.sv Line: 4
+    Warning (15610): No output dependent on input pin "SW[3]" File: C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/fpga/top.sv Line: 4
+    Warning (15610): No output dependent on input pin "SW[4]" File: C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/fpga/top.sv Line: 4
+    Warning (15610): No output dependent on input pin "SW[5]" File: C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/fpga/top.sv Line: 4
+    Warning (15610): No output dependent on input pin "SW[6]" File: C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/fpga/top.sv Line: 4
+    Warning (15610): No output dependent on input pin "SW[7]" File: C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/fpga/top.sv Line: 4
+    Warning (15610): No output dependent on input pin "SW[8]" File: C:/Rachit/RISC-V_CPU/riscv-cpu/12_stage_pipeline/fpga/top.sv Line: 4
+Info (21057): Implemented 2865 device resources after synthesis - the final resource count might be different
+    Info (21058): Implemented 13 input pins
+    Info (21059): Implemented 52 output pins
+    Info (21061): Implemented 2672 logic cells
+    Info (21064): Implemented 128 RAM segments
+Info: Quartus Prime Analysis & Synthesis was successful. 0 errors, 23 warnings
+    Info: Peak virtual memory: 5006 megabytes
+    Info: Processing ended: Thu Jun 11 13:34:37 2026
+    Info: Elapsed time: 00:00:12
+    Info: Total CPU time (on all processors): 00:00:21
+
+

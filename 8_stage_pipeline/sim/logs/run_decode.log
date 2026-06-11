@@ -1,0 +1,40 @@
+# 
+# do ../scripts/run_decode.do
+# Model Technology ModelSim - Intel FPGA Edition vmap 2020.1 Lib Mapping Utility 2020.02 Feb 28 2020
+# vmap work work 
+# Modifying modelsim.ini
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 16:14:24 on Jun 11,2026
+# vlog -sv ../../packages/alu_pkg.sv ../../packages/decoder_pkg.sv ../../rtl/core/3_decode/imm_gen.sv ../../rtl/core/3_decode/control.sv ../../rtl/core/3_decode/decode.sv ../../tb/tb_decode.sv 
+# -- Compiling package alu_package
+# -- Compiling package decoder_package
+# -- Compiling module imm_gen
+# -- Importing package decoder_package
+# -- Compiling module control
+# -- Importing package alu_package
+# -- Compiling module decode
+# -- Compiling module tb_decode
+# 
+# Top level modules:
+# 	tb_decode
+# End time: 16:14:24 on Jun 11,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# vsim -batch -L work -voptargs="+acc" work.tb_decode 
+# Start time: 16:14:24 on Jun 11,2026
+# Loading sv_std.std
+# Loading work.tb_decode
+# Loading work.decoder_package
+# Loading work.decode
+# Loading work.imm_gen
+# Loading work.alu_package
+# Loading work.control
+# --- Starting decode Tests ---
+# --- decode Test Summary ---
+# Total Tests:           2
+# Passed:           2
+# Failed:           0
+# RESULT: PASS
+# ** Note: $finish    : ../../tb/tb_decode.sv(71)
+#    Time: 2 ns  Iteration: 0  Instance: /tb_decode
+# End time: 16:14:24 on Jun 11,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0

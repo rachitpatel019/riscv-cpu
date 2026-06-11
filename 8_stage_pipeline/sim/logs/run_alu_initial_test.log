@@ -1,0 +1,96 @@
+# 
+# do run_alu.do
+# Model Technology ModelSim - Intel FPGA Edition vmap 2020.1 Lib Mapping Utility 2020.02 Feb 28 2020
+# vmap work work 
+# Modifying modelsim.ini
+# C:/intelFPGA/20.1/modelsim_ase/verilog_src/uvm-1.2/src
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 22:39:41 on Jun 03,2026
+# vlog -sv "+incdir+C:/intelFPGA/20.1/modelsim_ase/verilog_src/uvm-1.2/src" C:/intelFPGA/20.1/modelsim_ase/verilog_src/uvm-1.2/src/uvm_pkg.sv ../../packages/alu_pkg.sv ../../packages/decoder_pkg.sv ../../rtl/core/8_ex2/alu.sv ../../tb/alu_tb.sv 
+# -- Compiling package uvm_pkg (uvm-1.2 Built-in)
+# ** Warning: C:/intelFPGA/20.1/modelsim_ase/verilog_src/uvm-1.2/src/seq/uvm_sequencer_base.svh(1499): (vlog-2186) SystemVerilog testbench feature
+# (randomization, coverage or assertion) detected in the design.
+# These features are only supported in Questasim.
+# ** Warning: C:/intelFPGA/20.1/modelsim_ase/verilog_src/uvm-1.2/src/seq/uvm_sequencer_base.svh(1662): (vlog-2186) SystemVerilog testbench feature
+# (randomization, coverage or assertion) detected in the design.
+# These features are only supported in Questasim.
+# ** Warning: C:/intelFPGA/20.1/modelsim_ase/verilog_src/uvm-1.2/src/seq/uvm_sequence_base.svh(1333): (vlog-2186) SystemVerilog testbench feature
+# (randomization, coverage or assertion) detected in the design.
+# These features are only supported in Questasim.
+# -- Compiling package alu_package
+# -- Compiling package decoder_package
+# -- Compiling module alu
+# -- Importing package alu_package
+# -- Compiling package alu_tb_sv_unit
+# -- Importing package uvm_pkg (uvm-1.2 Built-in)
+# -- Importing package alu_package
+# -- Compiling interface alu_if
+# -- Compiling module alu_tb
+# 
+# Top level modules:
+# 	alu_tb
+# End time: 22:39:45 on Jun 03,2026, Elapsed time: 0:00:04
+# Errors: 0, Warnings: 3
+# vsim -batch -L work -voptargs="+acc" work.alu_tb "+UVM_TESTNAME=alu_test" 
+# Start time: 22:39:41 on Jun 03,2026
+# Loading C:/Users/rachi/AppData/Local/Temp\rachi@RACHIT_LAPTOP_dpi_22752\win32pe_gcc-4.2.1\export_tramp.dll
+# ** Note: (vsim-8785) UVM-aware debugging capabilities will be disabled since no compiled "questa_uvm_pkg" can be found.
+# This also means that later if you turn on UVM-aware debugging your debug simulations may have
+# different random seeds from your non-debug simulations.
+# Loading sv_std.std
+# Loading work.alu_package
+# Loading work.uvm_pkg
+# Loading work.alu_tb_sv_unit
+# Loading work.alu_tb
+# Loading work.alu_if
+# Loading work.alu
+# Compiling C:/Users/rachi/AppData/Local/Temp\rachi@RACHIT_LAPTOP_dpi_22752\win32pe_gcc-4.2.1\exportwrapper.c
+# Loading C:/Users/rachi/AppData/Local/Temp\rachi@RACHIT_LAPTOP_dpi_22752\win32pe_gcc-4.2.1\vsim_auto_compile.dll
+# ** Warning: (vsim-3770) Failed to find user specified function 'uvm_hdl_check_path' in DPI C/C++ source files.
+#    Time: 0 ps  Iteration: 0  Region: /uvm_pkg File: C:/intelFPGA/20.1/modelsim_ase/verilog_src/uvm-1.2/src/uvm_pkg.sv
+# ** Warning: (vsim-3770) Failed to find user specified function 'uvm_hdl_deposit' in DPI C/C++ source files.
+#    Time: 0 ps  Iteration: 0  Region: /uvm_pkg File: C:/intelFPGA/20.1/modelsim_ase/verilog_src/uvm-1.2/src/uvm_pkg.sv
+# ** Warning: (vsim-3770) Failed to find user specified function 'uvm_hdl_force' in DPI C/C++ source files.
+#    Time: 0 ps  Iteration: 0  Region: /uvm_pkg File: C:/intelFPGA/20.1/modelsim_ase/verilog_src/uvm-1.2/src/uvm_pkg.sv
+# ** Warning: (vsim-3770) Failed to find user specified function 'uvm_hdl_release_and_read' in DPI C/C++ source files.
+#    Time: 0 ps  Iteration: 0  Region: /uvm_pkg File: C:/intelFPGA/20.1/modelsim_ase/verilog_src/uvm-1.2/src/uvm_pkg.sv
+# ** Warning: (vsim-3770) Failed to find user specified function 'uvm_hdl_release' in DPI C/C++ source files.
+#    Time: 0 ps  Iteration: 0  Region: /uvm_pkg File: C:/intelFPGA/20.1/modelsim_ase/verilog_src/uvm-1.2/src/uvm_pkg.sv
+# ** Warning: (vsim-3770) Failed to find user specified function 'uvm_hdl_read' in DPI C/C++ source files.
+#    Time: 0 ps  Iteration: 0  Region: /uvm_pkg File: C:/intelFPGA/20.1/modelsim_ase/verilog_src/uvm-1.2/src/uvm_pkg.sv
+# ** Warning: (vsim-3770) Failed to find user specified function 'uvm_dpi_get_next_arg_c' in DPI C/C++ source files.
+#    Time: 0 ps  Iteration: 0  Region: /uvm_pkg File: C:/intelFPGA/20.1/modelsim_ase/verilog_src/uvm-1.2/src/uvm_pkg.sv
+# ** Warning: (vsim-3770) Failed to find user specified function 'uvm_dpi_get_tool_name_c' in DPI C/C++ source files.
+#    Time: 0 ps  Iteration: 0  Region: /uvm_pkg File: C:/intelFPGA/20.1/modelsim_ase/verilog_src/uvm-1.2/src/uvm_pkg.sv
+# ** Warning: (vsim-3770) Failed to find user specified function 'uvm_dpi_get_tool_version_c' in DPI C/C++ source files.
+#    Time: 0 ps  Iteration: 0  Region: /uvm_pkg File: C:/intelFPGA/20.1/modelsim_ase/verilog_src/uvm-1.2/src/uvm_pkg.sv
+# ** Warning: (vsim-3770) Failed to find user specified function 'uvm_dpi_regcomp' in DPI C/C++ source files.
+#    Time: 0 ps  Iteration: 0  Region: /uvm_pkg File: C:/intelFPGA/20.1/modelsim_ase/verilog_src/uvm-1.2/src/uvm_pkg.sv
+# ** Warning: (vsim-3770) Failed to find user specified function 'uvm_dpi_regexec' in DPI C/C++ source files.
+#    Time: 0 ps  Iteration: 0  Region: /uvm_pkg File: C:/intelFPGA/20.1/modelsim_ase/verilog_src/uvm-1.2/src/uvm_pkg.sv
+# ** Warning: (vsim-3770) Failed to find user specified function 'uvm_dpi_regfree' in DPI C/C++ source files.
+#    Time: 0 ps  Iteration: 0  Region: /uvm_pkg File: C:/intelFPGA/20.1/modelsim_ase/verilog_src/uvm-1.2/src/uvm_pkg.sv
+# ** Warning: (vsim-3770) Failed to find user specified function 'uvm_re_match' in DPI C/C++ source files.
+#    Time: 0 ps  Iteration: 0  Region: /uvm_pkg File: C:/intelFPGA/20.1/modelsim_ase/verilog_src/uvm-1.2/src/uvm_pkg.sv
+# ** Warning: (vsim-3770) Failed to find user specified function 'uvm_dump_re_cache' in DPI C/C++ source files.
+#    Time: 0 ps  Iteration: 0  Region: /uvm_pkg File: C:/intelFPGA/20.1/modelsim_ase/verilog_src/uvm-1.2/src/uvm_pkg.sv
+# ** Warning: (vsim-3770) Failed to find user specified function 'uvm_glob_to_re' in DPI C/C++ source files.
+#    Time: 0 ps  Iteration: 0  Region: /uvm_pkg File: C:/intelFPGA/20.1/modelsim_ase/verilog_src/uvm-1.2/src/uvm_pkg.sv
+# ** Warning: Design size of 54060 statements exceeds ModelSim-Intel FPGA Starter Edition recommended capacity.
+# Expect performance to be adversely affected.
+# ** Fatal: (vsim-160) C:/intelFPGA/20.1/modelsim_ase/verilog_src/uvm-1.2/src/dpi/uvm_svcmd_dpi.svh(27): Null foreign function pointer encountered when calling 'uvm_dpi_get_next_arg_c'
+#    Time: 0 ps  Iteration: 0  Process: /uvm_pkg/#INITIAL#610 File: C:/intelFPGA/20.1/modelsim_ase/verilog_src/uvm-1.2/src/dpi/uvm_svcmd_dpi.svh
+# Fatal error in Module uvm_pkg at C:/intelFPGA/20.1/modelsim_ase/verilog_src/uvm-1.2/src/dpi/uvm_svcmd_dpi.svh line 27
+# 
+# HDL call sequence:
+# Stopped at C:/intelFPGA/20.1/modelsim_ase/verilog_src/uvm-1.2/src/dpi/uvm_svcmd_dpi.svh 27 Module uvm_pkg - -
+# called from  C:/intelFPGA/20.1/modelsim_ase/verilog_src/uvm-1.2/src/dpi/uvm_svcmd_dpi.svh 32 Function uvm_dpi_get_next_arg - -
+# called from  C:/intelFPGA/20.1/modelsim_ase/verilog_src/uvm-1.2/src/base/uvm_cmdline_processor.svh 247 Function uvm_pkg/uvm_cmdline_processor::new - -
+# called from  C:/intelFPGA/20.1/modelsim_ase/verilog_src/uvm-1.2/src/base/uvm_cmdline_processor.svh 62 Function uvm_pkg/uvm_cmdline_processor::get_inst - -
+# called from  C:/intelFPGA/20.1/modelsim_ase/verilog_src/uvm-1.2/src/base/uvm_root.svh 339 Function uvm_pkg/uvm_root::new - -
+# called from  C:/intelFPGA/20.1/modelsim_ase/verilog_src/uvm-1.2/src/base/uvm_root.svh 271 Function uvm_pkg/uvm_root::m_uvm_get_root - -
+# called from  C:/intelFPGA/20.1/modelsim_ase/verilog_src/uvm-1.2/src/base/uvm_coreservice.svh 198 Function uvm_pkg/uvm_default_coreservice_t::get_root - -
+# called from  C:/intelFPGA/20.1/modelsim_ase/verilog_src/uvm-1.2/src/base/uvm_root.svh 326 Function uvm_pkg/uvm_root::get - -
+# called from  C:/intelFPGA/20.1/modelsim_ase/verilog_src/uvm-1.2/src/base/uvm_root.svh 315 Module uvm_pkg - -
+# End time: 22:39:47 on Jun 03,2026, Elapsed time: 0:00:06
+# Errors: 1, Warnings: 16

@@ -1,0 +1,32 @@
+# 
+# do ../scripts/run_forwarding_unit.do
+# Model Technology ModelSim - Intel FPGA Edition vmap 2020.1 Lib Mapping Utility 2020.02 Feb 28 2020
+# vmap work work 
+# Modifying modelsim.ini
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 16:14:30 on Jun 11,2026
+# vlog -sv ../../packages/alu_pkg.sv ../../packages/decoder_pkg.sv ../../rtl/core/hazard_control/forwarding_unit.sv ../../tb/tb_forwarding_unit.sv 
+# -- Compiling package alu_package
+# -- Compiling package decoder_package
+# -- Compiling module forwarding_unit
+# -- Compiling module tb_forwarding_unit
+# 
+# Top level modules:
+# 	tb_forwarding_unit
+# End time: 16:14:30 on Jun 11,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# vsim -batch -L work -voptargs="+acc" work.tb_forwarding_unit 
+# Start time: 16:14:30 on Jun 11,2026
+# Loading sv_std.std
+# Loading work.tb_forwarding_unit
+# Loading work.forwarding_unit
+# --- Starting forwarding_unit Tests (8-Stage Balanced) ---
+# --- forwarding_unit Test Summary ---
+# Total Tests:           6
+# Passed:           6
+# Failed:           0
+# RESULT: PASS
+# ** Note: $finish    : ../../tb/tb_forwarding_unit.sv(88)
+#    Time: 6 ns  Iteration: 0  Instance: /tb_forwarding_unit
+# End time: 16:14:30 on Jun 11,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0

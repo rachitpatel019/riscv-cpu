@@ -1,0 +1,30 @@
+# 
+# do ../scripts/run_branch_eval.do
+# Model Technology ModelSim - Intel FPGA Edition vmap 2020.1 Lib Mapping Utility 2020.02 Feb 28 2020
+# vmap work work 
+# Modifying modelsim.ini
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 16:14:27 on Jun 11,2026
+# vlog -sv ../../rtl/core/6_ex2/branch_eval.sv ../../tb/tb_branch_eval.sv 
+# -- Compiling module branch_eval
+# -- Compiling module tb_branch_eval
+# 
+# Top level modules:
+# 	tb_branch_eval
+# End time: 16:14:27 on Jun 11,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# vsim -batch -L work -voptargs=""+acc"" work.tb_branch_eval 
+# Start time: 16:14:26 on Jun 11,2026
+# Loading sv_std.std
+# Loading work.tb_branch_eval
+# Loading work.branch_eval
+# --- Starting branch_eval Tests ---
+# --- branch_eval Test Summary ---
+# Total Tests:          13
+# Passed:          13
+# Failed:           0
+# RESULT: PASS
+# ** Note: $finish    : ../../tb/tb_branch_eval.sv(93)
+#    Time: 13 ns  Iteration: 0  Instance: /tb_branch_eval
+# End time: 16:14:27 on Jun 11,2026, Elapsed time: 0:00:01
+# Errors: 0, Warnings: 0

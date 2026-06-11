@@ -1,0 +1,34 @@
+# 
+# do ../scripts/run_alu.do
+# Model Technology ModelSim - Intel FPGA Edition vmap 2020.1 Lib Mapping Utility 2020.02 Feb 28 2020
+# vmap work work 
+# Modifying modelsim.ini
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 16:14:26 on Jun 11,2026
+# vlog -sv ../../packages/alu_pkg.sv ../../packages/decoder_pkg.sv ../../rtl/core/6_ex2/alu.sv ../../tb/tb_alu.sv 
+# -- Compiling package alu_package
+# -- Compiling package decoder_package
+# -- Compiling module alu
+# -- Importing package alu_package
+# -- Compiling module tb_alu
+# 
+# Top level modules:
+# 	tb_alu
+# End time: 16:14:26 on Jun 11,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# vsim -batch -L work -voptargs="+acc" work.tb_alu 
+# Start time: 16:14:26 on Jun 11,2026
+# Loading sv_std.std
+# Loading work.alu_package
+# Loading work.tb_alu
+# Loading work.alu
+# --- Starting alu Tests ---
+# --- alu Test Summary ---
+# Total Tests:         110
+# Passed:         110
+# Failed:           0
+# RESULT: PASS
+# ** Note: $finish    : ../../tb/tb_alu.sv(68)
+#    Time: 110 ns  Iteration: 0  Instance: /tb_alu
+# End time: 16:14:26 on Jun 11,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0

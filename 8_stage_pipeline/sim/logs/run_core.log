@@ -1,0 +1,113 @@
+# 
+# do ../scripts/run_core.do
+# Model Technology ModelSim - Intel FPGA Edition vmap 2020.1 Lib Mapping Utility 2020.02 Feb 28 2020
+# vmap work work 
+# Modifying modelsim.ini
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 23:15:22 on Jun 03,2026
+# vlog -sv ../../packages/alu_pkg.sv ../../packages/decoder_pkg.sv ../../rtl/core/1_fetch/pc_update.sv ../../rtl/core/2_imem/instr_mem.sv ../../rtl/core/3_IMEM_ID_REG/IMEM_ID.sv ../../rtl/core/4_decode/control.sv ../../rtl/core/4_decode/imm_gen.sv ../../rtl/core/4_decode/decode.sv ../../rtl/core/4_decode/ID_RR.sv ../../rtl/core/5_reg_read/regfile.sv ../../rtl/core/5_reg_read/RR.sv ../../rtl/core/6_RR_EX1_REG/RR_EX1.sv ../../rtl/core/7_ex1/data_sel.sv ../../rtl/core/7_ex1/EX1_EX2.sv ../../rtl/core/8_ex2/alu.sv ../../rtl/core/8_ex2/EX2_EX3.sv ../../rtl/core/9_ex3/pc_target_calc.sv ../../rtl/core/9_ex3/EX3_MEM.sv ../../rtl/core/10_mem/data_mem.sv ../../rtl/core/10_mem/MEM.sv ../../rtl/core/11_MEM_WB_REG/MEM_WB.sv ../../rtl/core/12_wb/writeback.sv ../../rtl/core/core.sv ../../tb/core_tb.sv 
+# -- Compiling package alu_package
+# -- Compiling package decoder_package
+# -- Compiling module pc_update
+# -- Compiling module instr_mem
+# -- Compiling module IF_ID
+# -- Compiling module control
+# -- Importing package decoder_package
+# -- Importing package alu_package
+# -- Compiling module imm_gen
+# -- Compiling module decode
+# -- Compiling module ID_RR
+# -- Compiling module regfile
+# -- Compiling module RR
+# -- Compiling module RR_EX1
+# -- Compiling module data_sel
+# -- Compiling module EX1_EX2
+# -- Compiling module alu
+# -- Compiling module EX2_EX3
+# -- Compiling module pc_target_calc
+# -- Compiling module EX3_MEM
+# -- Compiling module data_mem
+# -- Compiling module MEM
+# -- Compiling module MEM_WB
+# -- Compiling module writeback
+# -- Compiling module core
+# -- Compiling module core_tb
+# 
+# Top level modules:
+# 	core_tb
+# End time: 23:15:22 on Jun 03,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# vsim -batch -L work -voptargs="+acc" work.core_tb 
+# Start time: 23:15:22 on Jun 03,2026
+# Loading sv_std.std
+# Loading work.core_tb
+# Loading work.core
+# Loading work.pc_update
+# Loading work.instr_mem
+# Loading work.IF_ID
+# Loading work.decoder_package
+# Loading work.decode
+# Loading work.imm_gen
+# Loading work.alu_package
+# Loading work.control
+# Loading work.ID_RR
+# Loading work.regfile
+# Loading work.RR
+# Loading work.RR_EX1
+# Loading work.data_sel
+# Loading work.EX1_EX2
+# Loading work.alu
+# Loading work.EX2_EX3
+# Loading work.pc_target_calc
+# Loading work.EX3_MEM
+# Loading work.data_mem
+# Loading work.MEM
+# Loading work.MEM_WB
+# Loading work.writeback
+# ** Warning: (vsim-2685) [TFMPC] - Too few port connections for 'stage10_reg'.  Expected 32, found 30.
+#    Time: 0 ps  Iteration: 0  Instance: /core_tb/dut/stage10_reg File: ../../rtl/core/core.sv Line: 540
+# ** Warning: (vsim-3722) ../../rtl/core/core.sv(540): [TFMPC] - Missing connection for port 'pc_sel_out'.
+# ** Warning: (vsim-3722) ../../rtl/core/core.sv(540): [TFMPC] - Missing connection for port 'pc_target_out'.
+# Starting Integrated Core Directed Test...
+# [WB] PC: 0x00000000, Data: 0x0000000a
+# [WB] PC: 0x00000000, Data: 0x0000000a
+# [WB] PC: 0x00000004, Data: 0x00000014
+# [WB] PC: 0x00000008, Data: 0x0000000a
+# [WB] PC: 0x00000010, Data: 0x00000000
+# [WB] PC: 0x00000014, Data: 0x0000000a
+# [WB] PC: 0x00000000, Data: 0x0000000a
+# [WB] PC: 0x00000004, Data: 0x00000014
+# [WB] PC: 0x00000008, Data: 0x0000001e
+# [WB] PC: 0x00000010, Data: 0x0000000a
+# [WB] PC: 0x00000014, Data: 0x0000000a
+# [WB] PC: 0x00000000, Data: 0x0000000a
+# [WB] PC: 0x00000004, Data: 0x00000014
+# [WB] PC: 0x00000008, Data: 0x0000001e
+# [WB] PC: 0x00000010, Data: 0x0000001e
+# [WB] PC: 0x00000014, Data: 0x00000014
+# [WB] PC: 0x00000000, Data: 0x0000000a
+# [WB] PC: 0x00000004, Data: 0x00000014
+# [WB] PC: 0x00000008, Data: 0x0000001e
+# [WB] PC: 0x00000010, Data: 0x0000001e
+# [WB] PC: 0x00000014, Data: 0x00000028
+# [WB] PC: 0x00000000, Data: 0x0000000a
+# [WB] PC: 0x00000004, Data: 0x00000014
+# [WB] PC: 0x00000008, Data: 0x0000001e
+# [WB] PC: 0x00000010, Data: 0x0000001e
+# [WB] PC: 0x00000014, Data: 0x00000028
+# [WB] PC: 0x00000000, Data: 0x0000000a
+# [WB] PC: 0x00000004, Data: 0x00000014
+# [WB] PC: 0x00000008, Data: 0x0000001e
+# [WB] PC: 0x00000010, Data: 0x0000001e
+# [WB] PC: 0x00000014, Data: 0x00000028
+# [WB] PC: 0x00000000, Data: 0x0000000a
+# [WB] PC: 0x00000004, Data: 0x00000014
+# [WB] PC: 0x00000008, Data: 0x0000001e
+# [WB] PC: 0x00000010, Data: 0x0000001e
+# [WB] PC: 0x00000014, Data: 0x00000028
+# 
+# Integrated Core Test Complete.
+# ** Note: $finish    : ../../tb/core_tb.sv(32)
+#    Time: 1045 ns  Iteration: 1  Instance: /core_tb
+# End time: 23:15:22 on Jun 03,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 3
