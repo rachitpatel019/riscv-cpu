@@ -22,12 +22,18 @@ always_comb begin
     // Decision is now driven by registered condition_met
     pc_sel = jump || (branch && condition_met_in);
 
-    if (jump)
-        pc_target = {alu_result[31:1], 1'b0};
-    else if (branch && condition_met_in)
-        pc_target = branch_target_in;
-	else
+    if (jump) begin
+        // JAL uses (pc + imm), JALR uses (rs1 + imm). 
+        // Both are calculated by the ALU in Stage 8.
+        // RISC-V spec for RV32I-only: PC must be 4-aligned.
+        pc_target = alu_result & 32'hFFFFFFFC;
+    end
+    else if (branch && condition_met_in) begin
+        pc_target = branch_target_in & 32'hFFFFFFFC;
+    end
+    else begin
         pc_target = 32'b0;
+    end
 end
 
 endmodule
