@@ -1,0 +1,2 @@
+create_clock -name MAX10_CLK1_50 -period 9.100 [get_ports MAX10_CLK1_50]
+derive_clock_uncertainty
