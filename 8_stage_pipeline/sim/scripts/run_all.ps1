@@ -1,4 +1,4 @@
-# run_all.ps1 for 12-stage pipeline
+# run_all.ps1 for 8-stage pipeline
 # Sequential simulation runner with summary reporting and UVM support.
 
 Set-Location $PSScriptRoot
@@ -25,7 +25,7 @@ $passed = @()
 $failed = @()
 
 Write-Host "--------------------------------------------------" -ForegroundColor Cyan
-Write-Host "Starting 12-Stage RISC-V CPU Simulation Regression" -ForegroundColor Cyan
+Write-Host "Starting 8-Stage RISC-V CPU Simulation Regression" -ForegroundColor Cyan
 Write-Host "--------------------------------------------------" -ForegroundColor Cyan
 
 foreach ($script in $scripts) {

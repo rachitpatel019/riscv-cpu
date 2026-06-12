@@ -9,11 +9,11 @@ Archive/5_stage_pipeline/fpga/db
 Archive/5_stage_pipeline/fpga/incremental_db
 Archive/5_stage_pipeline/fpga/output_files
 
-/12_stage_pipeline/fpga/db
-/12_stage_pipeline/fpga/incremental_db
-/12_stage_pipeline/fpga/output_files
-/12_stage_pipeline/sim/logs
-/12_stage_pipeline/sim/scripts/work
+/8_stage_pipeline/fpga/db
+/8_stage_pipeline/fpga/incremental_db
+/8_stage_pipeline/fpga/output_files
+/8_stage_pipeline/sim/logs
+/8_stage_pipeline/sim/scripts/work
 
 /.gemini
 /GEMINI.md

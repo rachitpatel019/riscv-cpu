@@ -31,7 +31,7 @@ vlog -work work ../../rtl/core/6_ex2/branch_eval.sv
 vlog -work work ../../rtl/core/6_ex2/EX2_EX3.sv
 vlog -work work ../../rtl/core/7_ex3_mem/pc_target_calc.sv
 vlog -work work ../../rtl/core/7_ex3_mem/MEM_WB.sv
-vlog -work work ../../rtl/core/8_wb/data_mem.sv
+vlog -work work ../../rtl/core/7_ex3_mem/data_mem.sv
 vlog -work work ../../rtl/core/8_wb/writeback.sv
 vlog -work work ../../rtl/core/hazard_control/forwarding_unit.sv
 vlog -work work ../../rtl/core/hazard_control/hazard_detection_unit.sv
