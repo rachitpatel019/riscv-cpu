@@ -18,6 +18,12 @@ module core (
     input  logic        clk,
     input  logic        reset,
 
+    // MMIO Interface
+    input  logic [1:0]  mmio_keys,
+    input  logic [9:0]  mmio_switches,
+    output logic [9:0]  mmio_leds,
+    output logic [23:0] mmio_hex,
+
     // Outputs for debugging/FPGA
     output logic [31:0] out_pc,
     output logic [31:0] out_writeback_data,
@@ -209,7 +215,7 @@ module core (
     ID_RR stage3_id_rr_reg (
         .clk(clk),
         .reset(reset),
-        .stall(1'b0),
+        .stall(stall_frontend),
         .flush(flush || stall_frontend), 
         .immediate_in(D_immediate),
         .rs1_in(D_rs1),
@@ -268,7 +274,6 @@ module core (
     RR_EX1 stage4_rr_ex1_reg (
         .clk(clk),
         .reset(reset),
-        .stall(1'b0),
         .flush(flush),
         .immediate_in(IDRR_immediate),
         .rs1_in(IDRR_rs1),
@@ -336,7 +341,6 @@ module core (
     EX1_EX2 stage5_ex1_ex2_reg (
         .clk(clk),
         .reset(reset),
-        .stall(1'b0),
         .flush(flush),
         .pc_in(E1_pc),
         .alu_op_in(E1_alu_op),
@@ -395,7 +399,6 @@ module core (
     EX2_EX3 stage6_ex2_ex3_reg (
         .clk(clk),
         .reset(reset),
-        .stall(1'b0),
         .flush(flush),
         .pc_in(E2_pc),
         .imm_in(E2_imm),
@@ -461,7 +464,6 @@ module core (
     MEM_WB stage7_mem_wb_reg (
         .clk(clk),
         .reset(reset),
-        .stall(1'b0),
         .flush(1'b0), 
         .rd_in(E3_rd),
         .reg_write_in(E3_reg_write),
@@ -480,16 +482,22 @@ module core (
     // =========================================================================
     // Stage 8: MEM Read & WB Logic
     // =========================================================================
-    data_mem stage8_data_mem (
+    memory stage8_memory_system (
         .clk(clk),
-        .stall(1'b0),
+        .reset(reset),
         .mem_read(E3_mem_read),
         .mem_write(E3_mem_write),
         .address(E3_alu_result),
         .write_data(E3_rs2_data),
         .mem_size(E3_mem_size),
         .mem_unsigned(E3_mem_unsigned),
-        .read_data(W_mem_read_data)
+        .read_data(W_mem_read_data),
+        
+        // MMIO connections
+        .mmio_keys(mmio_keys),
+        .mmio_switches(mmio_switches),
+        .mmio_leds(mmio_leds),
+        .mmio_hex(mmio_hex)
     );
 
     writeback stage8_wb (

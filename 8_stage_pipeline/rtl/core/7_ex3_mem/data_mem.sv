@@ -3,7 +3,6 @@ Supports byte, halfword, and word accesses with proper alignment handling */
 
 module data_mem (
     input  logic clk,
-    input  logic stall,
     input  logic mem_read,
     input  logic mem_write,
     input  logic [31:0] address,
@@ -13,7 +12,7 @@ module data_mem (
     output logic [31:0] read_data
 );
 
-localparam MEM_DEPTH = 256;
+localparam MEM_DEPTH = 1024;
 (* ramstyle = "M9K" *) logic [31:0] memory [0:MEM_DEPTH-1];
 
 // Write logic
@@ -46,13 +45,11 @@ logic [1:0]  size_reg;
 logic        unsigned_reg;
 
 always_ff @(posedge clk) begin
-    if (!stall) begin
-        current_word <= memory[address[31:2]];
-        addr_low     <= address[1:0];
-        read_active  <= mem_read;
-        size_reg     <= mem_size;
-        unsigned_reg <= mem_unsigned;
-    end
+    current_word <= memory[address[31:2]];
+    addr_low     <= address[1:0];
+    read_active  <= mem_read;
+    size_reg     <= mem_size;
+    unsigned_reg <= mem_unsigned;
 end
 
 // Combinational extraction logic based on registered signals

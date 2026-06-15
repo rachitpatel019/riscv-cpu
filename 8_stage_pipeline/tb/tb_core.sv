@@ -34,10 +34,20 @@ module tb_core;
 
     cycle_state_t expected_states [0:MAX_CYCLES];
 
+    // MMIO signals for TB
+    logic [1:0]  tb_mmio_keys = 2'b11;
+    logic [9:0]  tb_mmio_switches = 10'b1010101010;
+    logic [9:0]  tb_mmio_leds;
+    logic [23:0] tb_mmio_hex;
+
     // DUT Instance
     core dut (
         .clk(clk),
         .reset(reset),
+        .mmio_keys(tb_mmio_keys),
+        .mmio_switches(tb_mmio_switches),
+        .mmio_leds(tb_mmio_leds),
+        .mmio_hex(tb_mmio_hex),
         .out_pc(),
         .out_writeback_data(),
         .out_reg_write(),

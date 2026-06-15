@@ -2,7 +2,6 @@ module MEM_WB(
     input logic clk,
     input logic reset,
 
-    input logic stall,
     input logic flush,
 
     input logic [4:0] rd_in,
@@ -28,14 +27,6 @@ always_ff @(posedge clk) begin
         mem_read_data_out <= 32'b0;
         wb_sel_out <= 2'b0;
         pc_out <= 32'b0;
-    end
-    else if (stall) begin
-        rd_out <= rd_out;
-        reg_write_out <= reg_write_out;
-        alu_result_out <= alu_result_out;
-        mem_read_data_out <= mem_read_data_out;
-        wb_sel_out <= wb_sel_out;
-        pc_out <= pc_out;
     end
     else begin
         rd_out <= rd_in;

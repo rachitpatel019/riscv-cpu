@@ -1,7 +1,6 @@
 module EX2_EX3(
     input logic clk,
     input logic reset,
-    input logic stall,
     input logic flush,
 
     input logic [31:0] pc_in,
@@ -75,26 +74,6 @@ always_ff @(posedge clk) begin
         mem_size_out <= 2'b0;
         mem_unsigned_out <= 0;
         wb_sel_out <= 2'b0;
-    end
-    else if (stall) begin
-        pc_out <= pc_out;
-        branch_out <= branch_out;
-        jump_out <= jump_out;
-        branch_type_out <= branch_type_out;
-        reg_write_out <= reg_write_out;
-        rd_out <= rd_out;
-        operand_a_out <= operand_a_out;
-        operand_b_out <= operand_b_out;
-        rs2_data_out <= rs2_data_out;
-        alu_result_out <= alu_result_out;
-        condition_met_out <= condition_met_out;
-        branch_target_out <= branch_target_out;
-        imm_out <= imm_out;
-        mem_read_out <= mem_read_out;
-        mem_write_out <= mem_write_out;
-        mem_size_out <= mem_size_out;
-        mem_unsigned_out <= mem_unsigned_out;
-        wb_sel_out <= wb_sel_out;
     end
     else begin
         pc_out <= pc_in;

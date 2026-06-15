@@ -16,38 +16,48 @@ module top (
     logic clk;
     logic reset;
 
-    assign clk_osc = MAX10_CLK1_50;
-    assign clk_manual = !KEY[1];
-
-    // SW[9] selects between 50MHz oscillator (1) and manual clock (0)
-    assign clk = SW[9] ? clk_osc : clk_manual;
-    assign reset = !KEY[0]; // KEY[0] is active low, core reset is active high
+    // Power-on reset generation for the CPU
+    // The physical pushbuttons (KEY) are entirely dedicated to MMIO.
+    logic [3:0] reset_shift = 4'b1111;
+    always_ff @(posedge MAX10_CLK1_50) begin
+        reset_shift <= {1'b0, reset_shift[3:1]};
+    end
+    
+    assign clk = MAX10_CLK1_50;
+    assign reset = reset_shift[0];
 
     logic [31:0] out_pc;
     logic [31:0] out_writeback_data;
     logic        out_reg_write;
     logic [31:0] out_alu_result;
 
+    logic [9:0]  cpu_leds;
+    logic [23:0] cpu_hex;
+
     // Core instantiation
     core cpu_core (
         .clk(clk),
         .reset(reset),
+        .mmio_keys(KEY),
+        .mmio_switches(SW),
+        .mmio_leds(cpu_leds),
+        .mmio_hex(cpu_hex),
         .out_pc(out_pc),
         .out_writeback_data(out_writeback_data),
         .out_reg_write(out_reg_write),
         .out_alu_result(out_alu_result)
     );
 
-    // Map PC to LEDs
-    assign LEDR = out_pc[9:0];
-    // Seven segment decoders for Writeback data
-    // Showing lower 24 bits of out_writeback_data (6 hex digits)
-    seven_seg_decoder h0 (.bin(out_writeback_data[3:0]),   .seg(HEX0));
-    seven_seg_decoder h1 (.bin(out_writeback_data[7:4]),   .seg(HEX1));
-    seven_seg_decoder h2 (.bin(out_writeback_data[11:8]),  .seg(HEX2));
-    seven_seg_decoder h3 (.bin(out_writeback_data[15:12]), .seg(HEX3));
-    seven_seg_decoder h4 (.bin(out_writeback_data[19:16]), .seg(HEX4));
-    seven_seg_decoder h5 (.bin(out_writeback_data[23:20]), .seg(HEX5));
+    // Map CPU LEDs to physical LEDs
+    assign LEDR = cpu_leds;
+
+    // Seven segment decoders for MMIO HEX data
+    seven_seg_decoder h0 (.bin(cpu_hex[3:0]),   .seg(HEX0));
+    seven_seg_decoder h1 (.bin(cpu_hex[7:4]),   .seg(HEX1));
+    seven_seg_decoder h2 (.bin(cpu_hex[11:8]),  .seg(HEX2));
+    seven_seg_decoder h3 (.bin(cpu_hex[15:12]), .seg(HEX3));
+    seven_seg_decoder h4 (.bin(cpu_hex[19:16]), .seg(HEX4));
+    seven_seg_decoder h5 (.bin(cpu_hex[23:20]), .seg(HEX5));
 
 endmodule
 

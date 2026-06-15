@@ -1,7 +1,6 @@
 module RR_EX1 (
     input logic clk,
     input logic reset,
-    input logic stall,
     input logic flush,
 
     // Data outputs to the execute stage
@@ -82,7 +81,7 @@ always_ff @(posedge clk) begin
         jump_out <= 1'b0;
         branch_type_out <= 3'b0;
     end
-    else if (!stall) begin
+    else begin
         // Outputs to execute stage
         immediate_out <= immediate_in;
         rs1_out <= rs1_in;

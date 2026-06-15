@@ -15,36 +15,10 @@ set_global_assignment -name INTERNAL_FLASH_UPDATE_MODE "SINGLE IMAGE WITH ERAM"
 set_global_assignment -name CRC_ERROR_OPEN_DRAIN OFF
 
 # Packages
-set_global_assignment -name SYSTEMVERILOG_FILE ../packages/alu_pkg.sv
-set_global_assignment -name SYSTEMVERILOG_FILE ../packages/decoder_pkg.sv
 
 # RTL Files (Reorganized 8-Stage)
-set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/core/core.sv
-set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/core/1_fetch/pc_update.sv
-set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/core/2_imem/instr_mem.sv
-set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/core/3_decode/IF_ID.sv
-set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/core/3_decode/control.sv
-set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/core/3_decode/decode.sv
-set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/core/3_decode/ID_RR.sv
-set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/core/3_decode/imm_gen.sv
-set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/core/4_reg_read/regfile.sv
-set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/core/4_reg_read/RR_EX1.sv
-set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/core/5_ex1/data_sel.sv
-set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/core/5_ex1/EX1_EX2.sv
-set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/core/6_ex2/alu.sv
-set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/core/6_ex2/branch_eval.sv
-set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/core/6_ex2/EX2_EX3.sv
-set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/core/7_ex3_mem/pc_target_calc.sv
-set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/core/7_ex3_mem/MEM_WB.sv
-set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/core/7_ex3_mem/data_mem.sv
-set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/core/8_wb/writeback.sv
-set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/core/hazard_control/forwarding_unit.sv
-set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/core/hazard_control/hazard_detection_unit.sv
 
 # Other
-set_global_assignment -name SYSTEMVERILOG_FILE top.sv
-set_global_assignment -name HEX_FILE program.hex
-set_global_assignment -name SDC_FILE cpu.sdc
 
 # Pin Assignments
 set_location_assignment PIN_P11 -to MAX10_CLK1_50
@@ -116,6 +90,34 @@ set_location_assignment PIN_N20 -to HEX5[6]
 set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
 set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id Top
 set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
-set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
 
 set_global_assignment -name LAST_QUARTUS_VERSION "24.1std.0 Lite Edition"
+set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/core/7_ex3_mem/mmio.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/core/7_ex3_mem/memory.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../packages/alu_pkg.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../packages/decoder_pkg.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/core/core.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/core/1_fetch/pc_update.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/core/2_imem/instr_mem.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/core/3_decode/IF_ID.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/core/3_decode/control.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/core/3_decode/decode.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/core/3_decode/ID_RR.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/core/3_decode/imm_gen.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/core/4_reg_read/regfile.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/core/4_reg_read/RR_EX1.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/core/5_ex1/data_sel.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/core/5_ex1/EX1_EX2.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/core/6_ex2/alu.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/core/6_ex2/branch_eval.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/core/6_ex2/EX2_EX3.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/core/7_ex3_mem/pc_target_calc.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/core/7_ex3_mem/MEM_WB.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/core/7_ex3_mem/data_mem.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/core/8_wb/writeback.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/core/hazard_control/forwarding_unit.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/core/hazard_control/hazard_detection_unit.sv
+set_global_assignment -name SYSTEMVERILOG_FILE top.sv
+set_global_assignment -name HEX_FILE program.hex
+set_global_assignment -name SDC_FILE cpu.sdc
+set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
