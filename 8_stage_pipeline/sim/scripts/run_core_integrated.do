@@ -3,6 +3,14 @@
 
 # Guardrail: Exit on error to prevent hanging in interactive mode
 onerror {quit -f -code 1}
+onbreak {quit -f}
+
+# Navigate to logs directory
+cd [file normalize [file join [file dirname [info script]] ../logs]]
+
+# Copy configuration and program files
+file copy -force ../scripts/modelsim.ini modelsim.ini
+file copy -force ../scripts/program.hex program.hex
 
 # Create work library
 if [file exists work] {

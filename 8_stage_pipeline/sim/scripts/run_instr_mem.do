@@ -2,6 +2,7 @@ onerror {quit -f}
 onbreak {quit -f}
 cd [file normalize [file join [file dirname [info script]] ../logs]]
 file copy -force ../scripts/modelsim.ini modelsim.ini
+file copy -force ../scripts/program.hex program.hex
 if {[file exists work]} { vdel -all }
 vlib work
 vmap work work
