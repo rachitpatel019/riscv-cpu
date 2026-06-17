@@ -15,7 +15,7 @@ module instr_mem(
     output logic [31:0] instruction
 );
 
-localparam MEM_DEPTH = 256;
+localparam MEM_DEPTH = 1024;
 (* ramstyle = "M9K" *) logic [31:0] instruction_memory [0:MEM_DEPTH-1];
 
 // Internal registers for BRAM inference
