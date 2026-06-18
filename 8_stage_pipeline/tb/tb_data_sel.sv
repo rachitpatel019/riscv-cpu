@@ -9,12 +9,16 @@ module tb_data_sel;
     logic [31:0] rs1_data;
     logic [31:0] rs2_data;
     logic [31:0] imm;
-    logic alu_src_a;
-    logic alu_src_b;
-    logic forward_a;
-    logic forward_b;
-    logic [31:0] forward_a_data;
-    logic [31:0] forward_b_data;
+    logic        alu_src_a;
+    logic        alu_src_b;
+    
+    logic [1:0]  forward_a_sel;
+    logic [1:0]  forward_b_sel;
+    
+    logic [31:0] fwd_ex2_data;
+    logic [31:0] fwd_ex3_data;
+    logic [31:0] fwd_wb_data;
+
     logic [31:0] operand_a;
     logic [31:0] operand_b;
     logic [31:0] rs2_data_out;
@@ -24,13 +28,13 @@ module tb_data_sel;
     task drive_data_sel(
         input logic [31:0] i_pc, input logic [31:0] i_rs1, input logic [31:0] i_rs2, input logic [31:0] i_imm,
         input logic i_alu_src_a, input logic i_alu_src_b,
-        input logic i_forward_a, input logic i_forward_b,
-        input logic [31:0] i_fwd_a_data, input logic [31:0] i_fwd_b_data
+        input logic [1:0] i_fwd_a_sel, input logic [1:0] i_fwd_b_sel,
+        input logic [31:0] i_ex2, input logic [31:0] i_ex3, input logic [31:0] i_wb
     );
         pc = i_pc; rs1_data = i_rs1; rs2_data = i_rs2; imm = i_imm;
         alu_src_a = i_alu_src_a; alu_src_b = i_alu_src_b;
-        forward_a = i_forward_a; forward_b = i_forward_b;
-        forward_a_data = i_fwd_a_data; forward_b_data = i_fwd_b_data;
+        forward_a_sel = i_fwd_a_sel; forward_b_sel = i_fwd_b_sel;
+        fwd_ex2_data = i_ex2; fwd_ex3_data = i_ex3; fwd_wb_data = i_wb;
         #1;
     endtask
 
@@ -46,17 +50,28 @@ module tb_data_sel;
     endtask
 
     initial begin
-        $display("--- Starting data_sel Tests ---");
+        $display("--- Starting data_sel Tests (Optimized) ---");
 
         // 1. ALU Source Routing (No forwarding)
-        drive_data_sel(32'h100, 32'h1, 32'h2, 32'h3, 0, 0, 0, 0, 0, 0); check_data_sel(32'h1, 32'h2, 32'h2);
-        drive_data_sel(32'h100, 32'h1, 32'h2, 32'h3, 1, 1, 0, 0, 0, 0); check_data_sel(32'h100, 32'h3, 32'h2);
+        drive_data_sel(32'h100, 32'h1, 32'h2, 32'h3, 0, 0, 0, 0, 0, 0, 0); check_data_sel(32'h1, 32'h2, 32'h2);
+        drive_data_sel(32'h100, 32'h1, 32'h2, 32'h3, 1, 1, 0, 0, 0, 0, 0); check_data_sel(32'h100, 32'h3, 32'h2);
 
         // 2. Forwarding Overrides (ALU sources are 0)
-        drive_data_sel(32'h100, 32'h1, 32'h2, 32'h3, 0, 0, 1, 1, 32'hA, 32'hB); check_data_sel(32'hA, 32'hB, 32'hB);
+        // Forward from EX2 (S6)
+        drive_data_sel(32'h100, 32'h1, 32'h2, 32'h3, 0, 0, 2'b01, 2'b01, 32'hA, 32'hB, 32'hC); check_data_sel(32'hA, 32'hA, 32'hA);
+        // Wait, rs2_data_out should be rs2_final (which is forward_b result)
+        // drive_data_sel parameters: rs2 matches fwd_b_sel=01 which is i_ex2=32'hA.
+        // So operand_b = 32'hA, rs2_data_out = 32'hA.
+        
+        // Forward from EX3 (S7)
+        drive_data_sel(32'h100, 32'h1, 32'h2, 32'h3, 0, 0, 2'b10, 2'b10, 32'hA, 32'hB, 32'hC); check_data_sel(32'hB, 32'hB, 32'hB);
+
+        // Forward from WB (S8)
+        drive_data_sel(32'h100, 32'h1, 32'h2, 32'h3, 0, 0, 2'b11, 2'b11, 32'hA, 32'hB, 32'hC); check_data_sel(32'hC, 32'hC, 32'hC);
 
         // 3. Source vs. Forwarding Conflict
-        drive_data_sel(32'h100, 32'h1, 32'h2, 32'h3, 0, 1, 0, 1, 0, 32'hB); check_data_sel(32'h1, 32'h3, 32'hB);
+        // Operand B uses Immediate, but RS2 is forwarded
+        drive_data_sel(32'h100, 32'h1, 32'h2, 32'h3, 0, 1, 0, 2'b01, 32'hA, 32'hB, 32'hC); check_data_sel(32'h1, 32'h3, 32'hA);
 
         $display("--- data_sel Test Summary ---");
         $display("Total Tests: %d", tests_total);

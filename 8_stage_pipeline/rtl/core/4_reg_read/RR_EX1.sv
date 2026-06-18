@@ -25,6 +25,8 @@ module RR_EX1 (
     input logic branch_in,
     input logic jump_in,
     input logic [2:0] branch_type_in,
+    input logic [1:0] forward_a_sel_in,
+    input logic [1:0] forward_b_sel_in,
 
     // Data outputs to the execute stage
     output logic [31:0] immediate_out,
@@ -47,7 +49,9 @@ module RR_EX1 (
     output logic [1:0] wb_sel_out,
     output logic branch_out,
     output logic jump_out,
-    output logic [2:0] branch_type_out
+    output logic [2:0] branch_type_out,
+    output logic [1:0] forward_a_sel_out,
+    output logic [1:0] forward_b_sel_out
 );
 
 always_ff @(posedge clk) begin
@@ -74,6 +78,8 @@ always_ff @(posedge clk) begin
         branch_out <= 1'b0;
         jump_out <= 1'b0;
         branch_type_out <= 3'b0;
+        forward_a_sel_out <= 2'b00;
+        forward_b_sel_out <= 2'b00;
     end
     else begin
         // Outputs to execute stage
@@ -98,6 +104,8 @@ always_ff @(posedge clk) begin
         branch_out <= branch_in;
         jump_out <= jump_in;
         branch_type_out <= branch_type_in;
+        forward_a_sel_out <= forward_a_sel_in;
+        forward_b_sel_out <= forward_b_sel_in;
     end    
 end
 

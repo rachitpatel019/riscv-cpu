@@ -77,6 +77,9 @@ module core (
     logic        IDRR_branch, IDRR_jump;
     logic [2:0]  IDRR_branch_type;
 
+    logic [1:0]  IDRR_forward_a_sel, IDRR_forward_b_sel;
+    logic [1:0]  E1_forward_a_sel, E1_forward_b_sel;
+
     logic [31:0] RF_read_data1, RF_read_data2;
 
     // Stage 5: RR/EX1 (Op Sel)
@@ -95,8 +98,7 @@ module core (
     logic [2:0]  E1_branch_type;
 
     logic [31:0] E1_operand_a, E1_operand_b, E1_rs2_data_fwd;
-    logic        E1_forward_a, E1_forward_b;
-    logic [31:0] E1_forward_a_data, E1_forward_b_data;
+    logic [31:0] E2_fwd_val, E3_fwd_val, W_fwd_val;
 
     // Stage 6: EX1/EX2 (ALU)
     logic [31:0] E2_pc;
@@ -269,6 +271,23 @@ module core (
         .write_enable(W_reg_write)
     );
 
+    forwarding_unit fwd_unit (
+        .IDRR_rs1(IDRR_rs1),
+        .IDRR_rs2(IDRR_rs2),
+        .IDRR_uses_rs1(IDRR_uses_rs1),
+        .IDRR_uses_rs2(IDRR_uses_rs2),
+        .E1_reg_write(E1_reg_write),
+        .E1_mem_read(E1_mem_read),
+        .E1_rd(E1_rd),
+        .E2_reg_write(E2_reg_write),
+        .E2_mem_read(E2_mem_read),
+        .E2_rd(E2_rd),
+        .E3_reg_write(E3_reg_write),
+        .E3_rd(E3_rd),
+        .forward_a_sel(IDRR_forward_a_sel),
+        .forward_b_sel(IDRR_forward_b_sel)
+    );
+
     RR_EX1 stage4_rr_ex1_reg (
         .clk(clk),
         .reset(reset),
@@ -292,6 +311,8 @@ module core (
         .branch_in(IDRR_branch),
         .jump_in(IDRR_jump),
         .branch_type_in(IDRR_branch_type),
+        .forward_a_sel_in(IDRR_forward_a_sel),
+        .forward_b_sel_in(IDRR_forward_b_sel),
         .immediate_out(E1_immediate),
         .rs1_out(E1_rs1),
         .rs2_out(E1_rs2),
@@ -310,12 +331,20 @@ module core (
         .wb_sel_out(E1_wb_sel),
         .branch_out(E1_branch),
         .jump_out(E1_jump),
-        .branch_type_out(E1_branch_type)
+        .branch_type_out(E1_branch_type),
+        .forward_a_sel_out(E1_forward_a_sel),
+        .forward_b_sel_out(E1_forward_b_sel)
     );
 
     // =========================================================================
     // Stage 5: EX1 (Operand Selection) - Bottleneck
     // =========================================================================
+    
+    // Forwarding data source pre-muxing
+    assign E2_fwd_val = (E2_wb_sel == 2'b10) ? E2_pc + 32'd4 : E2_alu_result;
+    assign E3_fwd_val = (E3_wb_sel == 2'b10) ? E3_pc + 32'd4 : E3_alu_result;
+    assign W_fwd_val  = W_write_data;
+
     data_sel stage5_data_sel (
         .pc(E1_pc),
         .rs1_data(E1_rs1_data),
@@ -323,10 +352,11 @@ module core (
         .imm(E1_immediate),
         .alu_src_a(E1_alu_src_a),
         .alu_src_b(E1_alu_src_b),
-        .forward_a(E1_forward_a),
-        .forward_b(E1_forward_b),
-        .forward_a_data(E1_forward_a_data),
-        .forward_b_data(E1_forward_b_data),
+        .forward_a_sel(E1_forward_a_sel),
+        .forward_b_sel(E1_forward_b_sel),
+        .fwd_ex2_data(E2_fwd_val),
+        .fwd_ex3_data(E3_fwd_val),
+        .fwd_wb_data(W_fwd_val),
         .operand_a(E1_operand_a),
         .operand_b(E1_operand_b),
         .rs2_data_out(E1_rs2_data_fwd)
@@ -506,34 +536,7 @@ module core (
     // Forwarding & Hazard Units
     // =========================================================================
 
-    // Forwarding data selection logic
-    logic [31:0] E2_fwd_val, E3_fwd_val, M_fwd_val;
-    assign E2_fwd_val = (E2_wb_sel == 2'b10) ? E2_pc + 32'd4 : E2_alu_result;
-    assign E3_fwd_val = (E3_wb_sel == 2'b10) ? E3_pc + 32'd4 : E3_alu_result;
-    assign M_fwd_val  = W_write_data; // WB result ready at start of S8
-
-    forwarding_unit fwd_unit (
-        .E1_rs1(E1_rs1),
-        .E1_rs2(E1_rs2),
-        .E1_uses_rs1(E1_uses_rs1),
-        .E1_uses_rs2(E1_uses_rs2),
-        .E2_reg_write(E2_reg_write),
-        .E2_mem_read(E2_mem_read),
-        .E2_rd(E2_rd),
-        .E2_forward_data(E2_fwd_val),
-        .E3_reg_write(E3_reg_write),
-        .E3_mem_read(E3_mem_read),
-        .E3_rd(E3_rd),
-        .E3_forward_data(E3_fwd_val),
-        .W_reg_write(W_reg_write),
-        .W_rd(W_rd),
-        .W_write_data(W_write_data),
-        .E1_forward_a(E1_forward_a),
-        .E1_forward_b(E1_forward_b),
-        .E1_forward_a_data(E1_forward_a_data),
-        .E1_forward_b_data(E1_forward_b_data)
-    );
-
+    // Forwarding Unit is now in S4
 
     hazard_detection_unit hazard_unit (
         .D_rs1(D_rs1),

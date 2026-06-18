@@ -30,12 +30,16 @@ module tb_writeback;
     endtask
 
     initial begin
-        $display("--- Starting writeback Tests ---");
+        $display("--- Starting writeback Tests (Optimized 2-to-1) ---");
 
+        // 00 -> ALU (or pre-muxed PC+4)
         drive_wb(32'h100, 32'hA, 32'hB, 2'b00); check_wb(32'hA);
+        // 01 -> Mem
         drive_wb(32'h100, 32'hA, 32'hB, 2'b01); check_wb(32'hB);
-        drive_wb(32'h100, 32'hA, 32'hB, 2'b10); check_wb(32'h104);
-        drive_wb(32'h100, 32'hA, 32'hB, 2'b11); check_wb(32'hA); 
+        // 10 -> ALU (or pre-muxed PC+4) - In optimized, bit 0 is the key
+        drive_wb(32'h104, 32'h108, 32'hB, 2'b10); check_wb(32'h108);
+        // 11 -> Mem
+        drive_wb(32'h104, 32'h108, 32'hB, 2'b11); check_wb(32'hB); 
 
         $display("--- writeback Test Summary ---");
         $display("Total Tests: %d", tests_total);

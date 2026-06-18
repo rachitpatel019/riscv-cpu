@@ -5,79 +5,76 @@ module tb_forwarding_unit;
     int tests_passed = 0;
     int tests_failed = 0;
 
-    logic [4:0]  E1_rs1;
-    logic [4:0]  E1_rs2;
-    logic        E1_uses_rs1;
-    logic        E1_uses_rs2;
+    logic [4:0]  IDRR_rs1;
+    logic [4:0]  IDRR_rs2;
+    logic        IDRR_uses_rs1;
+    logic        IDRR_uses_rs2;
+
+    logic        E1_reg_write;
+    logic        E1_mem_read;
+    logic [4:0]  E1_rd;
 
     logic        E2_reg_write;
     logic        E2_mem_read;
     logic [4:0]  E2_rd;
-    logic [31:0] E2_forward_data;
 
     logic        E3_reg_write;
-    logic        E3_mem_read;
     logic [4:0]  E3_rd;
-    logic [31:0] E3_forward_data;
 
-    logic        W_reg_write;
-    logic [4:0]  W_rd;
-    logic [31:0] W_write_data;
-
-    logic        E1_forward_a;
-    logic        E1_forward_b;
-    logic [31:0] E1_forward_a_data;
-    logic [31:0] E1_forward_b_data;
+    logic [1:0]  forward_a_sel;
+    logic [1:0]  forward_b_sel;
 
     forwarding_unit dut (.*);
 
     task drive_fwd(
         input logic [4:0] i_rs1, input logic [4:0] i_rs2,
         input logic i_uses_rs1, input logic i_uses_rs2,
-        input logic i_e2_en, input logic i_e2_read, input logic [4:0] i_e2_rd, input logic [31:0] i_e2_data,
-        input logic i_e3_en, input logic i_e3_read, input logic [4:0] i_e3_rd, input logic [31:0] i_e3_data,
-        input logic i_w_en,  input logic [4:0] i_w_rd,  input logic [31:0] i_w_data
+        input logic i_e1_en, input logic i_e1_read, input logic [4:0] i_e1_rd,
+        input logic i_e2_en, input logic i_e2_read, input logic [4:0] i_e2_rd,
+        input logic i_e3_en, input logic [4:0] i_e3_rd
     );
-        E1_rs1 = i_rs1; E1_rs2 = i_rs2;
-        E1_uses_rs1 = i_uses_rs1; E1_uses_rs2 = i_uses_rs2;
-        E2_reg_write = i_e2_en; E2_mem_read = i_e2_read; E2_rd = i_e2_rd; E2_forward_data = i_e2_data;
-        E3_reg_write = i_e3_en; E3_mem_read = i_e3_read; E3_rd = i_e3_rd; E3_forward_data = i_e3_data;
-        W_reg_write = i_w_en;   W_rd = i_w_rd;   W_write_data = i_w_data;
+        IDRR_rs1 = i_rs1; IDRR_rs2 = i_rs2;
+        IDRR_uses_rs1 = i_uses_rs1; IDRR_uses_rs2 = i_uses_rs2;
+        E1_reg_write = i_e1_en; E1_mem_read = i_e1_read; E1_rd = i_e1_rd;
+        E2_reg_write = i_e2_en; E2_mem_read = i_e2_read; E2_rd = i_e2_rd;
+        E3_reg_write = i_e3_en; E3_rd = i_e3_rd;
         #1;
     endtask
 
-    task check_fwd(input logic exp_a, input logic [31:0] exp_a_data, input logic exp_b, input logic [31:0] exp_b_data);
-        if (E1_forward_a === exp_a && E1_forward_a_data === exp_a_data &&
-            E1_forward_b === exp_b && E1_forward_b_data === exp_b_data) begin
+    task check_fwd(input logic [1:0] exp_a_sel, input logic [1:0] exp_b_sel);
+        if (forward_a_sel === exp_a_sel && forward_b_sel === exp_b_sel) begin
             tests_passed++;
         end else begin
             tests_failed++;
-            $error("MISMATCH: Time=%t, ExpA=%b (%h), ActA=%b (%h), ExpB=%b (%h), ActB=%b (%h)",
-                   $time, exp_a, exp_a_data, E1_forward_a, E1_forward_a_data, exp_b, exp_b_data, E1_forward_b, E1_forward_b_data);
+            $error("MISMATCH: Time=%t, ExpA_sel=%b, ActA_sel=%b, ExpB_sel=%b, ActB_sel=%b",
+                   $time, exp_a_sel, forward_a_sel, exp_b_sel, forward_b_sel);
         end
         tests_total++;
     endtask
 
     initial begin
-        $display("--- Starting forwarding_unit Tests (8-Stage Balanced) ---");
+        $display("--- Starting forwarding_unit Tests (8-Stage Balanced Optimized) ---");
 
-        // 1. Priority 1 (EX2 - S6)
-        drive_fwd(5'd1, 5'd2, 1, 1, 1, 0, 5'd1, 32'hE2, 1, 0, 5'd1, 32'hE3, 0, 0, 0); check_fwd(1, 32'hE2, 0, 0);
+        // 1. Priority 1 (E1 -> will be S6)
+        // IDRR_uses_rs1=1, E1 matches RS1 -> forward_a_sel=2'b01
+        drive_fwd(5'd1, 5'd2, 1, 1, 1, 0, 5'd1, 1, 0, 5'd1, 0, 5'd0); check_fwd(2'b01, 2'b00);
 
-        // 2. Priority 2 (EX3 - S7)
-        drive_fwd(5'd1, 5'd2, 1, 1, 0, 0, 0, 0, 1, 0, 5'd1, 32'hE3, 1, 5'd1, 32'hA1); check_fwd(1, 32'hE3, 0, 0);
+        // 2. Priority 2 (E2 -> will be S7)
+        // IDRR_uses_rs1=1, E2 matches RS1 -> forward_a_sel=2'b10
+        drive_fwd(5'd1, 5'd2, 1, 1, 0, 0, 0, 1, 0, 5'd1, 1, 5'd1); check_fwd(2'b10, 2'b00);
 
-        // 3. WB Stage Forwarding (S8)
-        drive_fwd(5'd1, 5'd2, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 5'd1, 32'hBD); check_fwd(1, 32'hBD, 0, 0);
+        // 3. WB Stage Forwarding (E3 -> will be S8)
+        // IDRR_uses_rs1=1, E3 matches RS1 -> forward_a_sel=2'b11
+        drive_fwd(5'd1, 5'd2, 1, 1, 0, 0, 0, 0, 0, 0, 1, 5'd1); check_fwd(2'b11, 2'b00);
 
         // 4. R0 Exemption
-        drive_fwd(5'd0, 5'd0, 1, 1, 1, 0, 5'd0, 32'hE2, 0, 0, 0, 0, 0, 0, 0); check_fwd(0, 0, 0, 0);
+        drive_fwd(5'd0, 5'd0, 1, 1, 1, 0, 5'd0, 0, 0, 0, 0, 0); check_fwd(2'b00, 2'b00);
 
         // 5. Uses RS1/RS2 Filter
-        drive_fwd(5'd1, 5'd2, 0, 0, 1, 0, 5'd1, 32'hE2, 0, 0, 0, 0, 0, 0, 0); check_fwd(0, 0, 0, 0);
+        drive_fwd(5'd1, 5'd2, 0, 0, 1, 0, 5'd1, 0, 0, 0, 0, 0); check_fwd(2'b00, 2'b00);
 
-        // 6. Mem Read Blocking (Load-Use)
-        drive_fwd(5'd1, 5'd2, 1, 1, 1, 1, 5'd1, 32'hBAD, 0, 0, 0, 0, 0, 0, 0); check_fwd(0, 0, 0, 0);
+        // 6. Mem Read Blocking (Load-Use) - Should NOT forward if Mem Read
+        drive_fwd(5'd1, 5'd2, 1, 1, 1, 1, 5'd1, 0, 0, 0, 0, 0); check_fwd(2'b00, 2'b00);
 
         $display("--- forwarding_unit Test Summary ---");
         $display("Total Tests: %d", tests_total);

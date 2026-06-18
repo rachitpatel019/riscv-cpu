@@ -53,32 +53,23 @@ always_ff @(posedge clk) begin
 end
 
 // Combinational extraction logic based on registered signals
-logic [15:0] extracted_halfword;
-logic [7:0]  extracted_byte;
+logic [31:0] shifted_word;
+assign shifted_word = current_word >> {addr_low, 3'b000};
 
 always_comb begin
-    extracted_halfword = addr_low[1] ? current_word[31:16] : current_word[15:0];
-    
-    case (addr_low)
-        2'b11: extracted_byte = current_word[31:24];
-        2'b10: extracted_byte = current_word[23:16];
-        2'b01: extracted_byte = current_word[15:8];
-        2'b00: extracted_byte = current_word[7:0];
-    endcase
-
     if (read_active) begin
         case (size_reg)
             2'b10: read_data = current_word;
             2'b01: // Halfword
                 if (unsigned_reg)
-                    read_data = {16'b0, extracted_halfword};
+                    read_data = {16'b0, shifted_word[15:0]};
                 else
-                    read_data = {{16{extracted_halfword[15]}}, extracted_halfword}; 
+                    read_data = {{16{shifted_word[15]}}, shifted_word[15:0]}; 
             2'b00: // Byte
                 if (unsigned_reg)
-                    read_data = {24'b0, extracted_byte};
+                    read_data = {24'b0, shifted_word[7:0]};
                 else
-                    read_data = {{24{extracted_byte[7]}}, extracted_byte}; 
+                    read_data = {{24{shifted_word[7]}}, shifted_word[7:0]}; 
             default: read_data = current_word;
         endcase
     end

@@ -1,21 +1,14 @@
-// Writeback stage of the 5-stage RISC-V pipeline.
-
+// Writeback stage - Optimized 2-to-1 Mux
 module writeback(
-    input logic [31:0] pc,
-    input logic [31:0] alu_result,
+    input logic [31:0] pc,            // Not used anymore in simplified mux
+    input logic [31:0] alu_result,    // Pre-muxed with PC+4 in S7
     input logic [31:0] mem_data,
-    input logic [1:0] wb_sel,
+    input logic [1:0]  wb_sel,
 
     output logic [31:0] write_data
 );
 
-always_comb begin
-    case (wb_sel)
-        2'b00: write_data = alu_result;
-        2'b01: write_data = mem_data;
-        2'b10: write_data = pc + 32'd4;
-        default: write_data = alu_result;
-    endcase
-end
+// wb_sel == 2'b01 is Load instruction
+assign write_data = (wb_sel[0]) ? mem_data : alu_result;
 
 endmodule

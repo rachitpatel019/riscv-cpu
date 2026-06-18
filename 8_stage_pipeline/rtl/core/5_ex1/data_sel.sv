@@ -3,21 +3,47 @@ module data_sel (
     input logic [31:0] rs1_data,
     input logic [31:0] rs2_data,
     input logic [31:0] imm,
-    input logic alu_src_a,
-    input logic alu_src_b,
-    input logic forward_a,
-    input logic forward_b,
-    input logic [31:0] forward_a_data,
-    input logic [31:0] forward_b_data,
+    input logic        alu_src_a,
+    input logic        alu_src_b,
+    
+    // Forwarding controls
+    input logic [1:0]  forward_a_sel,
+    input logic [1:0]  forward_b_sel,
+    
+    // Forwarding data sources
+    input logic [31:0] fwd_ex2_data,
+    input logic [31:0] fwd_ex3_data,
+    input logic [31:0] fwd_wb_data,
 
     output logic [31:0] operand_a,
     output logic [31:0] operand_b,
     output logic [31:0] rs2_data_out
 );
 
-assign operand_a = alu_src_a ? pc : (forward_a ? forward_a_data : rs1_data);
-assign operand_b = alu_src_b ? imm : (forward_b ? forward_b_data : rs2_data);
+    // Operand A Selection
+    logic [31:0] rs1_final;
+    always_comb begin
+        case (forward_a_sel)
+            2'b01:   rs1_final = fwd_ex2_data;
+            2'b10:   rs1_final = fwd_ex3_data;
+            2'b11:   rs1_final = fwd_wb_data;
+            default: rs1_final = rs1_data;
+        endcase
+    end
+    assign operand_a = alu_src_a ? pc : rs1_final;
 
-assign rs2_data_out = forward_b ? forward_b_data : rs2_data;
+    // Operand B Selection
+    logic [31:0] rs2_final;
+    always_comb begin
+        case (forward_b_sel)
+            2'b01:   rs2_final = fwd_ex2_data;
+            2'b10:   rs2_final = fwd_ex3_data;
+            2'b11:   rs2_final = fwd_wb_data;
+            default: rs2_final = rs2_data;
+        endcase
+    end
+    assign operand_b = alu_src_b ? imm : rs2_final;
+    
+    assign rs2_data_out = rs2_final;
 
 endmodule
