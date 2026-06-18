@@ -257,15 +257,13 @@ module core (
         .branch_type_out(IDRR_branch_type)
     );
 
-    // =========================================================================
-    // Stage 4: Reg Read (Captured by RR_EX1)
-    // =========================================================================
+    // Stage 4: Reg Read
     regfile stage4_regfile (
         .clk(clk),
         .read_address1(IDRR_rs1),
         .read_address2(IDRR_rs2),
-        .read_data1(RF_read_data1),
-        .read_data2(RF_read_data2),
+        .read_data1(E1_rs1_data), // Direct connection to E1
+        .read_data2(E1_rs2_data), // Direct connection to E1
         .write_address(W_rd),
         .write_data(W_write_data),
         .write_enable(W_reg_write)
@@ -278,8 +276,6 @@ module core (
         .immediate_in(IDRR_immediate),
         .rs1_in(IDRR_rs1),
         .rs2_in(IDRR_rs2),
-        .rs1_data_in(RF_read_data1),
-        .rs2_data_in(RF_read_data2),
         .rd_in(IDRR_rd),
         .pc_in(IDRR_pc),
         .uses_rs1_in(IDRR_uses_rs1),
@@ -299,8 +295,6 @@ module core (
         .immediate_out(E1_immediate),
         .rs1_out(E1_rs1),
         .rs2_out(E1_rs2),
-        .rs1_data_out(E1_rs1_data),
-        .rs2_data_out(E1_rs2_data),
         .rd_out(E1_rd),
         .pc_out(E1_pc),
         .uses_rs1_out(E1_uses_rs1),

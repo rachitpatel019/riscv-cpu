@@ -31,9 +31,20 @@ always_ff @(posedge clk) begin
     end
 end
 
-// Asynchronous Read Logic with Internal Forwarding (Write-First)
-assign read_data1 = (write_enable && (write_address == read_address1) && (write_address != 5'b0)) ? write_data_actual : registers[read_address1];
-assign read_data2 = (write_enable && (write_address == read_address2) && (write_address != 5'b0)) ? write_data_actual : registers[read_address2];
+// Synchronous Read Logic with Internal Forwarding (Write-First)
+always_ff @(posedge clk) begin
+    // Port 1
+    if (write_enable && (write_address == read_address1) && (write_address != 5'b0))
+        read_data1 <= write_data_actual;
+    else
+        read_data1 <= registers[read_address1];
+
+    // Port 2
+    if (write_enable && (write_address == read_address2) && (write_address != 5'b0))
+        read_data2 <= write_data_actual;
+    else
+        read_data2 <= registers[read_address2];
+end
 
 // always_comb begin
 //     // Port 1

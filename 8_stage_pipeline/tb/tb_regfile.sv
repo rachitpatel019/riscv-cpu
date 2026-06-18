@@ -32,7 +32,8 @@ module tb_regfile;
     endtask
 
     task check_read(input logic [31:0] exp1, input logic [31:0] exp2);
-        @(posedge clk);
+        @(posedge clk); // Sampling edge
+        @(posedge clk); // Data ready edge
         #1;
         if (read_data1 === exp1 && read_data2 === exp2) begin
             tests_passed++;
