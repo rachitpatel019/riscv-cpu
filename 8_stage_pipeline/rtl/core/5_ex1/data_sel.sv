@@ -24,9 +24,8 @@ module data_sel (
     logic [31:0] rs1_final;
     always_comb begin
         case (forward_a_sel)
-            2'b01:   rs1_final = fwd_ex2_data;
-            2'b10:   rs1_final = fwd_ex3_data;
-            2'b11:   rs1_final = fwd_wb_data;
+            2'b01:   rs1_final = fwd_ex2_data; // From S7 (Registered ALU)
+            2'b10:   rs1_final = fwd_ex3_data; // From S8 (Registered Writeback)
             default: rs1_final = rs1_data;
         endcase
     end
@@ -38,7 +37,6 @@ module data_sel (
         case (forward_b_sel)
             2'b01:   rs2_final = fwd_ex2_data;
             2'b10:   rs2_final = fwd_ex3_data;
-            2'b11:   rs2_final = fwd_wb_data;
             default: rs2_final = rs2_data;
         endcase
     end

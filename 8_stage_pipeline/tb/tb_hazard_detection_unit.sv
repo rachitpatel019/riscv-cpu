@@ -10,10 +10,10 @@ module tb_hazard_detection_unit;
     logic       D_uses_rs1;
     logic       D_uses_rs2;
 
-    logic       RR_mem_read;
+    logic       RR_reg_write;
     logic [4:0] RR_rd;
 
-    logic       E1_mem_read;
+    logic       E1_reg_write;
     logic [4:0] E1_rd;
 
     logic       E2_mem_read;
@@ -29,15 +29,15 @@ module tb_hazard_detection_unit;
     task drive_hazard(
         input logic [4:0] i_rs1, input logic [4:0] i_rs2,
         input logic i_uses_rs1, input logic i_uses_rs2,
-        input logic i_rr_read,  input logic [4:0] i_rr_rd,
-        input logic i_e1_read,  input logic [4:0] i_e1_rd,
+        input logic i_rr_en,    input logic [4:0] i_rr_rd,
+        input logic i_e1_en,    input logic [4:0] i_e1_rd,
         input logic i_e2_read,  input logic [4:0] i_e2_rd,
         input logic i_e3_read,  input logic [4:0] i_e3_rd
     );
         D_rs1 = i_rs1; D_rs2 = i_rs2;
         D_uses_rs1 = i_uses_rs1; D_uses_rs2 = i_uses_rs2;
-        RR_mem_read = i_rr_read; RR_rd = i_rr_rd;
-        E1_mem_read = i_e1_read; E1_rd = i_e1_rd;
+        RR_reg_write = i_rr_en; RR_rd = i_rr_rd;
+        E1_reg_write = i_e1_en; E1_rd = i_e1_rd;
         E2_mem_read = i_e2_read; E2_rd = i_e2_rd;
         E3_mem_read = i_e3_read; E3_rd = i_e3_rd;
         #1;
@@ -54,16 +54,16 @@ module tb_hazard_detection_unit;
     endtask
 
     initial begin
-        $display("--- Starting hazard_detection_unit Tests (8-Stage Balanced) ---");
+        $display("--- Starting hazard_detection_unit Tests (8-Stage Phase 1) ---");
 
         // 1. No Hazard
         drive_hazard(5'd1, 5'd2, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0); check_hazard(0);
 
-        // 2. Stage 4 (RR) Load-Use Hazard
+        // 2. Stage 4 (RR) ALU-Use Hazard (Stall because no forwarding from S6)
         drive_hazard(5'd1, 5'd2, 1, 1, 1, 5'd1, 0, 0, 0, 0, 0, 0); check_hazard(1);
         drive_hazard(5'd1, 5'd2, 1, 1, 1, 5'd2, 0, 0, 0, 0, 0, 0); check_hazard(1);
 
-        // 3. Stage 5 (EX1) Load-Use Hazard
+        // 3. Stage 5 (EX1) ALU-Use Hazard
         drive_hazard(5'd1, 5'd2, 1, 1, 0, 0, 1, 5'd1, 0, 0, 0, 0); check_hazard(1);
 
         // 4. Stage 6 (EX2) Load-Use Hazard

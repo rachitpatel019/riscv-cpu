@@ -15,17 +15,17 @@ module hazard_detection_unit (
     input  logic        D_uses_rs1,
     input  logic        D_uses_rs2,
 
-    // Inputs from downstream stages (Load instructions)
-    input  logic        RR_mem_read,    // S4
+    // Inputs from downstream stages
+    input  logic        RR_reg_write,   // S4
     input  logic [4:0]  RR_rd,
     
-    input  logic        E1_mem_read,    // S5
+    input  logic        E1_reg_write,   // S5
     input  logic [4:0]  E1_rd,
 
-    input  logic        E2_mem_read,    // S6
+    input  logic        E2_mem_read,    // S6 Load-Use Stall (Memory is S8, available S9/W)
     input  logic [4:0]  E2_rd,
     
-    input  logic        E3_mem_read,    // S7
+    input  logic        E3_mem_read,    // S7 Load-Use Stall
     input  logic [4:0]  E3_rd,
 
     // Output
@@ -35,17 +35,18 @@ module hazard_detection_unit (
     always_comb begin
         stall = 1'b0;
 
-        // Load-Use Hazard Detection
-        // If a Load is in Stage 4, 5, 6, or 7 and its destination matches Decode's source
+        // Data Hazard Detection requiring Stall
+        // We now stall if a result is in S4 or S5 (since S6 forwarding is removed)
+        // OR if a Load is in S6 or S7 (Load-Use penalty)
 
-        // Stage 4 Load
-        if (RR_mem_read && (RR_rd != 5'b0)) begin
+        // Stage 4 Producer (Any reg_write)
+        if (RR_reg_write && (RR_rd != 5'b0)) begin
             if ((RR_rd == D_rs1 && D_uses_rs1) || (RR_rd == D_rs2 && D_uses_rs2))
                 stall = 1'b1;
         end
 
-        // Stage 5 Load
-        if (E1_mem_read && (E1_rd != 5'b0)) begin
+        // Stage 5 Producer (Any reg_write)
+        if (E1_reg_write && (E1_rd != 5'b0)) begin
             if ((E1_rd == D_rs1 && D_uses_rs1) || (E1_rd == D_rs2 && D_uses_rs2))
                 stall = 1'b1;
         end

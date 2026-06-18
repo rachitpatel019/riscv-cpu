@@ -57,17 +57,11 @@ module tb_data_sel;
         drive_data_sel(32'h100, 32'h1, 32'h2, 32'h3, 1, 1, 0, 0, 0, 0, 0); check_data_sel(32'h100, 32'h3, 32'h2);
 
         // 2. Forwarding Overrides (ALU sources are 0)
-        // Forward from EX2 (S6)
+        // Forward from S7 (Registered ALU)
         drive_data_sel(32'h100, 32'h1, 32'h2, 32'h3, 0, 0, 2'b01, 2'b01, 32'hA, 32'hB, 32'hC); check_data_sel(32'hA, 32'hA, 32'hA);
-        // Wait, rs2_data_out should be rs2_final (which is forward_b result)
-        // drive_data_sel parameters: rs2 matches fwd_b_sel=01 which is i_ex2=32'hA.
-        // So operand_b = 32'hA, rs2_data_out = 32'hA.
         
-        // Forward from EX3 (S7)
+        // Forward from S8 (Registered Writeback)
         drive_data_sel(32'h100, 32'h1, 32'h2, 32'h3, 0, 0, 2'b10, 2'b10, 32'hA, 32'hB, 32'hC); check_data_sel(32'hB, 32'hB, 32'hB);
-
-        // Forward from WB (S8)
-        drive_data_sel(32'h100, 32'h1, 32'h2, 32'h3, 0, 0, 2'b11, 2'b11, 32'hA, 32'hB, 32'hC); check_data_sel(32'hC, 32'hC, 32'hC);
 
         // 3. Source vs. Forwarding Conflict
         // Operand B uses Immediate, but RS2 is forwarded

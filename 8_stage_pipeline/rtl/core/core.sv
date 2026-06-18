@@ -276,9 +276,6 @@ module core (
         .IDRR_rs2(IDRR_rs2),
         .IDRR_uses_rs1(IDRR_uses_rs1),
         .IDRR_uses_rs2(IDRR_uses_rs2),
-        .E1_reg_write(E1_reg_write),
-        .E1_mem_read(E1_mem_read),
-        .E1_rd(E1_rd),
         .E2_reg_write(E2_reg_write),
         .E2_mem_read(E2_mem_read),
         .E2_rd(E2_rd),
@@ -354,9 +351,9 @@ module core (
         .alu_src_b(E1_alu_src_b),
         .forward_a_sel(E1_forward_a_sel),
         .forward_b_sel(E1_forward_b_sel),
-        .fwd_ex2_data(E2_fwd_val),
-        .fwd_ex3_data(E3_fwd_val),
-        .fwd_wb_data(W_fwd_val),
+        .fwd_ex2_data(E3_fwd_val), // From S7 (Registered ALU)
+        .fwd_ex3_data(W_fwd_val),   // From S8 (Registered Writeback)
+        .fwd_wb_data(32'b0),        // Not used in Phase 1
         .operand_a(E1_operand_a),
         .operand_b(E1_operand_b),
         .rs2_data_out(E1_rs2_data_fwd)
@@ -543,9 +540,9 @@ module core (
         .D_rs2(D_rs2),
         .D_uses_rs1(D_uses_rs1),
         .D_uses_rs2(D_uses_rs2),
-        .RR_mem_read(IDRR_mem_read),
+        .RR_reg_write(IDRR_reg_write),
         .RR_rd(IDRR_rd),
-        .E1_mem_read(E1_mem_read),
+        .E1_reg_write(E1_reg_write),
         .E1_rd(E1_rd),
         .E2_mem_read(E2_mem_read),
         .E2_rd(E2_rd),
