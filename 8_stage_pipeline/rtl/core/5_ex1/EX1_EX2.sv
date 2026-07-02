@@ -1,10 +1,14 @@
-module EX1_EX2(
+/*
+Pipeline register between EX1 and EX2 stages.
+Holds execution operands, memory control, and writeback select lines.
+*/
+
+module EX1_EX2 (
     input logic clk,
     input logic reset,
     input logic flush,
 
     input logic [31:0] pc_in,
-
     input logic [3:0] alu_op_in,
     input logic [31:0] imm_in,
     input logic branch_in,
@@ -25,7 +29,6 @@ module EX1_EX2(
     input logic [1:0] wb_sel_in,
 
     output logic [31:0] pc_out,
-
     output logic [3:0] alu_op_out,
     output logic [31:0] imm_out,
     output logic branch_out,
@@ -46,6 +49,7 @@ module EX1_EX2(
     output logic [1:0] wb_sel_out
 );
 
+// Propagates Stage 5 (EX1) execution inputs to Stage 6 (EX2), supporting flush and reset.
 always_ff @(posedge clk) begin
     if (reset || flush) begin
         pc_out <= 32'b0;

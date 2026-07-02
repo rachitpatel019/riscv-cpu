@@ -6,18 +6,32 @@
 package require ::quartus::project
 package require ::quartus::sta
 
+# Change directory to the script's directory so it can be run from the repository root
+set script_dir [file normalize [file dirname [info script]]]
+cd $script_dir
+
 # Configuration
 set project_name "cpu"
 
-# Open the project
-puts "Opening project..."
-project_open $project_name
+# Verify project files exist
+if {![file exists "${project_name}.qpf"] || ![file exists "${project_name}.qsf"]} {
+    puts "Error: Quartus project file(s) ${project_name}.qpf or ${project_name}.qsf not found."
+    exit 1
+}
 
-# Create the timing netlist
-puts "Creating timing netlist..."
-create_timing_netlist
-read_sdc
-update_timing_netlist
+# Open the project and build timing netlist
+puts "Opening project and loading timing netlist..."
+if {[catch {
+    project_open $project_name
+    create_timing_netlist
+    read_sdc
+    update_timing_netlist
+} err]} {
+    puts "Error: Failed to initialize timing netlist: $err"
+    puts "Ensure that the project has been fully compiled before running timing analysis."
+    catch { project_close }
+    exit 1
+}
 puts "Timing netlist updated."
 
 # Define the pipeline stages {Display Name, Source Pattern, Destination Pattern}

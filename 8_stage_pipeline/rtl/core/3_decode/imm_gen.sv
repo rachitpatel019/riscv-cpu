@@ -1,6 +1,8 @@
-// RISC-V Immediate Generator
+/*
+Generates immediate values based on RISC-V instruction formats (I, S, B, U, J).
+*/
 
-module imm_gen(
+module imm_gen (
     input logic [31:0] instruction,
 
     output logic [31:0] immediate
@@ -9,8 +11,10 @@ module imm_gen(
 import decoder_package::*;
 
 logic [6:0] opcode;
+
 assign opcode = instruction[6:0];
 
+// Combinational logic decoding and sign-extending immediate values based on RISC-V format.
 always_comb begin
     case (opcode)
         OP_I, OP_I_LOAD, OP_I_JALR:  

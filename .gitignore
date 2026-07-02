@@ -15,5 +15,5 @@ Archive/5_stage_pipeline/fpga/output_files
 /8_stage_pipeline/sim/logs
 /8_stage_pipeline/sim/scripts/work
 
-/.gemini
+/.agents
 /GEMINI.md

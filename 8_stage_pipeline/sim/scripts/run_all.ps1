@@ -3,6 +3,18 @@
 
 Set-Location $PSScriptRoot
 
+# Verify that vsim tool exists in PATH
+if (-not (Get-Command vsim -ErrorAction SilentlyContinue)) {
+    Write-Host "Error: ModelSim/QuestaSim executable 'vsim' not found in system PATH." -ForegroundColor Red
+    exit 1
+}
+
+# Ensure output logs directory exists
+$logsDir = Join-Path $PSScriptRoot "../logs"
+if (-not (Test-Path $logsDir)) {
+    New-Item -ItemType Directory -Path $logsDir -Force | Out-Null
+}
+
 $scripts = @(
     "run_pc_update.do",
     "run_instr_mem.do",
@@ -29,20 +41,21 @@ Write-Host "Starting 8-Stage RISC-V CPU Simulation Regression" -ForegroundColor 
 Write-Host "--------------------------------------------------" -ForegroundColor Cyan
 
 foreach ($script in $scripts) {
-    if (-not (Test-Path $script)) {
-        Write-Host "Warning: $script not found. Skipping..." -ForegroundColor Yellow
+    $scriptPath = Join-Path $PSScriptRoot $script
+    if (-not (Test-Path $scriptPath)) {
+        Write-Host "Warning: $script not found at $scriptPath. Skipping..." -ForegroundColor Yellow
         continue
     }
 
     Write-Host "`n>>> Executing $script..." -ForegroundColor Cyan
     
     # Run from the logs directory
-    Push-Location "../logs"
+    Push-Location $logsDir
     
     # Guardrails: -batch for non-interactive, -do to run and exit
     # We add a timeout of 60 seconds per test to prevent hanging
     $logFile = "$($script.Replace('.do', '.log'))"
-    $process = Start-Process vsim -ArgumentList "-batch", "-do", "../scripts/$script", "-l", "$logFile" -PassThru -NoNewWindow
+    $process = Start-Process vsim -ArgumentList "-batch", "-do", "$scriptPath", "-l", "$logFile" -PassThru -NoNewWindow
     
     # Wait for completion with timeout
     $process | Wait-Process -Timeout 60 -ErrorAction SilentlyContinue
@@ -59,7 +72,7 @@ foreach ($script in $scripts) {
     Pop-Location
     
     # Scan log for failures
-    $logPath = "../logs/$logFile"
+    $logPath = Join-Path $logsDir $logFile
     $hasFailureKeyword = $false
     if (Test-Path $logPath) {
         $logContent = Get-Content $logPath
@@ -84,6 +97,9 @@ Write-Host "==================================================" -ForegroundColor
 
 if ($failed.Count -eq 0) {
     Write-Host "ALL TESTS PASSED ($($passed.Count)/$($scripts.Count))" -ForegroundColor Green
+    Write-Host "==================================================" -ForegroundColor Cyan
+    Write-Host "Regression complete." -ForegroundColor Cyan
+    exit 0
 } else {
     Write-Host "SOME TESTS FAILED ($($failed.Count)/$($scripts.Count))" -ForegroundColor Red
     Write-Host "`nPassed Testbenches:" -ForegroundColor Green
@@ -91,7 +107,7 @@ if ($failed.Count -eq 0) {
     
     Write-Host "`nFailing Testbenches:" -ForegroundColor Red
     foreach ($f in $failed) { Write-Host "  [-] $f" }
+    Write-Host "==================================================" -ForegroundColor Cyan
+    Write-Host "Regression complete." -ForegroundColor Cyan
+    exit 1
 }
-
-Write-Host "==================================================" -ForegroundColor Cyan
-Write-Host "Regression complete." -ForegroundColor Cyan

@@ -1,16 +1,19 @@
+/*
+Pipeline register between Reg Read and EX1 stages.
+Holds data signals, control signals, and forwarding select lines.
+*/
+
 module RR_EX1 (
     input logic clk,
     input logic reset,
     input logic flush,
 
-    // Data outputs to the execute stage
     input logic [31:0] immediate_in,
     input logic [4:0] rs1_in,
     input logic [4:0] rs2_in,
     input logic [4:0] rd_in,
     input logic [31:0] pc_in,
 
-    // Control signals
     input logic uses_rs1_in,
     input logic uses_rs2_in,
     input logic [3:0] alu_op_in,
@@ -28,14 +31,12 @@ module RR_EX1 (
     input logic [1:0] forward_a_sel_in,
     input logic [1:0] forward_b_sel_in,
 
-    // Data outputs to the execute stage
     output logic [31:0] immediate_out,
     output logic [4:0] rs1_out,
     output logic [4:0] rs2_out,
     output logic [4:0] rd_out,
     output logic [31:0] pc_out,
 
-    // Control signals
     output logic uses_rs1_out,
     output logic uses_rs2_out,
     output logic [3:0] alu_op_out,
@@ -54,16 +55,15 @@ module RR_EX1 (
     output logic [1:0] forward_b_sel_out
 );
 
+// Propagates Reg Read stage values to execution Stage 5 (EX1), supporting flush and reset.
 always_ff @(posedge clk) begin
     if (reset || flush) begin
-        // Outputs to execute stage
         immediate_out <= 32'b0;
         rs1_out <= 5'b0;
         rs2_out <= 5'b0;
         rd_out <= 5'b0;
         pc_out <= 32'b0;
 
-        // Control signals
         uses_rs1_out <= 1'b0;
         uses_rs2_out <= 1'b0;
         alu_op_out <= 4'b0;
@@ -82,14 +82,12 @@ always_ff @(posedge clk) begin
         forward_b_sel_out <= 2'b00;
     end
     else begin
-        // Outputs to execute stage
         immediate_out <= immediate_in;
         rs1_out <= rs1_in;
         rs2_out <= rs2_in;
         rd_out <= rd_in;
         pc_out <= pc_in;
 
-        // Control signals
         uses_rs1_out <= uses_rs1_in;
         uses_rs2_out <= uses_rs2_in;
         alu_op_out <= alu_op_in;

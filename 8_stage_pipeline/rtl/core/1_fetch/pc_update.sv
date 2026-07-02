@@ -1,5 +1,5 @@
 /*
-Module to calculate and output the next program counter (PC) value.
+Calculates and outputs the next program counter (PC) value.
 */
 
 module pc_update (
@@ -7,13 +7,14 @@ module pc_update (
     input logic reset,
 
     input logic stall,
-    
+
     input logic pc_sel,
     input logic [31:0] pc_target,
 
     output logic [31:0] pc
 );
 
+// Updates the program counter register on each clock cycle based on stall, jump, and reset signals.
 always_ff @(posedge clk) begin
     if (reset) begin
         pc <= 32'b0;

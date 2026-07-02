@@ -1,17 +1,20 @@
+/*
+Pipeline register between Decode and Reg Read stages.
+Holds data fields, control signals, and status bits.
+*/
+
 module ID_RR (
     input logic clk,
     input logic reset,
     input logic stall,
     input logic flush,
 
-    // Data outputs to the execute stage
     input logic [31:0] immediate_in,
     input logic [4:0] rs1_in,
     input logic [4:0] rs2_in,
     input logic [4:0] rd_in,
     input logic [31:0] pc_in,
 
-    // Control signals
     input logic uses_rs1_in,
     input logic uses_rs2_in,
     input logic [3:0] alu_op_in,
@@ -27,14 +30,12 @@ module ID_RR (
     input logic jump_in,
     input logic [2:0] branch_type_in,
 
-    // Data outputs to the execute stage
     output logic [31:0] immediate_out,
     output logic [4:0] rs1_out,
     output logic [4:0] rs2_out,
     output logic [4:0] rd_out,
     output logic [31:0] pc_out,
 
-    // Control signals
     output logic uses_rs1_out,
     output logic uses_rs2_out,
     output logic [3:0] alu_op_out,
@@ -51,16 +52,15 @@ module ID_RR (
     output logic [2:0] branch_type_out
 );
 
+// Propagates Decode stage signals to Reg Read stage, handling synchronous clear and stall.
 always_ff @(posedge clk) begin
     if (reset || flush) begin
-        // Outputs to execute stage
         immediate_out <= 32'b0;
         rs1_out <= 5'b0;
         rs2_out <= 5'b0;
         rd_out <= 5'b0;
         pc_out <= 32'b0;
 
-        // Control signals
         uses_rs1_out <= 1'b0;
         uses_rs2_out <= 1'b0;
         alu_op_out <= 4'b0;
@@ -77,14 +77,12 @@ always_ff @(posedge clk) begin
         branch_type_out <= 3'b0;
     end
     else if (!stall) begin
-        // Outputs to execute stage
         immediate_out <= immediate_in;
         rs1_out <= rs1_in;
         rs2_out <= rs2_in;
         rd_out <= rd_in;
         pc_out <= pc_in;
 
-        // Control signals
         uses_rs1_out <= uses_rs1_in;
         uses_rs2_out <= uses_rs2_in;
         alu_op_out <= alu_op_in;

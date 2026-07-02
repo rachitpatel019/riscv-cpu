@@ -1,7 +1,11 @@
-module MEM_WB(
+/*
+Pipeline register between MEM and WB stages.
+Holds destination index, write control, ALU/memory data, and select signals.
+*/
+
+module MEM_WB (
     input logic clk,
     input logic reset,
-
     input logic flush,
 
     input logic [4:0] rd_in,
@@ -19,6 +23,7 @@ module MEM_WB(
     output logic [31:0] pc_out
 );
 
+// Propagates Stage 7 (EX3/MEM) values to writeback Stage 8 (WB), supporting flush and reset.
 always_ff @(posedge clk) begin
     if (reset || flush) begin
         rd_out <= 5'b0;
@@ -37,5 +42,5 @@ always_ff @(posedge clk) begin
         pc_out <= pc_in;
     end
 end
-    
+
 endmodule

@@ -1,10 +1,14 @@
-module EX2_EX3(
+/*
+Pipeline register between EX2 and EX3 stages.
+Holds PC, execution results, memory parameters, and writeback select lines.
+*/
+
+module EX2_EX3 (
     input logic clk,
     input logic reset,
     input logic flush,
 
     input logic [31:0] pc_in,
-
     input logic [31:0] imm_in,
     input logic branch_in,
     input logic jump_in,
@@ -17,9 +21,7 @@ module EX2_EX3(
     input logic [31:0] operand_b_in,
     input logic [31:0] rs2_data_in,
     input logic [31:0] alu_result_in,
-    
-    // Optimized timing signals
-    input logic        condition_met_in,
+    input logic condition_met_in,
     input logic [31:0] branch_target_in,
 
     input logic mem_read_in,
@@ -29,7 +31,6 @@ module EX2_EX3(
     input logic [1:0] wb_sel_in,
 
     output logic [31:0] pc_out,
-
     output logic [31:0] imm_out,
     output logic branch_out,
     output logic jump_out,
@@ -42,9 +43,7 @@ module EX2_EX3(
     output logic [31:0] operand_b_out,
     output logic [31:0] rs2_data_out,
     output logic [31:0] alu_result_out,
-    
-    // Optimized timing signals
-    output logic        condition_met_out,
+    output logic condition_met_out,
     output logic [31:0] branch_target_out,
 
     output logic mem_read_out,
@@ -54,6 +53,7 @@ module EX2_EX3(
     output logic [1:0] wb_sel_out
 );
 
+// Propagates Stage 6 (EX2) execution results to Stage 7 (EX3/MEM), supporting flush and reset.
 always_ff @(posedge clk) begin
     if (reset || flush) begin
         pc_out <= 32'b0;

@@ -1,0 +1,1317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>8-Stage Pipelined RISC-V (RV32I) CPU - Architecture Specification</title>
+<style>
+    :root {
+        --bg: #0f172a;
+        --surface: #1e293b;
+        --surface-alt: #334155;
+        --border: #475569;
+        --text: #e2e8f0;
+        --text-muted: #94a3b8;
+        --accent: #38bdf8;
+        --accent-dim: #0ea5e9;
+        --stage-fetch: #f472b6;
+        --stage-imem: #fb923c;
+        --stage-decode: #facc15;
+        --stage-rr: #a3e635;
+        --stage-ex1: #34d399;
+        --stage-ex2: #22d3ee;
+        --stage-ex3: #818cf8;
+        --stage-wb: #c084fc;
+        --hazard: #ef4444;
+        --forward: #10b981;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        line-height: 1.6;
+        padding: 2rem;
+    }
+    h1 {
+        font-size: 2rem;
+        color: var(--accent);
+        border-bottom: 2px solid var(--accent-dim);
+        padding-bottom: 0.5rem;
+        margin-bottom: 1rem;
+    }
+    h2 {
+        font-size: 1.5rem;
+        color: var(--accent);
+        margin-top: 2.5rem;
+        margin-bottom: 1rem;
+        border-left: 4px solid var(--accent-dim);
+        padding-left: 0.75rem;
+    }
+    h3 {
+        font-size: 1.2rem;
+        color: var(--text);
+        margin-top: 1.5rem;
+        margin-bottom: 0.5rem;
+    }
+    h4 {
+        font-size: 1rem;
+        color: var(--text-muted);
+        margin-top: 1rem;
+        margin-bottom: 0.4rem;
+    }
+    p, li {
+        color: var(--text);
+        margin-bottom: 0.5rem;
+    }
+    ul, ol {
+        padding-left: 1.5rem;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 1rem 0;
+        font-size: 0.9rem;
+    }
+    th, td {
+        border: 1px solid var(--border);
+        padding: 0.5rem 0.75rem;
+        text-align: left;
+    }
+    th {
+        background: var(--surface-alt);
+        color: var(--accent);
+        font-weight: 600;
+    }
+    td {
+        background: var(--surface);
+    }
+    tr:hover td {
+        background: var(--surface-alt);
+    }
+    code {
+        background: var(--surface-alt);
+        color: var(--accent);
+        padding: 0.1rem 0.4rem;
+        border-radius: 3px;
+        font-family: 'Consolas', 'Courier New', monospace;
+        font-size: 0.9em;
+    }
+    .toc {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    .toc a {
+        color: var(--accent);
+        text-decoration: none;
+    }
+    .toc a:hover {
+        text-decoration: underline;
+    }
+    .stage-badge {
+        display: inline-block;
+        padding: 0.15rem 0.6rem;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #0f172a;
+    }
+    .meta-box {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 1rem 1.5rem;
+        margin: 1rem 0;
+    }
+    .warning-box {
+        background: #451a03;
+        border: 1px solid #f59e0b;
+        border-radius: 8px;
+        padding: 1rem 1.5rem;
+        margin: 1rem 0;
+        color: #fbbf24;
+    }
+    .note-box {
+        background: #0c4a6e;
+        border: 1px solid #0ea5e9;
+        border-radius: 8px;
+        padding: 1rem 1.5rem;
+        margin: 1rem 0;
+        color: #7dd3fc;
+    }
+    .pipeline-diagram {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin: 1.5rem 0;
+        overflow-x: auto;
+        font-family: 'Consolas', 'Courier New', monospace;
+        font-size: 0.85rem;
+        line-height: 1.4;
+        white-space: pre;
+    }
+    .section-divider {
+        border: none;
+        border-top: 1px solid var(--border);
+        margin: 2rem 0;
+    }
+</style>
+</head>
+<body>
+
+<h1>8-Stage Pipelined RISC-V (RV32I) CPU - Architecture Specification</h1>
+
+<div class="meta-box">
+    <strong>ISA:</strong> RISC-V RV32I (Base Integer Instruction Set)<br>
+    <strong>Data Width:</strong> 32-bit<br>
+    <strong>Pipeline Depth:</strong> 8 stages<br>
+    <strong>Memory:</strong> Harvard architecture (separate instruction and data memories)<br>
+    <strong>FPGA Target:</strong> Intel/Altera (M9K BRAM inference)<br>
+    <strong>Features:</strong> Data forwarding, hazard detection with stalling, branch/jump resolution, MMIO peripherals<br>
+    <strong>Top Module:</strong> <code>core</code>
+</div>
+
+<!-- ============================================================ -->
+<!-- TABLE OF CONTENTS                                             -->
+<!-- ============================================================ -->
+<div class="toc">
+    <h3>Table of Contents</h3>
+    <ol>
+        <li><a href="#overview">Architecture Overview</a></li>
+        <li><a href="#pipeline-diagram">Pipeline Diagram</a></li>
+        <li><a href="#packages">Packages</a></li>
+        <li><a href="#stage1">Stage 1 - Fetch (F)</a></li>
+        <li><a href="#stage2">Stage 2 - Instruction Memory (IM)</a></li>
+        <li><a href="#stage3">Stage 3 - Decode (D)</a></li>
+        <li><a href="#stage4">Stage 4 - Register Read (RR)</a></li>
+        <li><a href="#stage5">Stage 5 - Execute 1 (EX1)</a></li>
+        <li><a href="#stage6">Stage 6 - Execute 2 (EX2)</a></li>
+        <li><a href="#stage7">Stage 7 - Execute 3 / Memory (EX3/MEM)</a></li>
+        <li><a href="#stage8">Stage 8 - Writeback (WB)</a></li>
+        <li><a href="#hazards">Hazard Detection and Stalling</a></li>
+        <li><a href="#forwarding">Data Forwarding</a></li>
+        <li><a href="#branches">Branch and Jump Handling</a></li>
+        <li><a href="#memory-system">Memory System</a></li>
+        <li><a href="#mmio">Memory-Mapped I/O (MMIO)</a></li>
+        <li><a href="#pipeline-registers">Pipeline Register Summary</a></li>
+        <li><a href="#control-signals">Control Signal Reference</a></li>
+        <li><a href="#module-hierarchy">Module Hierarchy</a></li>
+        <li><a href="#timing">Timing and Performance</a></li>
+        <li><a href="#corner-cases">Corner Cases and Assumptions</a></li>
+    </ol>
+</div>
+
+<!-- ============================================================ -->
+<!-- 1. ARCHITECTURE OVERVIEW                                      -->
+<!-- ============================================================ -->
+<h2 id="overview">1. Architecture Overview</h2>
+
+<p>
+    This is an 8-stage pipelined RISC-V processor implementing the RV32I base integer instruction set.
+    The pipeline splits a classic 5-stage design into 8 stages to improve clock frequency on FPGA targets
+    by reducing the critical path length per stage. The stages are:
+</p>
+
+<ol>
+    <li><strong>Fetch (F)</strong> - PC generation and update</li>
+    <li><strong>Instruction Memory (IM)</strong> - Synchronous instruction memory read (1-cycle latency)</li>
+    <li><strong>Decode (D)</strong> - Instruction decoding, control signal generation, immediate extraction</li>
+    <li><strong>Register Read (RR)</strong> - Register file read (synchronous, 1-cycle latency), forwarding decision</li>
+    <li><strong>Execute 1 (EX1)</strong> - Operand selection with forwarding muxes</li>
+    <li><strong>Execute 2 (EX2)</strong> - ALU computation, branch condition evaluation, branch target calculation</li>
+    <li><strong>Execute 3 / Memory (EX3/MEM)</strong> - PC target finalization, memory read/write initiation</li>
+    <li><strong>Writeback (WB)</strong> - Write-back data selection and register file write</li>
+</ol>
+
+<p>
+    The processor uses a Harvard memory architecture with separate instruction and data memories.
+    Both memories are synchronous (M9K BRAM-based), introducing one-cycle read latency each.
+    Data hazards are resolved through a combination of stalling (hazard detection unit) and
+    data forwarding (forwarding unit). Branch and jump resolution occurs in Stage 7 (EX3/MEM),
+    with a flush penalty of 6 pipeline stages on taken branches and jumps.
+</p>
+
+<!-- ============================================================ -->
+<!-- 2. PIPELINE DIAGRAM                                           -->
+<!-- ============================================================ -->
+<h2 id="pipeline-diagram">2. Pipeline Diagram</h2>
+
+<div class="pipeline-diagram">
+                       stall_frontend                        flush (E3_pc_sel)
+                       |                                     |
+  +--------+  +--------+  +--------+  +--------+  +--------+  +--------+  +--------+  +--------+
+  | Stage 1|  | Stage 2|  | Stage 3|  | Stage 4|  | Stage 5|  | Stage 6|  | Stage 7|  | Stage 8|
+  |  FETCH |->|  IMEM  |->| DECODE |->|REG READ|->|  EX1   |->|  EX2   |->|EX3/MEM |->|   WB   |
+  |        |  |        |  |        |  |        |  |        |  |        |  |        |  |        |
+  |pc_update| |instr_mem| |IF_ID   |  |regfile |  |data_sel|  |alu     |  |pc_tgt  |  |write-  |
+  |        |  |        |  |decode  |  |fwd_unit|  |        |  |br_eval |  |memory  |  |back    |
+  |        |  |        |  |imm_gen |  |ID_RR   |  |        |  |        |  |MEM_WB  |  |        |
+  |        |  |        |  |control |  |RR_EX1  |  |EX1_EX2 |  |EX2_EX3 |  |        |  |        |
+  +--------+  +--------+  +--------+  +--------+  +--------+  +--------+  +--------+  +--------+
+       |                                                                       |            |
+       +<----------------------------------------------------------------------+            |
+       |                        pc_sel, pc_target                                           |
+       |                                                                                    |
+       |    Forwarding Paths:                                                               |
+       |    E2_fwd_val  (EX2 -> EX1 data_sel)  = (wb_sel==10) ? PC+4 : alu_result          |
+       |    E3_fwd_val  (EX3 -> EX1 data_sel)  = (wb_sel==10) ? PC+4 : alu_result          |
+       |    W_fwd_val   (WB  -> EX1 data_sel)  = W_write_data  (currently unused)           |
+       |                                                                                    |
+       +<------------------------------- W_rd, W_write_data, W_reg_write -------------------+
+                                         (Register File Write Port)
+
+  Hazard Detection Unit:
+  Inputs from: D (rs1, rs2, uses_rs1, uses_rs2), RR (rd, reg_write), E1 (rd, reg_write),
+               E2 (rd, mem_read), E3 (rd, mem_read)
+  Output: stall_frontend -> stalls Stages 1-3, inserts bubble at ID_RR boundary
+</div>
+
+<!-- ============================================================ -->
+<!-- 3. PACKAGES                                                   -->
+<!-- ============================================================ -->
+<h2 id="packages">3. Packages</h2>
+
+<h3>3.1 alu_package (alu_pkg.sv)</h3>
+<p>Defines the ALU operation encoding as a 4-bit enumerated type <code>alu_operations</code>.</p>
+<table>
+    <tr><th>Operation</th><th>Encoding</th><th>Description</th></tr>
+    <tr><td><code>ALU_ADD</code></td><td>4'b0000</td><td>Addition (A + B)</td></tr>
+    <tr><td><code>ALU_SUB</code></td><td>4'b0001</td><td>Subtraction (A - B)</td></tr>
+    <tr><td><code>ALU_AND</code></td><td>4'b0010</td><td>Bitwise AND</td></tr>
+    <tr><td><code>ALU_OR</code></td><td>4'b0011</td><td>Bitwise OR</td></tr>
+    <tr><td><code>ALU_XOR</code></td><td>4'b0100</td><td>Bitwise XOR</td></tr>
+    <tr><td><code>ALU_SLTU</code></td><td>4'b0101</td><td>Set Less Than Unsigned</td></tr>
+    <tr><td><code>ALU_SLT</code></td><td>4'b0110</td><td>Set Less Than Signed</td></tr>
+    <tr><td><code>ALU_SLL</code></td><td>4'b0111</td><td>Shift Left Logical</td></tr>
+    <tr><td><code>ALU_SRL</code></td><td>4'b1000</td><td>Shift Right Logical</td></tr>
+    <tr><td><code>ALU_SRA</code></td><td>4'b1001</td><td>Shift Right Arithmetic</td></tr>
+    <tr><td><code>ALU_PASS</code></td><td>4'b1010</td><td>Pass-through B (used for LUI)</td></tr>
+</table>
+
+<h3>3.2 decoder_package (decoder_pkg.sv)</h3>
+<p>Defines opcode and function field enumerations for instruction decoding.</p>
+
+<h4>Opcodes (opcode_t, 7-bit)</h4>
+<table>
+    <tr><th>Name</th><th>Encoding</th><th>Instruction Type</th></tr>
+    <tr><td><code>OP_R</code></td><td>7'b0110011</td><td>R-type (register-register ALU)</td></tr>
+    <tr><td><code>OP_I</code></td><td>7'b0010011</td><td>I-type (register-immediate ALU)</td></tr>
+    <tr><td><code>OP_I_LOAD</code></td><td>7'b0000011</td><td>I-type (loads: LB, LH, LW, LBU, LHU)</td></tr>
+    <tr><td><code>OP_S</code></td><td>7'b0100011</td><td>S-type (stores: SB, SH, SW)</td></tr>
+    <tr><td><code>OP_B</code></td><td>7'b1100011</td><td>B-type (conditional branches)</td></tr>
+    <tr><td><code>OP_U_LUI</code></td><td>7'b0110111</td><td>U-type (Load Upper Immediate)</td></tr>
+    <tr><td><code>OP_U_AUIPC</code></td><td>7'b0010111</td><td>U-type (Add Upper Immediate to PC)</td></tr>
+    <tr><td><code>OP_J</code></td><td>7'b1101111</td><td>J-type (JAL)</td></tr>
+    <tr><td><code>OP_I_JALR</code></td><td>7'b1100111</td><td>I-type (JALR)</td></tr>
+</table>
+
+<h4>funct3 for R/I-type ALU (f3_RI_t, 3-bit)</h4>
+<table>
+    <tr><th>Name</th><th>Encoding</th><th>Operation</th></tr>
+    <tr><td><code>F3_ADD_SUB</code></td><td>3'b000</td><td>ADD / SUB (distinguished by funct7)</td></tr>
+    <tr><td><code>F3_SLL</code></td><td>3'b001</td><td>Shift Left Logical</td></tr>
+    <tr><td><code>F3_SLT</code></td><td>3'b010</td><td>Set Less Than</td></tr>
+    <tr><td><code>F3_SLTU</code></td><td>3'b011</td><td>Set Less Than Unsigned</td></tr>
+    <tr><td><code>F3_XOR</code></td><td>3'b100</td><td>XOR</td></tr>
+    <tr><td><code>F3_SRL_SRA</code></td><td>3'b101</td><td>SRL / SRA (distinguished by funct7)</td></tr>
+    <tr><td><code>F3_OR</code></td><td>3'b110</td><td>OR</td></tr>
+    <tr><td><code>F3_AND</code></td><td>3'b111</td><td>AND</td></tr>
+</table>
+
+<h4>funct7 for R-type (f7_R_t, 7-bit)</h4>
+<table>
+    <tr><th>Name</th><th>Encoding</th><th>Usage</th></tr>
+    <tr><td><code>F7_ADD_SRL</code></td><td>7'b0000000</td><td>Selects ADD (with F3_ADD_SUB) or SRL (with F3_SRL_SRA)</td></tr>
+    <tr><td><code>F7_SUB_SRA</code></td><td>7'b0100000</td><td>Selects SUB (with F3_ADD_SUB) or SRA (with F3_SRL_SRA)</td></tr>
+</table>
+
+<!-- ============================================================ -->
+<!-- 4. STAGE 1 - FETCH                                            -->
+<!-- ============================================================ -->
+<h2 id="stage1">4. Stage 1 - Fetch (F)</h2>
+
+<h3>Module: <code>pc_update</code></h3>
+<p>File: <code>rtl/core/1_fetch/pc_update.sv</code></p>
+<p>Generates the program counter. On each rising clock edge, updates PC based on priority:</p>
+<ol>
+    <li><code>reset</code> - PC resets to <code>32'b0</code></li>
+    <li><code>pc_sel</code> (branch/jump taken) - PC loads <code>pc_target</code> from Stage 7</li>
+    <li><code>stall</code> (hazard detected) - PC holds its current value</li>
+    <li>Default - PC increments by 4 (<code>pc + 4</code>)</li>
+</ol>
+
+<h4>Port Interface</h4>
+<table>
+    <tr><th>Port</th><th>Direction</th><th>Width</th><th>Description</th></tr>
+    <tr><td><code>clk</code></td><td>input</td><td>1</td><td>System clock</td></tr>
+    <tr><td><code>reset</code></td><td>input</td><td>1</td><td>Synchronous reset</td></tr>
+    <tr><td><code>stall</code></td><td>input</td><td>1</td><td>From hazard detection unit (<code>stall_frontend</code>)</td></tr>
+    <tr><td><code>pc_sel</code></td><td>input</td><td>1</td><td>Branch/jump taken signal from Stage 7 (<code>E3_pc_sel</code>)</td></tr>
+    <tr><td><code>pc_target</code></td><td>input</td><td>32</td><td>Target PC from Stage 7 (<code>E3_pc_target</code>)</td></tr>
+    <tr><td><code>pc</code></td><td>output</td><td>32</td><td>Current program counter (<code>F_pc</code>)</td></tr>
+</table>
+
+<!-- ============================================================ -->
+<!-- 5. STAGE 2 - INSTRUCTION MEMORY                               -->
+<!-- ============================================================ -->
+<h2 id="stage2">5. Stage 2 - Instruction Memory (IM)</h2>
+
+<h3>Module: <code>instr_mem</code></h3>
+<p>File: <code>rtl/core/2_imem/instr_mem.sv</code></p>
+<p>
+    Synchronous instruction memory modeled as a 1024-entry ROM/RAM array, initialized from
+    <code>program.hex</code> via <code>$readmemh</code>. Uses M9K BRAM inference on Intel/Altera FPGAs.
+    The synchronous read introduces a 1-cycle latency, justifying a dedicated pipeline stage.
+</p>
+
+<h4>Behavior</h4>
+<ul>
+    <li>On each clock edge (when not stalled): reads <code>instruction_memory[pc[31:2]]</code> into <code>instr_reg</code> and latches <code>pc</code> into <code>pc_reg</code>.</li>
+    <li>A <code>flush_reg</code> flag is set on <code>reset</code> or <code>flush</code>, and cleared on the next non-stalled cycle.</li>
+    <li>When <code>flush_reg</code> is active, the output instruction is replaced with NOP (<code>32'h00000013</code>, which is <code>ADDI x0, x0, 0</code>) and <code>pc_out</code> is zeroed.</li>
+</ul>
+
+<h4>Port Interface</h4>
+<table>
+    <tr><th>Port</th><th>Direction</th><th>Width</th><th>Description</th></tr>
+    <tr><td><code>clk</code></td><td>input</td><td>1</td><td>System clock</td></tr>
+    <tr><td><code>reset</code></td><td>input</td><td>1</td><td>Synchronous reset</td></tr>
+    <tr><td><code>stall</code></td><td>input</td><td>1</td><td>Stall signal (<code>stall_frontend</code>)</td></tr>
+    <tr><td><code>flush</code></td><td>input</td><td>1</td><td>Flush signal (<code>E3_pc_sel</code>)</td></tr>
+    <tr><td><code>pc</code></td><td>input</td><td>32</td><td>Program counter from Stage 1 (<code>F_pc</code>)</td></tr>
+    <tr><td><code>pc_out</code></td><td>output</td><td>32</td><td>Registered PC (<code>IM_pc_out</code>)</td></tr>
+    <tr><td><code>instruction</code></td><td>output</td><td>32</td><td>Fetched instruction (<code>IM_instruction</code>)</td></tr>
+</table>
+
+<h4>Memory Parameters</h4>
+<table>
+    <tr><th>Parameter</th><th>Value</th><th>Description</th></tr>
+    <tr><td><code>MEM_DEPTH</code></td><td>1024</td><td>Number of 32-bit instruction words (4 KiB)</td></tr>
+</table>
+
+<!-- ============================================================ -->
+<!-- 6. STAGE 3 - DECODE                                           -->
+<!-- ============================================================ -->
+<h2 id="stage3">6. Stage 3 - Decode (D)</h2>
+
+<p>
+    Stage 3 contains the IF/ID pipeline register, the decode unit (which wraps the immediate generator
+    and control unit), and the ID/RR pipeline register at the stage boundary.
+</p>
+
+<h3>6.1 Module: <code>IF_ID</code> (Pipeline Register)</h3>
+<p>File: <code>rtl/core/3_decode/IF_ID.sv</code></p>
+<p>
+    Pipeline register between Stages 2 (IMEM) and 3 (Decode). Holds the instruction and PC.
+    On <code>reset</code> or <code>flush</code>, inserts a NOP (<code>32'h00000013</code>) and zeros the PC.
+    On <code>stall</code>, holds its current values.
+</p>
+
+<h4>Port Interface</h4>
+<table>
+    <tr><th>Port</th><th>Direction</th><th>Width</th><th>Description</th></tr>
+    <tr><td><code>clk</code></td><td>input</td><td>1</td><td>System clock</td></tr>
+    <tr><td><code>reset</code></td><td>input</td><td>1</td><td>Synchronous reset</td></tr>
+    <tr><td><code>stall</code></td><td>input</td><td>1</td><td>Stall signal (<code>stall_frontend</code>)</td></tr>
+    <tr><td><code>flush</code></td><td>input</td><td>1</td><td>Flush signal (<code>E3_pc_sel</code>)</td></tr>
+    <tr><td><code>pc_in</code></td><td>input</td><td>32</td><td>PC from IMEM stage (<code>IM_pc_out</code>)</td></tr>
+    <tr><td><code>instruction_in</code></td><td>input</td><td>32</td><td>Instruction from IMEM (<code>IM_instruction</code>)</td></tr>
+    <tr><td><code>pc_out</code></td><td>output</td><td>32</td><td>Registered PC (<code>D_pc</code>)</td></tr>
+    <tr><td><code>instruction_out</code></td><td>output</td><td>32</td><td>Registered instruction (<code>D_instruction</code>)</td></tr>
+</table>
+
+<h3>6.2 Module: <code>decode</code> (Decode Unit)</h3>
+<p>File: <code>rtl/core/3_decode/decode.sv</code></p>
+<p>
+    Top-level decode wrapper. Extracts <code>rs1</code> (bits [19:15]), <code>rs2</code> (bits [24:20]),
+    and <code>rd</code> (bits [11:7]) from the instruction. Instantiates <code>imm_gen</code> and <code>control</code>
+    as sub-modules. All outputs are purely combinational.
+</p>
+
+<h4>Port Interface</h4>
+<table>
+    <tr><th>Port</th><th>Direction</th><th>Width</th><th>Description</th></tr>
+    <tr><td><code>pc</code></td><td>input</td><td>32</td><td>Program counter (<code>D_pc</code>)</td></tr>
+    <tr><td><code>instruction</code></td><td>input</td><td>32</td><td>32-bit instruction (<code>D_instruction</code>)</td></tr>
+    <tr><td><code>immediate</code></td><td>output</td><td>32</td><td>Sign-extended immediate value</td></tr>
+    <tr><td><code>rs1</code></td><td>output</td><td>5</td><td>Source register 1 address</td></tr>
+    <tr><td><code>rs2</code></td><td>output</td><td>5</td><td>Source register 2 address</td></tr>
+    <tr><td><code>rd</code></td><td>output</td><td>5</td><td>Destination register address</td></tr>
+    <tr><td><code>pc_out</code></td><td>output</td><td>32</td><td>PC pass-through</td></tr>
+    <tr><td><code>uses_rs1</code></td><td>output</td><td>1</td><td>Instruction reads rs1</td></tr>
+    <tr><td><code>uses_rs2</code></td><td>output</td><td>1</td><td>Instruction reads rs2</td></tr>
+    <tr><td><code>alu_op</code></td><td>output</td><td>4</td><td>ALU operation select</td></tr>
+    <tr><td><code>alu_src_a</code></td><td>output</td><td>1</td><td>0=rs1, 1=PC for ALU input A</td></tr>
+    <tr><td><code>alu_src_b</code></td><td>output</td><td>1</td><td>0=rs2, 1=immediate for ALU input B</td></tr>
+    <tr><td><code>reg_write</code></td><td>output</td><td>1</td><td>Register write enable</td></tr>
+    <tr><td><code>mem_read</code></td><td>output</td><td>1</td><td>Memory read enable</td></tr>
+    <tr><td><code>mem_write</code></td><td>output</td><td>1</td><td>Memory write enable</td></tr>
+    <tr><td><code>mem_size</code></td><td>output</td><td>2</td><td>Memory access size: 00=byte, 01=halfword, 10=word</td></tr>
+    <tr><td><code>mem_unsigned</code></td><td>output</td><td>1</td><td>Unsigned memory load flag</td></tr>
+    <tr><td><code>wb_sel</code></td><td>output</td><td>2</td><td>Writeback source: 00=ALU, 01=memory, 10=PC+4</td></tr>
+    <tr><td><code>branch</code></td><td>output</td><td>1</td><td>Branch instruction flag</td></tr>
+    <tr><td><code>jump</code></td><td>output</td><td>1</td><td>Jump instruction flag (JAL/JALR)</td></tr>
+    <tr><td><code>branch_type</code></td><td>output</td><td>3</td><td>Branch condition type (funct3 encoding)</td></tr>
+</table>
+
+<h3>6.3 Module: <code>imm_gen</code> (Immediate Generator)</h3>
+<p>File: <code>rtl/core/3_decode/imm_gen.sv</code></p>
+<p>
+    Generates sign-extended 32-bit immediate values based on the RISC-V instruction format.
+    Selection is determined by the opcode field.
+</p>
+
+<table>
+    <tr><th>Format</th><th>Opcodes</th><th>Immediate Construction</th></tr>
+    <tr><td>I-type</td><td><code>OP_I</code>, <code>OP_I_LOAD</code>, <code>OP_I_JALR</code></td><td><code>{{20{inst[31]}}, inst[31:20]}</code></td></tr>
+    <tr><td>S-type</td><td><code>OP_S</code></td><td><code>{{20{inst[31]}}, inst[31:25], inst[11:7]}</code></td></tr>
+    <tr><td>B-type</td><td><code>OP_B</code></td><td><code>{{19{inst[31]}}, inst[31], inst[7], inst[30:25], inst[11:8], 1'b0}</code></td></tr>
+    <tr><td>U-type</td><td><code>OP_U_LUI</code>, <code>OP_U_AUIPC</code></td><td><code>{inst[31:12], 12'b0}</code></td></tr>
+    <tr><td>J-type</td><td><code>OP_J</code></td><td><code>{{11{inst[31]}}, inst[31], inst[19:12], inst[20], inst[30:21], 1'b0}</code></td></tr>
+</table>
+
+<h3>6.4 Module: <code>control</code> (Control Unit)</h3>
+<p>File: <code>rtl/core/3_decode/control.sv</code></p>
+<p>
+    Decodes the instruction opcode, funct3, and funct7 fields to produce all control signals.
+    Combinational logic only. Imports both <code>decoder_package</code> and <code>alu_package</code>.
+</p>
+
+<h4>Control Signal Generation by Instruction Type</h4>
+<table>
+    <tr><th>Instruction</th><th>uses_rs1</th><th>uses_rs2</th><th>alu_src_a</th><th>alu_src_b</th><th>reg_write</th><th>mem_read</th><th>mem_write</th><th>wb_sel</th><th>branch</th><th>jump</th></tr>
+    <tr><td>R-type</td><td>1</td><td>1</td><td>0</td><td>0</td><td>1</td><td>0</td><td>0</td><td>00</td><td>0</td><td>0</td></tr>
+    <tr><td>I-type ALU</td><td>1</td><td>0</td><td>0</td><td>1</td><td>1</td><td>0</td><td>0</td><td>00</td><td>0</td><td>0</td></tr>
+    <tr><td>Load</td><td>1</td><td>0</td><td>0</td><td>1</td><td>1</td><td>1</td><td>0</td><td>01</td><td>0</td><td>0</td></tr>
+    <tr><td>Store</td><td>1</td><td>1</td><td>0</td><td>1</td><td>0</td><td>0</td><td>1</td><td>00</td><td>0</td><td>0</td></tr>
+    <tr><td>Branch</td><td>1</td><td>1</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>00</td><td>1</td><td>0</td></tr>
+    <tr><td>LUI</td><td>0</td><td>0</td><td>0</td><td>1</td><td>1</td><td>0</td><td>0</td><td>00</td><td>0</td><td>0</td></tr>
+    <tr><td>AUIPC</td><td>0</td><td>0</td><td>1</td><td>1</td><td>1</td><td>0</td><td>0</td><td>00</td><td>0</td><td>0</td></tr>
+    <tr><td>JAL</td><td>0</td><td>0</td><td>1</td><td>1</td><td>1</td><td>0</td><td>0</td><td>10</td><td>0</td><td>1</td></tr>
+    <tr><td>JALR</td><td>1</td><td>0</td><td>0</td><td>1</td><td>1</td><td>0</td><td>0</td><td>10</td><td>0</td><td>1</td></tr>
+</table>
+
+<div class="note-box">
+    <strong>Note:</strong> <code>mem_size</code> is assigned directly from <code>funct3[1:0]</code>,
+    <code>mem_unsigned</code> from <code>funct3[2]</code>, and <code>branch_type</code> from <code>funct3</code>.
+    These are valid for load, store, and branch instructions respectively; for other instruction types they are
+    don't-care values because the corresponding enable signals (<code>mem_read</code>, <code>mem_write</code>, <code>branch</code>)
+    are deasserted.
+</div>
+
+<h4>ALU Operation Selection</h4>
+<table>
+    <tr><th>Instruction Type</th><th>ALU Operation Logic</th></tr>
+    <tr><td>R-type</td><td>Decoded from funct3 + funct7 to specific ALU op</td></tr>
+    <tr><td>I-type ALU</td><td>Decoded from funct3 (+ funct7 for shifts) to specific ALU op</td></tr>
+    <tr><td>Load / Store</td><td><code>ALU_ADD</code> (address calculation)</td></tr>
+    <tr><td>Branch</td><td><code>ALU_SUB</code> (BEQ/BNE), <code>ALU_SLT</code> (BLT/BGE), <code>ALU_SLTU</code> (BLTU/BGEU)</td></tr>
+    <tr><td>LUI</td><td><code>ALU_PASS</code> (pass immediate through)</td></tr>
+    <tr><td>AUIPC</td><td><code>ALU_ADD</code> (PC + immediate)</td></tr>
+    <tr><td>JAL / JALR</td><td><code>ALU_ADD</code> (target address calculation)</td></tr>
+</table>
+
+<h3>6.5 Module: <code>ID_RR</code> (Pipeline Register)</h3>
+<p>File: <code>rtl/core/3_decode/ID_RR.sv</code></p>
+<p>
+    Pipeline register at the Decode/Register-Read boundary. Registers all decoded data fields
+    and control signals. On <code>reset</code> or <code>flush</code>, all outputs are zeroed (inserting a NOP bubble).
+    On <code>stall</code>, holds current values.
+</p>
+<div class="warning-box">
+    <strong>Important:</strong> In the core instantiation, <code>ID_RR.flush</code> is driven by
+    <code>flush || stall_frontend</code>. This means that when the frontend is stalled, the ID_RR register
+    is flushed (bubble inserted) rather than held. This prevents a stalled instruction from being
+    duplicated into the backend.
+</div>
+
+<h4>Registered Signals</h4>
+<p>Immediate (32b), rs1 (5b), rs2 (5b), rd (5b), pc (32b), uses_rs1 (1b), uses_rs2 (1b),
+alu_op (4b), alu_src_a (1b), alu_src_b (1b), reg_write (1b), mem_read (1b), mem_write (1b),
+mem_size (2b), mem_unsigned (1b), wb_sel (2b), branch (1b), jump (1b), branch_type (3b).</p>
+
+<!-- ============================================================ -->
+<!-- 7. STAGE 4 - REGISTER READ                                    -->
+<!-- ============================================================ -->
+<h2 id="stage4">7. Stage 4 - Register Read (RR)</h2>
+
+<p>
+    Stage 4 reads operands from the register file (synchronous read, 1-cycle latency) and
+    computes forwarding select signals for Stage 5.
+</p>
+
+<h3>7.1 Module: <code>regfile</code> (Register File)</h3>
+<p>File: <code>rtl/core/4_reg_read/regfile.sv</code></p>
+<p>
+    32-entry x 32-bit register file with two synchronous read ports and one synchronous write port.
+    Register <code>x0</code> is hardwired to zero (writes to <code>x0</code> are suppressed).
+    Supports read-during-write forwarding: if the write address matches a read address in the same cycle,
+    the write data is forwarded to the read output.
+</p>
+
+<h4>Port Interface</h4>
+<table>
+    <tr><th>Port</th><th>Direction</th><th>Width</th><th>Description</th></tr>
+    <tr><td><code>clk</code></td><td>input</td><td>1</td><td>System clock</td></tr>
+    <tr><td><code>read_address1</code></td><td>input</td><td>5</td><td>Read port 1 address (<code>IDRR_rs1</code>)</td></tr>
+    <tr><td><code>read_address2</code></td><td>input</td><td>5</td><td>Read port 2 address (<code>IDRR_rs2</code>)</td></tr>
+    <tr><td><code>read_data1</code></td><td>output</td><td>32</td><td>Read port 1 data (<code>E1_rs1_data</code>)</td></tr>
+    <tr><td><code>read_data2</code></td><td>output</td><td>32</td><td>Read port 2 data (<code>E1_rs2_data</code>)</td></tr>
+    <tr><td><code>write_address</code></td><td>input</td><td>5</td><td>Write port address (<code>W_rd</code>)</td></tr>
+    <tr><td><code>write_data</code></td><td>input</td><td>32</td><td>Write port data (<code>W_write_data</code>)</td></tr>
+    <tr><td><code>write_enable</code></td><td>input</td><td>1</td><td>Write enable (<code>W_reg_write</code>)</td></tr>
+</table>
+
+<div class="note-box">
+    <strong>Note:</strong> The register file uses synchronous reads (clocked), which means the read data
+    appears one cycle after the address is presented. This is why the register file read occupies its own
+    pipeline stage (Stage 4). The read addresses come from the ID_RR register (end of Stage 3), and the
+    read data emerges at the input to Stage 5 (EX1).
+</div>
+
+<h3>7.2 Module: <code>forwarding_unit</code></h3>
+<p>File: <code>rtl/core/hazard_control/forwarding_unit.sv</code></p>
+<p>
+    Computed in Stage 4 (using ID_RR outputs) but the select signals are consumed in Stage 5 (via RR_EX1 register).
+    See <a href="#forwarding">Section 13: Data Forwarding</a> for full details.
+</p>
+
+<h3>7.3 Module: <code>RR_EX1</code> (Pipeline Register)</h3>
+<p>File: <code>rtl/core/4_reg_read/RR_EX1.sv</code></p>
+<p>
+    Pipeline register at the Register-Read/EX1 boundary. Registers all data, control, and forwarding
+    select signals. On <code>reset</code> or <code>flush</code>, all outputs are zeroed. No stall input (this
+    register is never stalled; only the frontend stages 1-3 stall).
+</p>
+
+<h4>Registered Signals</h4>
+<p>All signals from ID_RR, plus: <code>forward_a_sel</code> (2b) and <code>forward_b_sel</code> (2b).</p>
+
+<!-- ============================================================ -->
+<!-- 8. STAGE 5 - EXECUTE 1                                        -->
+<!-- ============================================================ -->
+<h2 id="stage5">8. Stage 5 - Execute 1 (EX1)</h2>
+
+<p>
+    Stage 5 applies forwarding muxes to select the correct operand values before the ALU.
+</p>
+
+<h3>8.1 Module: <code>data_sel</code> (Operand Selection Unit)</h3>
+<p>File: <code>rtl/core/5_ex1/data_sel.sv</code></p>
+<p>
+    Multiplexes between register file data, forwarded data from downstream stages, PC, and immediate
+    values to produce the final ALU operands.
+</p>
+
+<h4>Operand A Selection</h4>
+<ol>
+    <li><code>forward_a_sel</code> selects the base rs1 value:
+        <ul>
+            <li><code>2'b00</code>: <code>rs1_data</code> (from register file)</li>
+            <li><code>2'b01</code>: <code>fwd_ex2_data</code> (forwarded from EX2/EX3 boundary = <code>E3_fwd_val</code>)</li>
+            <li><code>2'b10</code>: <code>fwd_ex3_data</code> (forwarded from EX3/WB boundary = <code>W_fwd_val</code>)</li>
+        </ul>
+    </li>
+    <li><code>alu_src_a</code> selects between <code>rs1_final</code> (0) and <code>pc</code> (1).</li>
+</ol>
+
+<h4>Operand B Selection</h4>
+<ol>
+    <li><code>forward_b_sel</code> selects the base rs2 value (same encoding as above).</li>
+    <li><code>alu_src_b</code> selects between <code>rs2_final</code> (0) and <code>imm</code> (1).</li>
+</ol>
+
+<p>Additionally, <code>rs2_data_out</code> outputs the forwarded rs2 value (before the alu_src_b mux),
+which is used as store data for memory write instructions.</p>
+
+<h4>Forwarding Value Sources (defined in core.sv)</h4>
+<table>
+    <tr><th>Signal</th><th>Source</th><th>Value</th></tr>
+    <tr><td><code>E2_fwd_val</code></td><td>Connected to <code>fwd_ex2_data</code> via <code>E3_fwd_val</code></td><td><code>(E2_wb_sel == 2'b10) ? E2_pc + 4 : E2_alu_result</code></td></tr>
+    <tr><td><code>E3_fwd_val</code></td><td>Connected to <code>fwd_ex2_data</code> input</td><td><code>(E3_wb_sel == 2'b10) ? E3_pc + 4 : E3_alu_result</code></td></tr>
+    <tr><td><code>W_fwd_val</code></td><td>Connected to <code>fwd_ex3_data</code> input</td><td><code>W_write_data</code></td></tr>
+</table>
+
+<div class="warning-box">
+    <strong>Important wiring detail:</strong> In <code>core.sv</code>, <code>data_sel.fwd_ex2_data</code> is connected to
+    <code>E3_fwd_val</code> (not <code>E2_fwd_val</code>), and <code>data_sel.fwd_ex3_data</code> is connected to
+    <code>W_fwd_val</code>. The third input <code>fwd_wb_data</code> is tied to <code>32'b0</code> and is currently
+    unused. The forwarding select encoding from the forwarding unit (2'b01 = EX2 stage result,
+    2'b10 = EX3 stage result) maps to these physical connections.
+</div>
+
+<h3>8.2 Module: <code>EX1_EX2</code> (Pipeline Register)</h3>
+<p>File: <code>rtl/core/5_ex1/EX1_EX2.sv</code></p>
+<p>
+    Pipeline register at the EX1/EX2 boundary. Registers selected operands, ALU control, branch/jump
+    signals, memory control, and writeback signals. On <code>reset</code> or <code>flush</code>, all outputs
+    are zeroed.
+</p>
+
+<h4>Registered Signals</h4>
+<p>PC (32b), alu_op (4b), imm (32b), branch (1b), jump (1b), branch_type (3b), reg_write (1b),
+rd (5b), operand_a (32b), operand_b (32b), rs2_data (32b), mem_read (1b), mem_write (1b),
+mem_size (2b), mem_unsigned (1b), wb_sel (2b).</p>
+
+<!-- ============================================================ -->
+<!-- 9. STAGE 6 - EXECUTE 2                                        -->
+<!-- ============================================================ -->
+<h2 id="stage6">9. Stage 6 - Execute 2 (EX2)</h2>
+
+<p>
+    Stage 6 performs the main ALU computation and evaluates branch conditions.
+</p>
+
+<h3>9.1 Module: <code>alu</code> (Arithmetic Logic Unit)</h3>
+<p>File: <code>rtl/core/6_ex2/alu.sv</code></p>
+<p>
+    Purely combinational ALU. All operations are computed in parallel; the <code>control</code> input selects
+    which result to output.
+</p>
+
+<h4>Port Interface</h4>
+<table>
+    <tr><th>Port</th><th>Direction</th><th>Width</th><th>Description</th></tr>
+    <tr><td><code>A</code></td><td>input</td><td>32</td><td>Operand A (<code>E2_operand_a</code>)</td></tr>
+    <tr><td><code>B</code></td><td>input</td><td>32</td><td>Operand B (<code>E2_operand_b</code>)</td></tr>
+    <tr><td><code>control</code></td><td>input</td><td>4</td><td>ALU operation select (<code>E2_alu_op</code>)</td></tr>
+    <tr><td><code>result</code></td><td>output</td><td>32</td><td>ALU result (<code>E2_alu_result</code>)</td></tr>
+</table>
+
+<h4>Operations</h4>
+<p>
+    ADD, SUB, AND, OR, XOR are straightforward 32-bit operations.
+    Shifts (SLL, SRL, SRA) use only <code>B[4:0]</code> as the shift amount.
+    SLT and SLTU produce a 32-bit result with the comparison result in bit 0 and zeros in bits [31:1].
+    ALU_PASS outputs B directly (used for LUI).
+</p>
+
+<h3>9.2 Module: <code>branch_eval</code> (Branch Evaluation Unit)</h3>
+<p>File: <code>rtl/core/6_ex2/branch_eval.sv</code></p>
+<p>
+    Evaluates branch conditions and computes the branch target address. Purely combinational.
+</p>
+
+<h4>Port Interface</h4>
+<table>
+    <tr><th>Port</th><th>Direction</th><th>Width</th><th>Description</th></tr>
+    <tr><td><code>pc</code></td><td>input</td><td>32</td><td>PC of the branch instruction (<code>E2_pc</code>)</td></tr>
+    <tr><td><code>imm</code></td><td>input</td><td>32</td><td>Branch offset immediate (<code>E2_imm</code>)</td></tr>
+    <tr><td><code>operand_a</code></td><td>input</td><td>32</td><td>Source operand A (<code>E2_operand_a</code>)</td></tr>
+    <tr><td><code>operand_b</code></td><td>input</td><td>32</td><td>Source operand B (<code>E2_operand_b</code>)</td></tr>
+    <tr><td><code>branch_type</code></td><td>input</td><td>3</td><td>Branch condition type (funct3)</td></tr>
+    <tr><td><code>condition_met</code></td><td>output</td><td>1</td><td>Branch condition result (<code>E2_condition_met</code>)</td></tr>
+    <tr><td><code>branch_target</code></td><td>output</td><td>32</td><td>Branch target address: <code>pc + imm</code> (<code>E2_branch_target</code>)</td></tr>
+</table>
+
+<h4>Branch Condition Evaluation</h4>
+<table>
+    <tr><th>branch_type</th><th>RISC-V Mnemonic</th><th>Condition</th></tr>
+    <tr><td>3'b000</td><td>BEQ</td><td><code>operand_a == operand_b</code></td></tr>
+    <tr><td>3'b001</td><td>BNE</td><td><code>operand_a != operand_b</code></td></tr>
+    <tr><td>3'b100</td><td>BLT</td><td><code>$signed(operand_a) &lt; $signed(operand_b)</code></td></tr>
+    <tr><td>3'b101</td><td>BGE</td><td><code>$signed(operand_a) &gt;= $signed(operand_b)</code></td></tr>
+    <tr><td>3'b110</td><td>BLTU</td><td><code>operand_a &lt; operand_b</code></td></tr>
+    <tr><td>3'b111</td><td>BGEU</td><td><code>operand_a &gt;= operand_b</code></td></tr>
+</table>
+
+<div class="note-box">
+    <strong>Note:</strong> The branch condition evaluation in <code>branch_eval</code> operates on the
+    raw operand values (operand_a and operand_b), which are the same values fed to the ALU.
+    For branch instructions, <code>alu_src_a=0</code> and <code>alu_src_b=0</code>, so these are the
+    (possibly forwarded) register values. The branch target is always computed as <code>pc + imm</code>
+    regardless of the branch type.
+</div>
+
+<h3>9.3 Module: <code>EX2_EX3</code> (Pipeline Register)</h3>
+<p>File: <code>rtl/core/6_ex2/EX2_EX3.sv</code></p>
+<p>
+    Pipeline register at the EX2/EX3 boundary. Registers ALU result, branch evaluation outputs,
+    memory control, and writeback signals. On <code>reset</code> or <code>flush</code>, all outputs are zeroed.
+</p>
+
+<h4>Registered Signals</h4>
+<p>PC (32b), imm (32b), branch (1b), jump (1b), branch_type (3b), reg_write (1b), rd (5b),
+operand_a (32b), operand_b (32b), rs2_data (32b), alu_result (32b), condition_met (1b),
+branch_target (32b), mem_read (1b), mem_write (1b), mem_size (2b), mem_unsigned (1b), wb_sel (2b).</p>
+
+<!-- ============================================================ -->
+<!-- 10. STAGE 7 - EXECUTE 3 / MEMORY                              -->
+<!-- ============================================================ -->
+<h2 id="stage7">10. Stage 7 - Execute 3 / Memory (EX3/MEM)</h2>
+
+<p>
+    Stage 7 performs three operations: PC target finalization for branches/jumps, memory access initiation,
+    and preparation of the writeback intermediate value. This is the stage where branch/jump resolution
+    occurs, generating the flush signal.
+</p>
+
+<h3>10.1 Module: <code>pc_target_calc</code> (PC Target Calculator)</h3>
+<p>File: <code>rtl/core/7_ex3_mem/pc_target_calc.sv</code></p>
+<p>
+    Computes the final PC selection signal and target address for branches and jumps.
+</p>
+
+<h4>Port Interface</h4>
+<table>
+    <tr><th>Port</th><th>Direction</th><th>Width</th><th>Description</th></tr>
+    <tr><td><code>pc</code></td><td>input</td><td>32</td><td>PC of the instruction (<code>E3_pc</code>)</td></tr>
+    <tr><td><code>operand_a</code></td><td>input</td><td>32</td><td>Operand A (unused in current logic)</td></tr>
+    <tr><td><code>operand_b</code></td><td>input</td><td>32</td><td>Operand B (unused in current logic)</td></tr>
+    <tr><td><code>branch</code></td><td>input</td><td>1</td><td>Branch flag (<code>E3_branch</code>)</td></tr>
+    <tr><td><code>jump</code></td><td>input</td><td>1</td><td>Jump flag (<code>E3_jump</code>)</td></tr>
+    <tr><td><code>branch_type</code></td><td>input</td><td>3</td><td>Branch type (unused in current logic)</td></tr>
+    <tr><td><code>imm</code></td><td>input</td><td>32</td><td>Immediate value (<code>E3_imm</code>)</td></tr>
+    <tr><td><code>alu_result</code></td><td>input</td><td>32</td><td>ALU result (<code>E3_alu_result</code>)</td></tr>
+    <tr><td><code>condition_met_in</code></td><td>input</td><td>1</td><td>Branch condition result (<code>E3_condition_met</code>)</td></tr>
+    <tr><td><code>branch_target_in</code></td><td>input</td><td>32</td><td>Branch target from Stage 6 (<code>E3_branch_target</code>)</td></tr>
+    <tr><td><code>pc_sel</code></td><td>output</td><td>1</td><td>PC redirect signal (<code>E3_pc_sel</code>)</td></tr>
+    <tr><td><code>pc_target</code></td><td>output</td><td>32</td><td>Target PC value (<code>E3_pc_target</code>)</td></tr>
+</table>
+
+<h4>Behavior</h4>
+<ul>
+    <li><code>pc_sel = jump || (branch &amp;&amp; condition_met_in)</code></li>
+    <li>If <code>jump</code>: <code>pc_target = alu_result &amp; 32'hFFFFFFFC</code> (4-byte aligned)</li>
+    <li>If <code>branch &amp;&amp; condition_met</code>: <code>pc_target = branch_target_in &amp; 32'hFFFFFFFC</code> (4-byte aligned)</li>
+    <li>Otherwise: <code>pc_target = 32'b0</code></li>
+</ul>
+
+<div class="note-box">
+    <strong>JAL vs JALR target computation:</strong>
+    <ul>
+        <li><strong>JAL:</strong> <code>alu_src_a=1</code> (PC), <code>alu_src_b=1</code> (imm). ALU computes <code>PC + imm</code>.
+            <code>pc_target_calc</code> uses <code>alu_result &amp; 0xFFFFFFFC</code> as the jump target.</li>
+        <li><strong>JALR:</strong> <code>alu_src_a=0</code> (rs1), <code>alu_src_b=1</code> (imm). ALU computes <code>rs1 + imm</code>.
+            <code>pc_target_calc</code> uses <code>alu_result &amp; 0xFFFFFFFC</code> as the jump target, clearing the lowest 2 bits
+            per the RISC-V specification.</li>
+        <li><strong>Branch:</strong> Target is <code>branch_target_in</code> (= <code>PC + imm</code>, computed in <code>branch_eval</code>),
+            also 4-byte aligned.</li>
+    </ul>
+</div>
+
+<h3>10.2 Module: <code>memory</code> (Memory System Top-Level)</h3>
+<p>File: <code>rtl/core/7_ex3_mem/memory.sv</code></p>
+<p>
+    Memory interconnect that routes read/write requests to either data memory (BRAM) or MMIO based
+    on the address. See <a href="#memory-system">Section 15: Memory System</a> for full details.
+</p>
+
+<h3>10.3 Writeback Intermediate Value</h3>
+<p>
+    Computed in <code>core.sv</code> as combinational logic:
+</p>
+<p><code>W_wb_intermediate = (E3_wb_sel == 2'b10) ? E3_pc + 32'd4 : E3_alu_result</code></p>
+<p>
+    This pre-computes the non-memory writeback value (ALU result or PC+4 for link register writes).
+    The value is registered through MEM_WB as <code>alu_result_in</code>.
+</p>
+
+<h3>10.4 Module: <code>MEM_WB</code> (Pipeline Register)</h3>
+<p>File: <code>rtl/core/7_ex3_mem/MEM_WB.sv</code></p>
+<p>
+    Pipeline register at the MEM/WB boundary. On <code>reset</code> or <code>flush</code> (currently
+    hardwired to <code>1'b0</code>), all outputs are zeroed.
+</p>
+
+<h4>Port Interface</h4>
+<table>
+    <tr><th>Port</th><th>Direction</th><th>Width</th><th>Description</th></tr>
+    <tr><td><code>rd_in/out</code></td><td>I/O</td><td>5</td><td>Destination register</td></tr>
+    <tr><td><code>reg_write_in/out</code></td><td>I/O</td><td>1</td><td>Register write enable</td></tr>
+    <tr><td><code>alu_result_in/out</code></td><td>I/O</td><td>32</td><td>ALU result or PC+4 (<code>W_wb_intermediate</code>)</td></tr>
+    <tr><td><code>mem_read_data_in/out</code></td><td>I/O</td><td>32</td><td>Memory read data (input currently tied to <code>32'b0</code>)</td></tr>
+    <tr><td><code>wb_sel_in/out</code></td><td>I/O</td><td>2</td><td>Writeback source select</td></tr>
+    <tr><td><code>pc_in/out</code></td><td>I/O</td><td>32</td><td>PC value</td></tr>
+</table>
+
+<div class="warning-box">
+    <strong>Important:</strong> The <code>mem_read_data_in</code> port of <code>MEM_WB</code> is currently
+    tied to <code>32'b0</code> in the core instantiation. Memory read data (<code>W_mem_read_data</code>)
+    is instead routed directly from the <code>memory</code> module output to the <code>writeback</code>
+    module, bypassing the MEM_WB register. This means memory read data arrives one cycle later
+    than the registered ALU result, and the writeback mux operates with this timing difference.
+</div>
+
+<!-- ============================================================ -->
+<!-- 11. STAGE 8 - WRITEBACK                                       -->
+<!-- ============================================================ -->
+<h2 id="stage8">11. Stage 8 - Writeback (WB)</h2>
+
+<h3>Module: <code>writeback</code></h3>
+<p>File: <code>rtl/core/8_wb/writeback.sv</code></p>
+<p>
+    Combinational writeback multiplexer. Selects the data to write back to the register file.
+</p>
+
+<h4>Port Interface</h4>
+<table>
+    <tr><th>Port</th><th>Direction</th><th>Width</th><th>Description</th></tr>
+    <tr><td><code>pc</code></td><td>input</td><td>32</td><td>PC value (<code>W_pc</code>) - currently unused in mux logic</td></tr>
+    <tr><td><code>alu_result</code></td><td>input</td><td>32</td><td>ALU result / PC+4 from MEM_WB (<code>W_alu_result</code>)</td></tr>
+    <tr><td><code>mem_data</code></td><td>input</td><td>32</td><td>Memory read data (<code>W_mem_read_data</code>)</td></tr>
+    <tr><td><code>wb_sel</code></td><td>input</td><td>2</td><td>Writeback select (<code>W_wb_sel</code>)</td></tr>
+    <tr><td><code>write_data</code></td><td>output</td><td>32</td><td>Final writeback data (<code>W_write_data</code>)</td></tr>
+</table>
+
+<h4>Selection Logic</h4>
+<p><code>write_data = (wb_sel[0]) ? mem_data : alu_result</code></p>
+<table>
+    <tr><th>wb_sel</th><th>Source</th><th>Used By</th></tr>
+    <tr><td>2'b00</td><td><code>alu_result</code></td><td>R-type, I-type ALU, LUI, AUIPC</td></tr>
+    <tr><td>2'b01</td><td><code>mem_data</code></td><td>Load instructions</td></tr>
+    <tr><td>2'b10</td><td><code>alu_result</code> (which holds PC+4)</td><td>JAL, JALR (link address)</td></tr>
+</table>
+
+<div class="note-box">
+    <strong>Note:</strong> The mux uses only <code>wb_sel[0]</code>, so <code>wb_sel=2'b10</code> and
+    <code>wb_sel=2'b00</code> both select <code>alu_result</code>. For JAL/JALR, the <code>alu_result</code>
+    port already contains PC+4 because the <code>W_wb_intermediate</code> computation in <code>core.sv</code>
+    substitutes PC+4 when <code>wb_sel==2'b10</code>.
+</div>
+
+<!-- ============================================================ -->
+<!-- 12. HAZARD DETECTION AND STALLING                             -->
+<!-- ============================================================ -->
+<h2 id="hazards">12. Hazard Detection and Stalling</h2>
+
+<h3>Module: <code>hazard_detection_unit</code></h3>
+<p>File: <code>rtl/core/hazard_control/hazard_detection_unit.sv</code></p>
+<p>
+    Detects data hazards that cannot be resolved by forwarding alone, and asserts a stall signal
+    to freeze the pipeline frontend (Stages 1-3).
+</p>
+
+<h4>Port Interface</h4>
+<table>
+    <tr><th>Port</th><th>Direction</th><th>Width</th><th>Source</th><th>Description</th></tr>
+    <tr><td><code>D_rs1</code></td><td>input</td><td>5</td><td>Stage 3 decode</td><td>Source register 1 of current instruction in decode</td></tr>
+    <tr><td><code>D_rs2</code></td><td>input</td><td>5</td><td>Stage 3 decode</td><td>Source register 2 of current instruction in decode</td></tr>
+    <tr><td><code>D_uses_rs1</code></td><td>input</td><td>1</td><td>Stage 3 decode</td><td>Current instruction reads rs1</td></tr>
+    <tr><td><code>D_uses_rs2</code></td><td>input</td><td>1</td><td>Stage 3 decode</td><td>Current instruction reads rs2</td></tr>
+    <tr><td><code>RR_reg_write</code></td><td>input</td><td>1</td><td>ID_RR output</td><td>Instruction in RR stage writes a register</td></tr>
+    <tr><td><code>RR_rd</code></td><td>input</td><td>5</td><td>ID_RR output</td><td>Destination register of RR instruction</td></tr>
+    <tr><td><code>E1_reg_write</code></td><td>input</td><td>1</td><td>RR_EX1 output</td><td>Instruction in EX1 stage writes a register</td></tr>
+    <tr><td><code>E1_rd</code></td><td>input</td><td>5</td><td>RR_EX1 output</td><td>Destination register of EX1 instruction</td></tr>
+    <tr><td><code>E2_mem_read</code></td><td>input</td><td>1</td><td>EX1_EX2 output</td><td>Instruction in EX2 is a load</td></tr>
+    <tr><td><code>E2_rd</code></td><td>input</td><td>5</td><td>EX1_EX2 output</td><td>Destination register of EX2 instruction</td></tr>
+    <tr><td><code>E3_mem_read</code></td><td>input</td><td>1</td><td>EX2_EX3 output</td><td>Instruction in EX3 is a load</td></tr>
+    <tr><td><code>E3_rd</code></td><td>input</td><td>5</td><td>EX2_EX3 output</td><td>Destination register of EX3 instruction</td></tr>
+    <tr><td><code>stall</code></td><td>output</td><td>1</td><td>-</td><td>Stall signal (<code>stall_frontend</code>)</td></tr>
+</table>
+
+<h4>Stall Conditions</h4>
+<p>A stall is asserted when any of the following conditions are true (all require <code>rd != x0</code>):</p>
+<ol>
+    <li><strong>RR stage dependency:</strong> Instruction in RR (Stage 4) writes to a register that the
+        instruction in Decode (Stage 3) reads. This covers the case where an instruction is only 1 stage
+        ahead and its result is not yet available anywhere for forwarding.</li>
+    <li><strong>EX1 stage dependency:</strong> Instruction in EX1 (Stage 5) writes to a register that
+        the instruction in Decode reads. This covers the 2-stage gap where the result is not yet computed.</li>
+    <li><strong>EX2 load-use hazard:</strong> Instruction in EX2 (Stage 6) is a load (<code>E2_mem_read</code>)
+        and its destination matches a source register in Decode. Load data is not available until after
+        the memory read completes.</li>
+    <li><strong>EX3 load-use hazard:</strong> Instruction in EX3 (Stage 7) is a load (<code>E3_mem_read</code>)
+        and its destination matches a source register in Decode. Memory read data is still being fetched.</li>
+</ol>
+
+<h4>Stall Effect</h4>
+<ul>
+    <li><code>stall_frontend</code> freezes Stages 1-3: PC holds, IMEM holds, IF_ID holds, ID_RR is flushed.</li>
+    <li>The ID_RR flush on stall (<code>flush || stall_frontend</code>) inserts a NOP bubble into the backend pipeline.</li>
+    <li>Stages 4-8 continue to advance normally during a stall.</li>
+</ul>
+
+<!-- ============================================================ -->
+<!-- 13. DATA FORWARDING                                           -->
+<!-- ============================================================ -->
+<h2 id="forwarding">13. Data Forwarding</h2>
+
+<h3>Module: <code>forwarding_unit</code></h3>
+<p>File: <code>rtl/core/hazard_control/forwarding_unit.sv</code></p>
+<p>
+    Pre-calculates forwarding select signals in Stage 4 (RR) for use in Stage 5 (EX1).
+    The forwarding unit checks whether downstream pipeline stages have results that can be
+    forwarded to resolve data dependencies without stalling.
+</p>
+
+<h4>Forwarding Select Encoding</h4>
+<table>
+    <tr><th>Select Value</th><th>Source</th><th>Pipeline Location</th></tr>
+    <tr><td><code>2'b00</code></td><td>Register file output (no forwarding)</td><td>Stage 4 output</td></tr>
+    <tr><td><code>2'b01</code></td><td>EX2 stage result</td><td>EX2/EX3 boundary (E3_fwd_val)</td></tr>
+    <tr><td><code>2'b10</code></td><td>EX3/WB stage result</td><td>WB output (W_fwd_val)</td></tr>
+</table>
+
+<h4>Forwarding Conditions (for each of rs1 and rs2)</h4>
+<ol>
+    <li><strong>Forward from EX2:</strong> <code>E2_reg_write &amp;&amp; !E2_mem_read &amp;&amp; (E2_rd == IDRR_rsN) &amp;&amp; (IDRR_rsN != 0)</code>
+        <br>Forwards non-load ALU results from the EX2 stage.</li>
+    <li><strong>Forward from EX3:</strong> <code>E3_reg_write &amp;&amp; (E3_rd == IDRR_rsN) &amp;&amp; (IDRR_rsN != 0)</code>
+        <br>Forwards any result from the EX3 stage (including load data via W_fwd_val).</li>
+</ol>
+
+<div class="note-box">
+    <strong>Priority:</strong> EX2 forwarding (2'b01) has higher priority than EX3 forwarding (2'b10).
+    If both stages have a matching destination register, the more recent result (EX2) is forwarded.
+    Load instructions in EX2 are excluded from forwarding (<code>!E2_mem_read</code>) because their data
+    is not yet available; this triggers a stall via the hazard detection unit instead.
+</div>
+
+<h4>Forwarding Path Timing</h4>
+<div class="pipeline-diagram">
+  Cycle N:    ... | D(instr_A) | RR       | EX1       | EX2(instr_B) | EX3(instr_C) | ...
+                  |            | fwd_unit | data_sel  |              |              |
+                  |            | computes | applies   |              |              |
+                  |            | selects  | forwarding|              |              |
+
+  Forward from EX2 (2'b01): instr_B's result -> instr_A's operand (2-stage gap: RR to EX2)
+  Forward from EX3 (2'b10): instr_C's result -> instr_A's operand (3-stage gap: RR to EX3)
+
+  The forwarding select is registered in RR_EX1, so it is stable when data_sel reads it in EX1.
+</div>
+
+<!-- ============================================================ -->
+<!-- 14. BRANCH AND JUMP HANDLING                                  -->
+<!-- ============================================================ -->
+<h2 id="branches">14. Branch and Jump Handling</h2>
+
+<h3>14.1 Resolution Point</h3>
+<p>
+    Branches and jumps are resolved in Stage 7 (EX3/MEM) by the <code>pc_target_calc</code> module.
+    The <code>E3_pc_sel</code> signal (= <code>flush</code>) indicates a taken branch or jump.
+</p>
+
+<h3>14.2 Flush Mechanism</h3>
+<p>When <code>E3_pc_sel</code> is asserted:</p>
+<ul>
+    <li><code>flush</code> signal is broadcast to all pipeline registers from IF_ID through EX2_EX3.</li>
+    <li>All 6 pipeline stages between Fetch and EX3 are flushed (instructions converted to NOPs).</li>
+    <li><code>pc_update</code> loads the target PC on the next clock edge.</li>
+    <li><code>instr_mem</code> sets <code>flush_reg</code> to output a NOP on the next cycle.</li>
+</ul>
+
+<h3>14.3 Branch Penalty</h3>
+<p>
+    Taken branches and jumps incur a <strong>6-cycle penalty</strong> (Stages 1-6 are flushed).
+    Not-taken branches incur no penalty (they flow through the pipeline normally).
+</p>
+<p>
+    There is no branch prediction in the current design. All branches are predicted not-taken
+    (the PC always increments by 4 unless redirected).
+</p>
+
+<h3>14.4 Flush Signal Distribution</h3>
+<table>
+    <tr><th>Module</th><th>Flush Input</th><th>Source</th></tr>
+    <tr><td><code>instr_mem</code></td><td><code>flush</code></td><td><code>E3_pc_sel</code></td></tr>
+    <tr><td><code>IF_ID</code></td><td><code>flush</code></td><td><code>E3_pc_sel</code></td></tr>
+    <tr><td><code>ID_RR</code></td><td><code>flush</code></td><td><code>E3_pc_sel || stall_frontend</code></td></tr>
+    <tr><td><code>RR_EX1</code></td><td><code>flush</code></td><td><code>E3_pc_sel</code></td></tr>
+    <tr><td><code>EX1_EX2</code></td><td><code>flush</code></td><td><code>E3_pc_sel</code></td></tr>
+    <tr><td><code>EX2_EX3</code></td><td><code>flush</code></td><td><code>E3_pc_sel</code></td></tr>
+    <tr><td><code>MEM_WB</code></td><td><code>flush</code></td><td><code>1'b0</code> (never flushed)</td></tr>
+</table>
+
+<!-- ============================================================ -->
+<!-- 15. MEMORY SYSTEM                                             -->
+<!-- ============================================================ -->
+<h2 id="memory-system">15. Memory System</h2>
+
+<h3>15.1 Module: <code>memory</code> (Memory Interconnect)</h3>
+<p>File: <code>rtl/core/7_ex3_mem/memory.sv</code></p>
+<p>
+    Address decoder and memory router. Routes memory transactions to either data memory or MMIO
+    based on the most significant bit of the address.
+</p>
+
+<h4>Address Map</h4>
+<table>
+    <tr><th>Address Range</th><th>Target</th><th>Description</th></tr>
+    <tr><td><code>0x00000000 - 0x7FFFFFFF</code></td><td>Data Memory (BRAM)</td><td>address[31] = 0</td></tr>
+    <tr><td><code>0x80000000 - 0xFFFFFFFF</code></td><td>MMIO Peripherals</td><td>address[31] = 1</td></tr>
+</table>
+
+<p>
+    The <code>is_mmio</code> signal is registered for one cycle (<code>is_mmio_reg</code>) to align with
+    the synchronous memory read latency. The output mux selects between <code>dmem_read_data</code>
+    and <code>mmio_read_data</code> based on this registered signal.
+</p>
+
+<h3>15.2 Module: <code>data_mem</code> (Data Memory)</h3>
+<p>File: <code>rtl/core/7_ex3_mem/data_mem.sv</code></p>
+<p>
+    1024-entry x 32-bit synchronous data memory using M9K BRAM. Supports byte, halfword, and word
+    accesses with alignment logic. Read data is available one cycle after the address is presented.
+</p>
+
+<h4>Memory Parameters</h4>
+<table>
+    <tr><th>Parameter</th><th>Value</th><th>Description</th></tr>
+    <tr><td><code>MEM_DEPTH</code></td><td>1024</td><td>Number of 32-bit words (4 KiB)</td></tr>
+</table>
+
+<h4>Write Behavior</h4>
+<table>
+    <tr><th>mem_size</th><th>Operation</th><th>Alignment</th></tr>
+    <tr><td>2'b10</td><td>Word write (32-bit)</td><td>address[31:2] selects word</td></tr>
+    <tr><td>2'b01</td><td>Halfword write (16-bit)</td><td>address[1] selects upper/lower halfword</td></tr>
+    <tr><td>2'b00</td><td>Byte write (8-bit)</td><td>address[1:0] selects byte lane</td></tr>
+</table>
+
+<h4>Read Behavior</h4>
+<p>
+    The word at <code>address[31:2]</code> is read synchronously. The registered <code>addr_low</code>,
+    <code>size_reg</code>, and <code>unsigned_reg</code> signals are used to extract and sign/zero-extend
+    the appropriate byte or halfword from the read word. Read data is zero when <code>read_active</code>
+    (registered <code>mem_read</code>) is deasserted.
+</p>
+
+<table>
+    <tr><th>mem_size</th><th>mem_unsigned</th><th>Operation</th></tr>
+    <tr><td>2'b10</td><td>x</td><td>Word read (32-bit, no extension)</td></tr>
+    <tr><td>2'b01</td><td>0</td><td>Halfword read, sign-extended to 32 bits</td></tr>
+    <tr><td>2'b01</td><td>1</td><td>Halfword read, zero-extended to 32 bits</td></tr>
+    <tr><td>2'b00</td><td>0</td><td>Byte read, sign-extended to 32 bits</td></tr>
+    <tr><td>2'b00</td><td>1</td><td>Byte read, zero-extended to 32 bits</td></tr>
+</table>
+
+<!-- ============================================================ -->
+<!-- 16. MMIO                                                      -->
+<!-- ============================================================ -->
+<h2 id="mmio">16. Memory-Mapped I/O (MMIO)</h2>
+
+<h3>Module: <code>mmio</code></h3>
+<p>File: <code>rtl/core/7_ex3_mem/mmio.sv</code></p>
+<p>
+    Interfaces with FPGA board peripherals: switches, keys (buttons), LEDs, and 7-segment hex displays.
+</p>
+
+<h4>MMIO Register Map</h4>
+<table>
+    <tr><th>Address</th><th>R/W</th><th>Width</th><th>Name</th><th>Description</th></tr>
+    <tr><td><code>0x80000000</code></td><td>W</td><td>10</td><td><code>led_reg</code></td><td>LED output (bits [9:0] of write data)</td></tr>
+    <tr><td><code>0x80000004</code></td><td>W</td><td>24</td><td><code>hex_reg</code></td><td>7-segment hex display (bits [23:0] of write data)</td></tr>
+    <tr><td><code>0x80000008</code></td><td>R</td><td>10</td><td>Switches</td><td>Switch input (zero-extended to 32 bits)</td></tr>
+    <tr><td><code>0x8000000C</code></td><td>R</td><td>2</td><td>Keys</td><td>Key/button input (zero-extended to 32 bits)</td></tr>
+</table>
+
+<h4>Port Interface</h4>
+<table>
+    <tr><th>Port</th><th>Direction</th><th>Width</th><th>Description</th></tr>
+    <tr><td><code>clk</code></td><td>input</td><td>1</td><td>System clock</td></tr>
+    <tr><td><code>reset</code></td><td>input</td><td>1</td><td>Synchronous reset (clears LED and hex registers)</td></tr>
+    <tr><td><code>mem_read</code></td><td>input</td><td>1</td><td>MMIO read enable</td></tr>
+    <tr><td><code>mem_write</code></td><td>input</td><td>1</td><td>MMIO write enable</td></tr>
+    <tr><td><code>address</code></td><td>input</td><td>32</td><td>MMIO address</td></tr>
+    <tr><td><code>write_data</code></td><td>input</td><td>32</td><td>Data to write</td></tr>
+    <tr><td><code>read_data</code></td><td>output</td><td>32</td><td>Read data (registered, 1-cycle latency)</td></tr>
+    <tr><td><code>sw_keys</code></td><td>input</td><td>2</td><td>Physical key inputs</td></tr>
+    <tr><td><code>sw_switches</code></td><td>input</td><td>10</td><td>Physical switch inputs</td></tr>
+    <tr><td><code>out_leds</code></td><td>output</td><td>10</td><td>LED outputs</td></tr>
+    <tr><td><code>out_hex</code></td><td>output</td><td>24</td><td>7-segment hex display outputs</td></tr>
+</table>
+
+<!-- ============================================================ -->
+<!-- 17. PIPELINE REGISTER SUMMARY                                 -->
+<!-- ============================================================ -->
+<h2 id="pipeline-registers">17. Pipeline Register Summary</h2>
+
+<table>
+    <tr><th>Register</th><th>Location</th><th>Stall</th><th>Flush Source</th><th>Reset Value</th></tr>
+    <tr><td><code>pc_update</code> (PC reg)</td><td>Stage 1</td><td>Yes (<code>stall_frontend</code>)</td><td>N/A (uses <code>pc_sel</code>)</td><td><code>32'b0</code></td></tr>
+    <tr><td><code>instr_mem</code> (instr_reg, pc_reg)</td><td>Stage 2</td><td>Yes (<code>stall_frontend</code>)</td><td>Yes (<code>flush</code>)</td><td>NOP + flush_reg</td></tr>
+    <tr><td><code>IF_ID</code></td><td>Stage 2/3 boundary</td><td>Yes (<code>stall_frontend</code>)</td><td>Yes (<code>flush</code>)</td><td>NOP + PC=0</td></tr>
+    <tr><td><code>ID_RR</code></td><td>Stage 3/4 boundary</td><td>Yes (<code>stall_frontend</code>)</td><td>Yes (<code>flush || stall_frontend</code>)</td><td>All zeros</td></tr>
+    <tr><td><code>regfile</code></td><td>Stage 4</td><td>No</td><td>No</td><td>All zeros (initialized)</td></tr>
+    <tr><td><code>RR_EX1</code></td><td>Stage 4/5 boundary</td><td>No</td><td>Yes (<code>flush</code>)</td><td>All zeros</td></tr>
+    <tr><td><code>EX1_EX2</code></td><td>Stage 5/6 boundary</td><td>No</td><td>Yes (<code>flush</code>)</td><td>All zeros</td></tr>
+    <tr><td><code>EX2_EX3</code></td><td>Stage 6/7 boundary</td><td>No</td><td>Yes (<code>flush</code>)</td><td>All zeros</td></tr>
+    <tr><td><code>MEM_WB</code></td><td>Stage 7/8 boundary</td><td>No</td><td>No (<code>1'b0</code>)</td><td>All zeros</td></tr>
+</table>
+
+<!-- ============================================================ -->
+<!-- 18. CONTROL SIGNAL REFERENCE                                  -->
+<!-- ============================================================ -->
+<h2 id="control-signals">18. Control Signal Reference</h2>
+
+<table>
+    <tr><th>Signal</th><th>Width</th><th>Source</th><th>Description</th></tr>
+    <tr><td><code>stall_frontend</code></td><td>1</td><td>hazard_detection_unit</td><td>Stalls Stages 1-3, flushes ID_RR</td></tr>
+    <tr><td><code>flush</code></td><td>1</td><td><code>E3_pc_sel</code></td><td>Flushes Stages 1-6 on taken branch/jump</td></tr>
+    <tr><td><code>alu_op</code></td><td>4</td><td>control unit</td><td>ALU operation select (alu_package encoding)</td></tr>
+    <tr><td><code>alu_src_a</code></td><td>1</td><td>control unit</td><td>0: rs1 (or forwarded), 1: PC</td></tr>
+    <tr><td><code>alu_src_b</code></td><td>1</td><td>control unit</td><td>0: rs2 (or forwarded), 1: immediate</td></tr>
+    <tr><td><code>reg_write</code></td><td>1</td><td>control unit</td><td>Register file write enable</td></tr>
+    <tr><td><code>mem_read</code></td><td>1</td><td>control unit</td><td>Data memory read enable</td></tr>
+    <tr><td><code>mem_write</code></td><td>1</td><td>control unit</td><td>Data memory write enable</td></tr>
+    <tr><td><code>mem_size</code></td><td>2</td><td>funct3[1:0]</td><td>00=byte, 01=halfword, 10=word</td></tr>
+    <tr><td><code>mem_unsigned</code></td><td>1</td><td>funct3[2]</td><td>0=sign-extend, 1=zero-extend load data</td></tr>
+    <tr><td><code>wb_sel</code></td><td>2</td><td>control unit</td><td>00=ALU result, 01=memory data, 10=PC+4</td></tr>
+    <tr><td><code>branch</code></td><td>1</td><td>control unit</td><td>Conditional branch instruction flag</td></tr>
+    <tr><td><code>jump</code></td><td>1</td><td>control unit</td><td>Unconditional jump instruction flag</td></tr>
+    <tr><td><code>branch_type</code></td><td>3</td><td>funct3</td><td>Branch condition encoding (BEQ, BNE, BLT, BGE, BLTU, BGEU)</td></tr>
+    <tr><td><code>uses_rs1</code></td><td>1</td><td>control unit</td><td>Instruction requires rs1 value</td></tr>
+    <tr><td><code>uses_rs2</code></td><td>1</td><td>control unit</td><td>Instruction requires rs2 value</td></tr>
+    <tr><td><code>forward_a_sel</code></td><td>2</td><td>forwarding_unit</td><td>Forwarding mux select for operand A</td></tr>
+    <tr><td><code>forward_b_sel</code></td><td>2</td><td>forwarding_unit</td><td>Forwarding mux select for operand B</td></tr>
+    <tr><td><code>pc_sel</code></td><td>1</td><td>pc_target_calc</td><td>1=redirect PC to target, 0=continue sequential</td></tr>
+</table>
+
+<!-- ============================================================ -->
+<!-- 19. MODULE HIERARCHY                                          -->
+<!-- ============================================================ -->
+<h2 id="module-hierarchy">19. Module Hierarchy</h2>
+
+<div class="pipeline-diagram">
+core (top-level)
+|
++-- pc_update              [Stage 1: Fetch]
+|
++-- instr_mem              [Stage 2: Instruction Memory]
+|
++-- IF_ID                  [Stage 2/3 Pipeline Register]
+|
++-- decode                 [Stage 3: Decode]
+|   +-- imm_gen
+|   +-- control
+|
++-- ID_RR                  [Stage 3/4 Pipeline Register]
+|
++-- regfile                [Stage 4: Register Read]
+|
++-- forwarding_unit        [Hazard Control: Forwarding]
+|
++-- RR_EX1                 [Stage 4/5 Pipeline Register]
+|
++-- data_sel               [Stage 5: EX1 - Operand Selection]
+|
++-- EX1_EX2                [Stage 5/6 Pipeline Register]
+|
++-- alu                    [Stage 6: EX2 - ALU]
+|
++-- branch_eval            [Stage 6: EX2 - Branch Evaluation]
+|
++-- EX2_EX3                [Stage 6/7 Pipeline Register]
+|
++-- pc_target_calc         [Stage 7: EX3 - PC Target Finalization]
+|
++-- memory                 [Stage 7: EX3 - Memory System]
+|   +-- data_mem
+|   +-- mmio
+|
++-- MEM_WB                 [Stage 7/8 Pipeline Register]
+|
++-- writeback              [Stage 8: WB - Writeback Mux]
+|
++-- hazard_detection_unit  [Hazard Control: Stall Generation]
+</div>
+
+<!-- ============================================================ -->
+<!-- 20. TIMING AND PERFORMANCE                                    -->
+<!-- ============================================================ -->
+<h2 id="timing">20. Timing and Performance</h2>
+
+<h3>20.1 Critical Path Candidates</h3>
+<ul>
+    <li><strong>ALU path:</strong> EX1_EX2 register outputs through ALU combinational logic to EX2_EX3 register inputs (Stage 6).</li>
+    <li><strong>Forwarding path:</strong> Forwarding unit combinational logic through RR_EX1 setup time (Stage 4).</li>
+    <li><strong>Hazard detection path:</strong> Decode combinational outputs through hazard detection unit to stall_frontend and back to IF_ID/ID_RR/pc_update (Stage 3).</li>
+    <li><strong>Memory path:</strong> Data memory read through alignment and sign-extension logic (Stage 7 to Stage 8).</li>
+    <li><strong>Branch resolution path:</strong> pc_target_calc combinational logic feeding back to pc_update (Stage 7 to Stage 1).</li>
+</ul>
+
+<h3>20.2 Performance Characteristics</h3>
+<table>
+    <tr><th>Metric</th><th>Value</th><th>Notes</th></tr>
+    <tr><td>Pipeline depth</td><td>8 stages</td><td>Deeper than classic 5-stage for better Fmax</td></tr>
+    <tr><td>Branch penalty (taken)</td><td>6 cycles</td><td>No branch prediction</td></tr>
+    <tr><td>Branch penalty (not-taken)</td><td>0 cycles</td><td>Default predict-not-taken</td></tr>
+    <tr><td>Load-use stall (worst case)</td><td>Up to 4 cycles</td><td>Depends on pipeline distance</td></tr>
+    <tr><td>ALU-to-ALU forwarding</td><td>0 stall cycles</td><td>When producer is 2+ stages ahead</td></tr>
+    <tr><td>IPC (ideal, no hazards)</td><td>1.0</td><td>Single-issue, in-order</td></tr>
+</table>
+
+<h3>20.3 Stall Cycle Breakdown</h3>
+<table>
+    <tr><th>Hazard Scenario</th><th>Stall Cycles</th><th>Reason</th></tr>
+    <tr><td>RAW: producer in RR (Stage 4), consumer in D (Stage 3)</td><td>1</td><td>1-stage gap; result not computed yet</td></tr>
+    <tr><td>RAW: producer in EX1 (Stage 5), consumer in D (Stage 3)</td><td>1+</td><td>2-stage gap; result not computed yet</td></tr>
+    <tr><td>Load-use: load in EX2 (Stage 6), consumer in D (Stage 3)</td><td>1+</td><td>Load data not available from memory</td></tr>
+    <tr><td>Load-use: load in EX3 (Stage 7), consumer in D (Stage 3)</td><td>1+</td><td>Load data being read from memory</td></tr>
+</table>
+
+<!-- ============================================================ -->
+<!-- 21. CORNER CASES AND ASSUMPTIONS                              -->
+<!-- ============================================================ -->
+<h2 id="corner-cases">21. Corner Cases and Assumptions</h2>
+
+<h3>21.1 Assumptions</h3>
+<ul>
+    <li>All instructions are 32-bit aligned (PC[1:0] is always 00).</li>
+    <li>Instruction memory is word-addressed using <code>pc[31:2]</code>; byte addressing within instruction words is not supported.</li>
+    <li>No exceptions, interrupts, or traps are implemented.</li>
+    <li>No CSR (Control and Status Register) instructions are supported.</li>
+    <li>No FENCE, ECALL, or EBREAK instructions are implemented.</li>
+    <li>The M extension (multiply/divide) is not implemented.</li>
+    <li>The A extension (atomics) is not implemented.</li>
+    <li>Memory accesses are assumed to complete in 1 cycle (no cache misses, no wait states).</li>
+    <li>MMIO reads and writes are registered (1-cycle latency).</li>
+    <li>The register file is initialized to all zeros.</li>
+    <li>Program memory is loaded at synthesis time via <code>$readmemh("program.hex")</code>.</li>
+</ul>
+
+<h3>21.2 Known Corner Cases</h3>
+<ul>
+    <li><strong>Register x0 handling:</strong> The register file suppresses writes to x0 and the hazard/forwarding
+        units check for <code>rd != 5'b0</code> and <code>rsN != 5'b0</code> to avoid false dependencies on x0.</li>
+    <li><strong>Simultaneous stall and flush:</strong> The <code>pc_sel</code> (flush) has higher priority than
+        <code>stall</code> in <code>pc_update</code>. If a branch resolves while the frontend is stalled,
+        the branch redirect takes precedence and the stalled instruction is discarded.</li>
+    <li><strong>MEM_WB flush:</strong> The <code>MEM_WB.flush</code> input is hardwired to <code>1'b0</code>.
+        This means instructions that have reached Stage 7 are never flushed. This is correct because the
+        branch/jump resolution also occurs in Stage 7, so any instruction at that stage or beyond is
+        architecturally committed.</li>
+    <li><strong>Memory read data bypass:</strong> <code>W_mem_read_data</code> comes directly from the
+        <code>memory</code> module (which has its own internal registered output), not through the
+        <code>MEM_WB</code> pipeline register (where <code>mem_read_data_in</code> is tied to <code>32'b0</code>).
+        This effectively means the memory data arrives at the writeback mux aligned with the MEM_WB
+        register outputs due to the memory's internal read register.</li>
+    <li><strong>NOP encoding:</strong> <code>32'h00000013</code> is <code>ADDI x0, x0, 0</code>, which is the
+        standard RISC-V NOP. It writes to x0 (no effect), reads x0 (always zero), and adds zero.
+        <code>reg_write</code> will be asserted for this instruction, but the register file suppresses the write
+        to x0.</li>
+    <li><strong>JALR alignment:</strong> <code>pc_target_calc</code> applies <code>&amp; 32'hFFFFFFFC</code> to both
+        jump and branch targets, clearing the lowest 2 bits to enforce 4-byte alignment. For JAL, the
+        immediate is always 2-byte aligned by construction, so the mask clears at most bit 1. For JALR,
+        the mask is required by the RISC-V specification to clear bit 0 of the computed target
+        (<code>rs1 + imm</code>).</li>
+</ul>
+
+<h3>21.3 Top-Level Core Ports</h3>
+<table>
+    <tr><th>Port</th><th>Direction</th><th>Width</th><th>Description</th></tr>
+    <tr><td><code>clk</code></td><td>input</td><td>1</td><td>System clock</td></tr>
+    <tr><td><code>reset</code></td><td>input</td><td>1</td><td>Synchronous reset</td></tr>
+    <tr><td><code>mmio_keys</code></td><td>input</td><td>2</td><td>FPGA key/button inputs</td></tr>
+    <tr><td><code>mmio_switches</code></td><td>input</td><td>10</td><td>FPGA switch inputs</td></tr>
+    <tr><td><code>mmio_leds</code></td><td>output</td><td>10</td><td>LED outputs</td></tr>
+    <tr><td><code>mmio_hex</code></td><td>output</td><td>24</td><td>7-segment hex display outputs</td></tr>
+    <tr><td><code>out_pc</code></td><td>output</td><td>32</td><td>Writeback-stage PC (debug)</td></tr>
+    <tr><td><code>out_writeback_data</code></td><td>output</td><td>32</td><td>Writeback data (debug)</td></tr>
+    <tr><td><code>out_reg_write</code></td><td>output</td><td>1</td><td>Register write enable (debug)</td></tr>
+    <tr><td><code>out_alu_result</code></td><td>output</td><td>32</td><td>EX2 ALU result (debug)</td></tr>
+</table>
+
+<hr class="section-divider">
+<p style="color: var(--text-muted); text-align: center; font-size: 0.85rem;">
+    Architecture Specification - 8-Stage Pipelined RISC-V (RV32I) CPU<br>
+    Generated from RTL inspection. All signal names and behaviors reflect the current implementation.
+</p>
+
+</body>
+</html>
