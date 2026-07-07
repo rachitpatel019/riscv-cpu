@@ -2,6 +2,7 @@
 # ModelSim run script for the 8-stage balanced pipeline integrated testbench
 
 # Guardrail: Exit on error to prevent hanging in interactive mode
+transcript ""
 onerror {quit -code 1 -f}
 onbreak {quit -f}
 
@@ -98,5 +99,8 @@ vsim -voptargs="+acc" -onfinish exit work.tb_core
 # Run simulation
 run -all
 
-# Exit if finished successfully
+# Cleanup work library
+if {[file exists work]} { file delete -force work }
+if {[file exists modelsim.ini]} { file delete -force modelsim.ini }
+if {[file exists program.hex]} { file delete -force program.hex }
 quit -f

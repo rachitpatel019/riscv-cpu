@@ -1,3 +1,4 @@
+transcript ""
 onerror {quit -code 1 -f}
 onbreak {quit -f}
 
@@ -34,4 +35,7 @@ vmap work work
 vlog -sv ../../rtl/core/6_ex2/branch_eval.sv ../../tb/tb_branch_eval.sv
 vsim -batch -L work -voptargs="+acc" work.tb_branch_eval
 run -all
+if {[file exists work]} { file delete -force work }
+if {[file exists modelsim.ini]} { file delete -force modelsim.ini }
+if {[file exists program.hex]} { file delete -force program.hex }
 quit -f

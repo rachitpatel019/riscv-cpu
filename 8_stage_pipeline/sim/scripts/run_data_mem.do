@@ -1,3 +1,4 @@
+transcript ""
 onerror {quit -code 1 -f}
 onbreak {quit -f}
 
@@ -27,4 +28,7 @@ vmap work work
 vlog -sv ../../packages/alu_pkg.sv ../../packages/decoder_pkg.sv ../../rtl/core/7_ex3_mem/data_mem.sv ../../tb/tb_data_mem.sv
 vsim -batch -L work -voptargs=+acc work.tb_data_mem
 run -all
+if {[file exists work]} { file delete -force work }
+if {[file exists modelsim.ini]} { file delete -force modelsim.ini }
+if {[file exists program.hex]} { file delete -force program.hex }
 quit -f

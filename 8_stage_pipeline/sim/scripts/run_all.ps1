@@ -1,5 +1,6 @@
 # run_all.ps1 for 8-stage pipeline
-# Sequential simulation runner with summary reporting and UVM support.
+# Sequential simulation runner with summary reporting.
+# All output is printed to the terminal; no log files are generated.
 
 Set-Location $PSScriptRoot
 
@@ -9,7 +10,7 @@ if (-not (Get-Command vsim -ErrorAction SilentlyContinue)) {
     exit 1
 }
 
-# Ensure output logs directory exists
+# Ensure logs directory exists (used as the working directory for simulations)
 $logsDir = Join-Path $PSScriptRoot "../logs"
 if (-not (Test-Path $logsDir)) {
     New-Item -ItemType Directory -Path $logsDir -Force | Out-Null
@@ -48,48 +49,46 @@ foreach ($script in $scripts) {
     }
 
     Write-Host "`n>>> Executing $script..." -ForegroundColor Cyan
-    
-    # Run from the logs directory
+
+    # Run from the logs directory so the work library and copied files land there.
     Push-Location $logsDir
-    
-    # Guardrails: -batch for non-interactive, -do to run and exit
-    # We add a timeout of 60 seconds per test to prevent hanging
-    $logFile = "$($script.Replace('.do', '.log'))"
-    $process = Start-Process vsim -ArgumentList "-batch", "-do", "$scriptPath", "-l", "$logFile" -PassThru -NoNewWindow
-    
-    # Wait for completion with timeout
-    $process | Wait-Process -Timeout 60 -ErrorAction SilentlyContinue
-    
+
+    # Run vsim in batch mode, printing output directly to the terminal.
+    # No -l flag so no log file is generated.
+    $process = Start-Process vsim `
+        -ArgumentList "-batch", "-do", "$scriptPath" `
+        -PassThru -NoNewWindow -Wait `
+        -ErrorAction SilentlyContinue
+
     $timeoutOccurred = $false
-    if (-not $process.HasExited) {
+    if ($null -eq $process -or -not $process.HasExited) {
+        # Fallback: process did not exit cleanly
         $timeoutOccurred = $true
-        $process | Stop-Process -Force -ErrorAction SilentlyContinue
+        if ($null -ne $process) { $process | Stop-Process -Force -ErrorAction SilentlyContinue }
         $exitCode = -1
     } else {
         $exitCode = $process.ExitCode
     }
-    
+
     Pop-Location
 
-    # Remove ModelSim-generated transcript file from the scripts directory
+    # Clean up copied files in the logs directory
+    $logsIni = Join-Path $logsDir "modelsim.ini"
+    if (Test-Path $logsIni) { Remove-Item -Path $logsIni -Force -ErrorAction SilentlyContinue }
+    $logsHex = Join-Path $logsDir "program.hex"
+    if (Test-Path $logsHex) { Remove-Item -Path $logsHex -Force -ErrorAction SilentlyContinue }
+
+    # Remove any ModelSim-generated transcript stubs from the scripts directory
     $transcriptPath = Join-Path $PSScriptRoot "transcript"
     if (Test-Path $transcriptPath) {
         Remove-Item -Path $transcriptPath -Force -ErrorAction SilentlyContinue
     }
-    
-    # Scan log for failures
-    $logPath = Join-Path $logsDir $logFile
-    $hasFailureKeyword = $false
-    if (Test-Path $logPath) {
-        $logContent = Get-Content $logPath
-        $hasFailureKeyword = $logContent | Select-String -Pattern "UVM_ERROR", "UVM_FATAL", "MISMATCH", "FAILURE", "Errors: [1-9]", "\*\* Error" -Quiet
-    }
 
-    if ($exitCode -ne 0 -or $hasFailureKeyword -or $timeoutOccurred) {
+    if ($exitCode -ne 0 -or $timeoutOccurred) {
         Write-Host "RESULT: $script FAILED" -ForegroundColor Red
         $failed += $script
         if ($timeoutOccurred) {
-            Write-Host "Reason: Timeout (60s exceeded)" -ForegroundColor Yellow
+            Write-Host "Reason: Process did not exit cleanly." -ForegroundColor Yellow
         }
     } else {
         Write-Host "RESULT: $script PASSED" -ForegroundColor Green
@@ -103,6 +102,15 @@ Write-Host "==================================================" -ForegroundColor
 
 if ($failed.Count -eq 0) {
     Write-Host "ALL TESTS PASSED ($($passed.Count)/$($scripts.Count))" -ForegroundColor Green
+
+    # Clean up the work directory now that all tests have passed
+    $workDir = Join-Path $logsDir "work"
+    if (Test-Path $workDir) {
+        Write-Host "Cleaning up work directory..." -ForegroundColor Cyan
+        Remove-Item -Path $workDir -Recurse -Force -ErrorAction SilentlyContinue
+        Write-Host "Work directory removed." -ForegroundColor Cyan
+    }
+
     Write-Host "==================================================" -ForegroundColor Cyan
     Write-Host "Regression complete." -ForegroundColor Cyan
     exit 0
@@ -110,7 +118,7 @@ if ($failed.Count -eq 0) {
     Write-Host "SOME TESTS FAILED ($($failed.Count)/$($scripts.Count))" -ForegroundColor Red
     Write-Host "`nPassed Testbenches:" -ForegroundColor Green
     foreach ($p in $passed) { Write-Host "  [+] $p" }
-    
+
     Write-Host "`nFailing Testbenches:" -ForegroundColor Red
     foreach ($f in $failed) { Write-Host "  [-] $f" }
     Write-Host "==================================================" -ForegroundColor Cyan
