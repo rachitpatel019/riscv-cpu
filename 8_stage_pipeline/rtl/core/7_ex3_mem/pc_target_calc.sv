@@ -14,6 +14,7 @@ module pc_target_calc (
     input logic [31:0] alu_result,
     input logic condition_met_in,
     input logic [31:0] branch_target_in,
+    input logic predicted_taken_in,
 
     output logic pc_sel,
     output logic [31:0] pc_target
@@ -21,13 +22,23 @@ module pc_target_calc (
 
 // Combinational logic deciding target PC. Aligns JALR and branch targets to 4-byte boundaries.
 always_comb begin
-    pc_sel = jump || (branch && condition_met_in);
+    logic actual_taken;
+    logic mispredict;
+
+    actual_taken = branch && condition_met_in;
+    mispredict = branch && (actual_taken != predicted_taken_in);
+
+    pc_sel = jump || mispredict;
 
     if (jump) begin
         pc_target = alu_result & 32'hFFFFFFFC;
     end
-    else if (branch && condition_met_in) begin
-        pc_target = branch_target_in & 32'hFFFFFFFC;
+    else if (mispredict) begin
+        if (actual_taken) begin
+            pc_target = branch_target_in & 32'hFFFFFFFC;
+        end else begin
+            pc_target = pc + 32'd4;
+        end
     end
     else begin
         pc_target = 32'b0;

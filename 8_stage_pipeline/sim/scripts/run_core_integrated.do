@@ -33,6 +33,7 @@ verify_file ../../rtl/core/3_decode/decode.sv
 verify_file ../../rtl/core/3_decode/imm_gen.sv
 verify_file ../../rtl/core/3_decode/ID_RR.sv
 verify_file ../../rtl/core/4_reg_read/regfile.sv
+verify_file ../../rtl/core/4_reg_read/bht.sv
 verify_file ../../rtl/core/4_reg_read/RR_EX1.sv
 verify_file ../../rtl/core/5_ex1/data_sel.sv
 verify_file ../../rtl/core/5_ex1/EX1_EX2.sv
@@ -74,6 +75,7 @@ vlog -work work ../../rtl/core/3_decode/decode.sv
 vlog -work work ../../rtl/core/3_decode/imm_gen.sv
 vlog -work work ../../rtl/core/3_decode/ID_RR.sv
 vlog -work work ../../rtl/core/4_reg_read/regfile.sv
+vlog -work work ../../rtl/core/4_reg_read/bht.sv
 vlog -work work ../../rtl/core/4_reg_read/RR_EX1.sv
 vlog -work work ../../rtl/core/5_ex1/data_sel.sv
 vlog -work work ../../rtl/core/5_ex1/EX1_EX2.sv

@@ -1,4 +1,4 @@
-create_clock -name MAX10_CLK1_50 -period 8.050 [get_ports MAX10_CLK1_50]
+create_clock -name MAX10_CLK1_50 -period 8.500 [get_ports MAX10_CLK1_50]
 derive_clock_uncertainty
 
 # Phase 4 Timing Optimization: False Path

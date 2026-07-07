@@ -12,6 +12,8 @@ logic reset;
 logic stall;
 logic pc_sel;
 logic [31:0] pc_target;
+logic stage4_pc_sel;
+logic [31:0] stage4_pc_target;
 
 logic [31:0] pc;
 
@@ -46,13 +48,17 @@ task automatic drive(
     input logic i_reset,
     input logic i_stall,
     input logic i_pc_sel,
-    input logic [31:0] i_pc_target
+    input logic [31:0] i_pc_target,
+    input logic i_stage4_pc_sel = 0,
+    input logic [31:0] i_stage4_pc_target = 0
 );
     @(negedge clk);
     reset = i_reset;
     stall = i_stall;
     pc_sel = i_pc_sel;
     pc_target = i_pc_target;
+    stage4_pc_sel = i_stage4_pc_sel;
+    stage4_pc_target = i_stage4_pc_target;
 endtask
 
 task automatic check(input logic [31:0] expected_pc);
@@ -62,8 +68,8 @@ task automatic check(input logic [31:0] expected_pc);
         tests_passed++;
         tests_total++;
     end else begin
-        report_error("CHECK", $sformatf("MISMATCH: Expected=%h, Actual=%h, Inputs: reset=%b, stall=%b, pc_sel=%b, pc_target=%h", 
-            expected_pc, pc, reset, stall, pc_sel, pc_target));
+        report_error("CHECK", $sformatf("MISMATCH: Expected=%h, Actual=%h, Inputs: reset=%b, stall=%b, pc_sel=%b, pc_target=%h, stage4_pc_sel=%b, stage4_pc_target=%h", 
+            expected_pc, pc, reset, stall, pc_sel, pc_target, stage4_pc_sel, stage4_pc_target));
     end
 endtask
 
@@ -93,6 +99,11 @@ initial begin
     drive(0, 0, 0, 0); check(32'h404);
 
     drive(0, 0, 1, 32'h00000002); check(32'h00000002);
+
+    drive(0, 0, 0, 0, 1, 32'h200); check(32'h200);
+    drive(0, 0, 0, 0, 0, 0); check(32'h204);
+
+    drive(0, 0, 1, 32'h300, 1, 32'h200); check(32'h300);
 
     report_info("TB", "All tests complete.");
     $display("--- pc_update Test Summary ---");

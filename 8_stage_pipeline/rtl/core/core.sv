@@ -71,6 +71,15 @@ logic IDRR_jump;
 logic [2:0] IDRR_branch_type;
 logic [1:0] IDRR_forward_a_sel;
 logic [1:0] IDRR_forward_b_sel;
+logic [31:0] IDRR_branch_target;
+logic IDRR_predict_taken;
+logic [1:0] BRAM_counter_out;
+logic [1:0] IDRR_counter_val;
+logic [1:0] E1_counter_val;
+logic [1:0] E2_counter_val;
+logic [1:0] E3_counter_val;
+logic [1:0] E2_next_counter;
+logic [1:0] E3_next_counter;
 logic [1:0] E1_forward_a_sel;
 logic [1:0] E1_forward_b_sel;
 logic [31:0] RF_read_data1;
@@ -97,6 +106,8 @@ logic [1:0] E1_wb_sel;
 logic E1_branch;
 logic E1_jump;
 logic [2:0] E1_branch_type;
+logic [31:0] E1_branch_target;
+logic E1_predict_taken;
 logic [31:0] E1_operand_a;
 logic [31:0] E1_operand_b;
 logic [31:0] E1_rs2_data_fwd;
@@ -124,6 +135,7 @@ logic [31:0] E2_rs2_data;
 logic [31:0] E2_alu_result;
 logic E2_condition_met;
 logic [31:0] E2_branch_target;
+logic E2_predict_taken;
 
 logic [31:0] E3_pc;
 logic [31:0] E3_imm;
@@ -143,6 +155,7 @@ logic [31:0] E3_rs2_data;
 logic [31:0] E3_alu_result;
 logic E3_condition_met;
 logic [31:0] E3_branch_target;
+logic E3_predict_taken;
 logic E3_pc_sel;
 logic [31:0] E3_pc_target;
 
@@ -157,6 +170,8 @@ logic [31:0] W_wb_intermediate;
 
 // Flush control logic based on program counter selection.
 assign flush = E3_pc_sel;
+logic stage4_flush;
+assign stage4_flush = IDRR_predict_taken;
 
 // Stage 1: Instruction Fetch. Computes the next PC value.
 pc_update stage1_fetch (
@@ -165,6 +180,8 @@ pc_update stage1_fetch (
     .stall(stall_frontend),
     .pc_sel(E3_pc_sel),
     .pc_target(E3_pc_target),
+    .stage4_pc_sel(IDRR_predict_taken),
+    .stage4_pc_target(IDRR_branch_target),
     .pc(F_pc)
 );
 
@@ -173,7 +190,7 @@ instr_mem stage2_imem (
     .clk(clk),
     .reset(reset),
     .stall(stall_frontend),
-    .flush(flush),
+    .flush(flush || stage4_flush),
     .pc(F_pc),
     .pc_out(IM_pc_out),
     .instruction(IM_instruction)
@@ -184,7 +201,7 @@ IF_ID stage3_if_id_reg (
     .clk(clk),
     .reset(reset),
     .stall(stall_frontend),
-    .flush(flush),
+    .flush(flush || stage4_flush),
     .pc_in(IM_pc_out),
     .instruction_in(IM_instruction),
     .pc_out(D_pc),
@@ -221,7 +238,7 @@ ID_RR stage3_id_rr_reg (
     .clk(clk),
     .reset(reset),
     .stall(stall_frontend),
-    .flush(flush || stall_frontend), 
+    .flush(flush || stall_frontend || stage4_flush), 
     .immediate_in(D_immediate),
     .rs1_in(D_rs1),
     .rs2_in(D_rs2),
@@ -289,6 +306,52 @@ forwarding_unit fwd_unit (
     .forward_b_sel(IDRR_forward_b_sel)
 );
 
+// Stage 4: Branch target calculation
+assign IDRR_branch_target = IDRR_pc + IDRR_immediate;
+
+// Stage 4: Branch History Table. Predicts branch outcomes.
+bht stage4_bht (
+    .clk(clk),
+    .reset(reset),
+    .read_index(D_pc[11:2]),
+    .read_enable(!stall_frontend),
+    .read_counter_out(BRAM_counter_out),
+    .write_index(E3_pc[11:2]),
+    .write_enable(E3_branch),
+    .write_counter_in(E3_next_counter)
+);
+
+// Stage 6 and Stage 7 Next Counter computation
+always_comb begin
+    if (E2_condition_met)
+        E2_next_counter = (E2_counter_val == 2'b11) ? 2'b11 : E2_counter_val + 2'b01;
+    else
+        E2_next_counter = (E2_counter_val == 2'b00) ? 2'b00 : E2_counter_val - 2'b01;
+end
+
+always_comb begin
+    if (E3_condition_met)
+        E3_next_counter = (E3_counter_val == 2'b11) ? 2'b11 : E3_counter_val + 2'b01;
+    else
+        E3_next_counter = (E3_counter_val == 2'b00) ? 2'b00 : E3_counter_val - 2'b01;
+end
+
+// BHT Bypass logic
+always_comb begin
+    if (E3_branch && (E3_pc[11:2] == IDRR_pc[11:2])) begin
+        IDRR_counter_val = E3_next_counter;
+    end
+    else if (E2_branch && (E2_pc[11:2] == IDRR_pc[11:2])) begin
+        IDRR_counter_val = E2_next_counter;
+    end
+    else begin
+        IDRR_counter_val = BRAM_counter_out;
+    end
+end
+
+// Predict taken if MSB of the counter is 1
+assign IDRR_predict_taken = IDRR_branch && (IDRR_counter_val[1] == 1'b1);
+
 // Stage 4: EX1 phase pipeline register. Synchronizes operand selection controls.
 RR_EX1 stage4_rr_ex1_reg (
     .clk(clk),
@@ -313,8 +376,11 @@ RR_EX1 stage4_rr_ex1_reg (
     .branch_in(IDRR_branch),
     .jump_in(IDRR_jump),
     .branch_type_in(IDRR_branch_type),
+    .predicted_taken_in(IDRR_predict_taken),
     .forward_a_sel_in(IDRR_forward_a_sel),
     .forward_b_sel_in(IDRR_forward_b_sel),
+    .branch_target_in(IDRR_branch_target),
+    .counter_val_in(IDRR_counter_val),
     .immediate_out(E1_immediate),
     .rs1_out(E1_rs1),
     .rs2_out(E1_rs2),
@@ -334,8 +400,11 @@ RR_EX1 stage4_rr_ex1_reg (
     .branch_out(E1_branch),
     .jump_out(E1_jump),
     .branch_type_out(E1_branch_type),
+    .predicted_taken_out(E1_predict_taken),
     .forward_a_sel_out(E1_forward_a_sel),
-    .forward_b_sel_out(E1_forward_b_sel)
+    .forward_b_sel_out(E1_forward_b_sel),
+    .branch_target_out(E1_branch_target),
+    .counter_val_out(E1_counter_val)
 );
 
 // Forwarding data path assignments for downstream execution stages.
@@ -372,6 +441,7 @@ EX1_EX2 stage5_ex1_ex2_reg (
     .branch_in(E1_branch),
     .jump_in(E1_jump),
     .branch_type_in(E1_branch_type),
+    .predicted_taken_in(E1_predict_taken),
     .reg_write_in(E1_reg_write),
     .rd_in(E1_rd),
     .operand_a_in(E1_operand_a),
@@ -382,12 +452,15 @@ EX1_EX2 stage5_ex1_ex2_reg (
     .mem_size_in(E1_mem_size),
     .mem_unsigned_in(E1_mem_unsigned),
     .wb_sel_in(E1_wb_sel),
+    .branch_target_in(E1_branch_target),
+    .counter_val_in(E1_counter_val),
     .pc_out(E2_pc),
     .alu_op_out(E2_alu_op),
     .imm_out(E2_imm),
     .branch_out(E2_branch),
     .jump_out(E2_jump),
     .branch_type_out(E2_branch_type),
+    .predicted_taken_out(E2_predict_taken),
     .reg_write_out(E2_reg_write),
     .rd_out(E2_rd),
     .operand_a_out(E2_operand_a),
@@ -397,7 +470,9 @@ EX1_EX2 stage5_ex1_ex2_reg (
     .mem_write_out(E2_mem_write),
     .mem_size_out(E2_mem_size),
     .mem_unsigned_out(E2_mem_unsigned),
-    .wb_sel_out(E2_wb_sel)
+    .wb_sel_out(E2_wb_sel),
+    .branch_target_out(E2_branch_target),
+    .counter_val_out(E2_counter_val)
 );
 
 // Stage 6: Arithmetic Logic Unit. Executes arithmetic and logical operations.
@@ -408,15 +483,12 @@ alu stage6_alu (
     .result(E2_alu_result)
 );
 
-// Stage 6: Branch evaluator. Computes branch condition results and targets.
+// Stage 6: Branch evaluator. Computes branch condition results.
 branch_eval stage6_branch_eval (
-    .pc(E2_pc),
-    .imm(E2_imm),
     .operand_a(E2_operand_a),
     .operand_b(E2_operand_b),
     .branch_type(E2_branch_type),
-    .condition_met(E2_condition_met),
-    .branch_target(E2_branch_target)
+    .condition_met(E2_condition_met)
 );
 
 // Stage 6: EX3/MEM phase pipeline register. Stores ALU outputs and memory commands.
@@ -429,6 +501,7 @@ EX2_EX3 stage6_ex2_ex3_reg (
     .branch_in(E2_branch),
     .jump_in(E2_jump),
     .branch_type_in(E2_branch_type),
+    .predicted_taken_in(E2_predict_taken),
     .reg_write_in(E2_reg_write),
     .rd_in(E2_rd),
     .operand_a_in(E2_operand_a),
@@ -442,11 +515,13 @@ EX2_EX3 stage6_ex2_ex3_reg (
     .mem_size_in(E2_mem_size),
     .mem_unsigned_in(E2_mem_unsigned),
     .wb_sel_in(E2_wb_sel),
+    .counter_val_in(E2_counter_val),
     .pc_out(E3_pc),
     .imm_out(E3_imm),
     .branch_out(E3_branch),
     .jump_out(E3_jump),
     .branch_type_out(E3_branch_type),
+    .predicted_taken_out(E3_predict_taken),
     .reg_write_out(E3_reg_write),
     .rd_out(E3_rd),
     .operand_a_out(E3_operand_a),
@@ -459,7 +534,8 @@ EX2_EX3 stage6_ex2_ex3_reg (
     .mem_write_out(E3_mem_write),
     .mem_size_out(E3_mem_size),
     .mem_unsigned_out(E3_mem_unsigned),
-    .wb_sel_out(E3_wb_sel)
+    .wb_sel_out(E3_wb_sel),
+    .counter_val_out(E3_counter_val)
 );
 
 // Stage 7: Program Counter target calculator. Selects jump or branch targets.
@@ -474,6 +550,7 @@ pc_target_calc stage7_calc (
     .alu_result(E3_alu_result),
     .condition_met_in(E3_condition_met),
     .branch_target_in(E3_branch_target),
+    .predicted_taken_in(E3_predict_taken),
     .pc_sel(E3_pc_sel),
     .pc_target(E3_pc_target)
 );

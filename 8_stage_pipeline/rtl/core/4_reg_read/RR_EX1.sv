@@ -28,8 +28,11 @@ module RR_EX1 (
     input logic branch_in,
     input logic jump_in,
     input logic [2:0] branch_type_in,
+    input logic predicted_taken_in,
     input logic [1:0] forward_a_sel_in,
     input logic [1:0] forward_b_sel_in,
+    input logic [31:0] branch_target_in,
+    input logic [1:0] counter_val_in,
 
     output logic [31:0] immediate_out,
     output logic [4:0] rs1_out,
@@ -51,8 +54,11 @@ module RR_EX1 (
     output logic branch_out,
     output logic jump_out,
     output logic [2:0] branch_type_out,
+    output logic predicted_taken_out,
     output logic [1:0] forward_a_sel_out,
-    output logic [1:0] forward_b_sel_out
+    output logic [1:0] forward_b_sel_out,
+    output logic [31:0] branch_target_out,
+    output logic [1:0] counter_val_out
 );
 
 // Propagates Reg Read stage values to execution Stage 5 (EX1), supporting flush and reset.
@@ -78,8 +84,11 @@ always_ff @(posedge clk) begin
         branch_out <= 1'b0;
         jump_out <= 1'b0;
         branch_type_out <= 3'b0;
+        predicted_taken_out <= 1'b0;
         forward_a_sel_out <= 2'b00;
         forward_b_sel_out <= 2'b00;
+        branch_target_out <= 32'b0;
+        counter_val_out <= 2'b0;
     end
     else begin
         immediate_out <= immediate_in;
@@ -102,8 +111,11 @@ always_ff @(posedge clk) begin
         branch_out <= branch_in;
         jump_out <= jump_in;
         branch_type_out <= branch_type_in;
+        predicted_taken_out <= predicted_taken_in;
         forward_a_sel_out <= forward_a_sel_in;
         forward_b_sel_out <= forward_b_sel_in;
+        branch_target_out <= branch_target_in;
+        counter_val_out <= counter_val_in;
     end    
 end
 

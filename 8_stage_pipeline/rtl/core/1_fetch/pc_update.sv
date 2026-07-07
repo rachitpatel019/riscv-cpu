@@ -10,6 +10,8 @@ module pc_update (
 
     input logic pc_sel,
     input logic [31:0] pc_target,
+    input logic stage4_pc_sel,
+    input logic [31:0] stage4_pc_target,
 
     output logic [31:0] pc
 );
@@ -21,6 +23,9 @@ always_ff @(posedge clk) begin
     end
     else if (pc_sel) begin
         pc <= pc_target;
+    end
+    else if (stage4_pc_sel) begin
+        pc <= stage4_pc_target;
     end
     else if (stall) begin
         pc <= pc;

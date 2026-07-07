@@ -26,6 +26,7 @@ set required_files {
     "../rtl/core/3_decode/ID_RR.sv"
     "../rtl/core/3_decode/imm_gen.sv"
     "../rtl/core/4_reg_read/regfile.sv"
+    "../rtl/core/4_reg_read/bht.sv"
     "../rtl/core/4_reg_read/RR_EX1.sv"
     "../rtl/core/5_ex1/data_sel.sv"
     "../rtl/core/5_ex1/EX1_EX2.sv"
@@ -83,6 +84,7 @@ set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/core/3_decode/decode.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/core/3_decode/ID_RR.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/core/3_decode/imm_gen.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/core/4_reg_read/regfile.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/core/4_reg_read/bht.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/core/4_reg_read/RR_EX1.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/core/5_ex1/data_sel.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/core/5_ex1/EX1_EX2.sv

@@ -2,11 +2,13 @@
 # Sequential simulation runner with summary reporting.
 # All output is printed to the terminal; no log files are generated.
 
+$originalDir = Get-Location
 Set-Location $PSScriptRoot
 
 # Verify that vsim tool exists in PATH
 if (-not (Get-Command vsim -ErrorAction SilentlyContinue)) {
     Write-Host "Error: ModelSim/QuestaSim executable 'vsim' not found in system PATH." -ForegroundColor Red
+    Set-Location $originalDir
     exit 1
 }
 
@@ -23,6 +25,7 @@ $scripts = @(
     "run_imm_gen.do",
     "run_decode.do",
     "run_regfile.do",
+    "run_bht.do",
     "run_data_sel.do",
     "run_alu.do",
     "run_branch_eval.do",
@@ -56,7 +59,7 @@ foreach ($script in $scripts) {
     # Run vsim in batch mode, printing output directly to the terminal.
     # No -l flag so no log file is generated.
     $process = Start-Process vsim `
-        -ArgumentList "-batch", "-do", "$scriptPath" `
+        -ArgumentList "-batch", "-l", "vsim.log", "-do", "$scriptPath" `
         -PassThru -NoNewWindow -Wait `
         -ErrorAction SilentlyContinue
 
@@ -77,6 +80,8 @@ foreach ($script in $scripts) {
     if (Test-Path $logsIni) { Remove-Item -Path $logsIni -Force -ErrorAction SilentlyContinue }
     $logsHex = Join-Path $logsDir "program.hex"
     if (Test-Path $logsHex) { Remove-Item -Path $logsHex -Force -ErrorAction SilentlyContinue }
+    $logsLog = Join-Path $logsDir "vsim.log"
+    if (Test-Path $logsLog) { Remove-Item -Path $logsLog -Force -ErrorAction SilentlyContinue }
 
     # Remove any ModelSim-generated transcript stubs from the scripts directory
     $transcriptPath = Join-Path $PSScriptRoot "transcript"
@@ -113,6 +118,7 @@ if ($failed.Count -eq 0) {
 
     Write-Host "==================================================" -ForegroundColor Cyan
     Write-Host "Regression complete." -ForegroundColor Cyan
+    Set-Location $originalDir
     exit 0
 } else {
     Write-Host "SOME TESTS FAILED ($($failed.Count)/$($scripts.Count))" -ForegroundColor Red
@@ -123,5 +129,6 @@ if ($failed.Count -eq 0) {
     foreach ($f in $failed) { Write-Host "  [-] $f" }
     Write-Host "==================================================" -ForegroundColor Cyan
     Write-Host "Regression complete." -ForegroundColor Cyan
+    Set-Location $originalDir
     exit 1
 }
