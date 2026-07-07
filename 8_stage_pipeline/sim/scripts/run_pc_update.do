@@ -11,6 +11,10 @@ proc verify_file {path} {
 # Navigate to the logs directory
 cd [file normalize [file join [file dirname [info script]] ../logs]]
 
+# Clean up ModelSim-generated transcript files
+file delete -force ../scripts/transcript
+file delete -force transcript
+
 # Verify required inputs
 verify_file ../scripts/modelsim.ini
 

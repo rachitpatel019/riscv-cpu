@@ -1245,6 +1245,124 @@ core (top-level)
     <tr><td>Load-use: load in EX3 (Stage 7), consumer in D (Stage 3)</td><td>1+</td><td>Load data being read from memory</td></tr>
 </table>
 
+<h3>20.4 Pipeline Stage Boundary Registers</h3>
+<p>
+    Post-synthesis static timing analysis measures setup-path propagation delays between the following
+    pipeline register boundaries. Each stage is defined by a source register (output flip-flops of the
+    preceding stage) and a destination register (input flip-flops of the current stage). The register
+    instance names used for timing boundary identification are listed below.
+</p>
+<table>
+    <tr><th>Stage</th><th>Stage Name</th><th>Source Register</th><th>Destination Register</th></tr>
+    <tr>
+        <td>Stage 1</td>
+        <td>Fetch Logic</td>
+        <td>(any; worst path from any register)</td>
+        <td><code>stage2_imem</code> address register</td>
+    </tr>
+    <tr>
+        <td>Stage 2</td>
+        <td>I-Mem Read</td>
+        <td><code>stage2_imem</code> address register</td>
+        <td><code>stage3_if_id_reg</code> instruction output</td>
+    </tr>
+    <tr>
+        <td>Stage 3</td>
+        <td>Decode &amp; Hazard</td>
+        <td><code>stage3_if_id_reg</code> instruction output</td>
+        <td><code>stage3_id_rr_reg</code> outputs</td>
+    </tr>
+    <tr>
+        <td>Stage 4</td>
+        <td>Register Read</td>
+        <td><code>stage3_id_rr_reg</code> outputs</td>
+        <td><code>stage4_rr_ex1_reg</code> outputs</td>
+    </tr>
+    <tr>
+        <td>Stage 5</td>
+        <td>EX1 (Op Sel)</td>
+        <td><code>stage4_rr_ex1_reg</code> outputs</td>
+        <td><code>stage5_ex1_ex2_reg</code> outputs</td>
+    </tr>
+    <tr>
+        <td>Stage 6</td>
+        <td>EX2 (ALU)</td>
+        <td><code>stage5_ex1_ex2_reg</code> outputs</td>
+        <td><code>stage6_ex2_ex3_reg</code> outputs</td>
+    </tr>
+    <tr>
+        <td>Stage 7</td>
+        <td>EX3 &amp; MEM Addr</td>
+        <td><code>stage6_ex2_ex3_reg</code> outputs</td>
+        <td><code>stage7_mem_wb_reg</code> outputs</td>
+    </tr>
+    <tr>
+        <td>Stage 8</td>
+        <td>WB Logic</td>
+        <td><code>stage7_mem_wb_reg</code> outputs</td>
+        <td><code>stage4_regfile</code> write port</td>
+    </tr>
+</table>
+<div class="note-box">
+    <strong>Stage 8 write-back path:</strong> The WB stage destination is the register file write port
+    (<code>stage4_regfile</code>), which is physically co-located in Stage 4. This is the cross-stage
+    write-back path also documented in the Forwarding and Module Hierarchy sections.
+</div>
+<div class="note-box">
+    <strong>Stage 1 source:</strong> Stage 1 (Fetch Logic) is measured from the worst-case setup path
+    originating anywhere in the design. This includes the long-distance branch resolution feedback path
+    from Stage 7 (<code>pc_target_calc</code>) back to the Stage 1 PC register, as well as the
+    sequential PC+4 increment path.
+</div>
+
+<h3>20.5 Per-Stage Propagation Delays</h3>
+<p>
+    The following worst-case setup-path data delays were measured by post-place-and-route static
+    timing analysis (Quartus Prime 24.1std, Lite Edition) against the placed-and-routed netlist.
+    Stage 6 (EX2 / ALU) has the longest combinational delay at 7.222 ns and sets the minimum
+    achievable clock period for this implementation.
+</p>
+<table>
+    <tr><th>Stage</th><th>Stage Name</th><th>Data Delay</th><th>Note</th></tr>
+    <tr><td>Stage 1</td><td>Fetch Logic</td><td>5.512 ns</td><td>Includes branch feedback path from Stage 7</td></tr>
+    <tr><td>Stage 2</td><td>I-Mem Read</td><td>5.186 ns</td><td>BRAM synchronous read latency dominates</td></tr>
+    <tr><td>Stage 3</td><td>Decode &amp; Hazard</td><td>6.673 ns</td><td>Decode combinational logic plus hazard detection</td></tr>
+    <tr><td>Stage 4</td><td>Register Read</td><td>4.445 ns</td><td>Forwarding unit combinational logic</td></tr>
+    <tr><td>Stage 5</td><td>EX1 (Op Sel)</td><td>5.302 ns</td><td>Operand selection mux chain</td></tr>
+    <tr><td><strong>Stage 6</strong></td><td><strong>EX2 (ALU)</strong></td><td><strong>7.222 ns</strong></td><td><strong>Critical path: longest stage delay</strong></td></tr>
+    <tr><td>Stage 7</td><td>EX3 &amp; MEM Addr</td><td>4.649 ns</td><td>PC target calculation and memory address</td></tr>
+    <tr><td>Stage 8</td><td>WB Logic</td><td>6.136 ns</td><td>Write-back mux to register file write port</td></tr>
+</table>
+
+<h3>20.6 Critical Path Analysis</h3>
+<p>
+    The following are the 10 worst-slack setup paths measured from the placed-and-routed netlist.
+    All 10 paths terminate at the register file write port (<code>stage4_regfile</code>, the WB
+    write-back path). The tightest slack is 0.000 ns, indicating the design is at the timing
+    constraint boundary for this path. No paths have negative slack; the design meets timing.
+</p>
+<table>
+    <tr><th>Slack (ns)</th><th>Data Delay (ns)</th><th>Destination</th></tr>
+    <tr><td>0.000</td><td>7.406</td><td><code>stage4_regfile|altsyncram:registers_rtl_0|...ram_block1a0~porta_datain_reg0</code></td></tr>
+    <tr><td>0.098</td><td>7.300</td><td><code>stage4_regfile|altsyncram:registers_rtl_1|...ram_block1a0~porta_datain_reg0</code></td></tr>
+    <tr><td>0.116</td><td>7.290</td><td><code>stage4_regfile|altsyncram:registers_rtl_0|...ram_block1a0~porta_datain_reg0</code></td></tr>
+    <tr><td>0.128</td><td>7.270</td><td><code>stage4_regfile|altsyncram:registers_rtl_1|...ram_block1a0~porta_datain_reg0</code></td></tr>
+    <tr><td>0.128</td><td>7.278</td><td><code>stage4_regfile|altsyncram:registers_rtl_0|...ram_block1a0~porta_datain_reg0</code></td></tr>
+    <tr><td>0.130</td><td>7.276</td><td><code>stage4_regfile|altsyncram:registers_rtl_0|...ram_block1a0~porta_datain_reg0</code></td></tr>
+    <tr><td>0.132</td><td>7.274</td><td><code>stage4_regfile|altsyncram:registers_rtl_0|...ram_block1a0~porta_datain_reg0</code></td></tr>
+    <tr><td>0.193</td><td>7.213</td><td><code>stage4_regfile|altsyncram:registers_rtl_0|...ram_block1a0~porta_datain_reg0</code></td></tr>
+    <tr><td>0.214</td><td>7.184</td><td><code>stage4_regfile|altsyncram:registers_rtl_1|...ram_block1a0~porta_datain_reg0</code></td></tr>
+    <tr><td>0.228</td><td>7.170</td><td><code>stage4_regfile|altsyncram:registers_rtl_1|...ram_block1a0~porta_datain_reg0</code></td></tr>
+</table>
+<div class="note-box">
+    <strong>Interpretation:</strong> All 10 critical paths are in the WB stage write-back path to the
+    register file BRAM (<code>altsyncram</code>). The 0.000 ns slack path indicates the constraint is
+    exactly met but not exceeded. Stage 6 (EX2 / ALU) has the longest per-stage combinational delay
+    at 7.222 ns; however, the tightest setup paths are in Stage 8 (WB write-back) where the BRAM
+    write-port data-in registers have a more demanding setup requirement. Any increase in WB
+    combinational delay risks a timing violation on the tightest path.
+</div>
+
 <!-- ============================================================ -->
 <!-- 21. CORNER CASES AND ASSUMPTIONS                              -->
 <!-- ============================================================ -->

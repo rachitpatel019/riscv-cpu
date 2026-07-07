@@ -1,6 +1,7 @@
 import os
 import sys
 import re
+import shutil
 import subprocess
 import argparse
 
@@ -113,32 +114,37 @@ def parse_signature_file(sig_path):
     return sig
 
 def run_test(test_file):
-    """Compile and execute differential test for a single assembly file."""
-    test_name = os.path.basename(test_file)
+    """Execute differential test for a single test case using pre-compiled artifacts."""
+    test_basename = os.path.basename(test_file)
+    test_name = os.path.splitext(test_basename)[0]
     print(f"\n==================================================")
-    print(f"[RUNNING] Test: {test_name}")
+    print(f"[RUNNING] Test: {test_basename}")
     print(f"==================================================")
     
-    # 1. Paths in WSL
-    wsl_src = to_wsl_path(test_file)
-    wsl_elf = to_wsl_path(ELF_FILE)
-    wsl_bin = to_wsl_path(BIN_FILE)
-    wsl_linker = to_wsl_path(LINKER_LD)
-    wsl_env = to_wsl_path(ENV_DIR)
-
-    # 2. Compile assembly test using WSL GCC toolchain
-    print("[INFO] Compiling assembly test...")
-    compile_cmd = [
-        "riscv64-unknown-elf-gcc", "-march=rv32i", "-mabi=ilp32", "-nostdlib",
-        "-T" + wsl_linker, "-I" + wsl_env, wsl_src, "-o", wsl_elf
-    ]
+    # 1. Locate pre-compiled build artifacts
+    build_subdir = os.path.join(SCRIPT_DIR, "build", test_name)
+    src_elf = os.path.join(build_subdir, "test.elf")
+    src_prog = os.path.join(build_subdir, "program.hex")
+    src_data = os.path.join(build_subdir, "data.hex")
+    
+    if not (os.path.exists(src_elf) and os.path.exists(src_prog) and os.path.exists(src_data)):
+        print(f"[ERROR] Pre-compiled artifacts not found for {test_name} under {build_subdir}!")
+        print("Please run 'generate_hex.py' first to compile the test cases.")
+        return False
+        
+    # 2. Copy artifacts to local folder for simulation
+    print("[INFO] Loading pre-compiled artifacts...")
     try:
-        run_wsl_command(compile_cmd)
-    except subprocess.CalledProcessError:
+        shutil.copy2(src_elf, ELF_FILE)
+        shutil.copy2(src_prog, PROGRAM_HEX)
+        shutil.copy2(src_data, DATA_HEX)
+    except Exception as e:
+        print(f"[ERROR] Failed to copy pre-compiled artifacts: {e}")
         return False
 
     # 3. Extract symbol addresses of tohost, begin_signature, and end_signature
     print("[INFO] Extracting symbol table...")
+    wsl_elf = to_wsl_path(ELF_FILE)
     try:
         symbols = get_elf_symbols(ELF_FILE)
         tohost_addr = symbols["tohost"]
@@ -153,39 +159,6 @@ def run_test(test_file):
     print(f"  tohost: 0x{tohost_addr:08x}")
     print(f"  begin_signature: 0x{sig_begin:08x}")
     print(f"  end_signature: 0x{sig_end:08x}")
-
-    # 4. Generate flat binary using objcopy
-    print("[INFO] Creating binary output...")
-    objcopy_cmd = ["riscv64-unknown-elf-objcopy", "-O", "binary", wsl_elf, wsl_bin]
-    try:
-        run_wsl_command(objcopy_cmd)
-    except subprocess.CalledProcessError:
-        return False
-
-    # 5. Read binary and splice it into program.hex and data.hex
-    print("[INFO] Splitting binary into program.hex & data.hex...")
-    with open(BIN_FILE, "rb") as f:
-        data = f.read()
-    
-    # Pad to 256KB (65536 words of 4 bytes)
-    target_size = 256 * 1024
-    if len(data) < target_size:
-        data = data.ljust(target_size, b'\x00')
-    elif len(data) > target_size:
-        print(f"[ERROR] Binary size {len(data)} exceeds 256KB target buffer!")
-        return False
-
-    # First 128KB goes to instruction memory (program.hex)
-    with open(PROGRAM_HEX, "w") as f:
-        for i in range(0, 128 * 1024, 4):
-            word = int.from_bytes(data[i:i+4], byteorder='little')
-            f.write(f"{word:08x}\n")
-
-    # Next 128KB goes to data memory (data.hex)
-    with open(DATA_HEX, "w") as f:
-        for i in range(128 * 1024, 256 * 1024, 4):
-            word = int.from_bytes(data[i:i+4], byteorder='little')
-            f.write(f"{word:08x}\n")
 
     # 6. Compile and Launch RTL Simulation using ModelSim on Windows
     print("[INFO] Compiling RTL and testbench with vlog...")

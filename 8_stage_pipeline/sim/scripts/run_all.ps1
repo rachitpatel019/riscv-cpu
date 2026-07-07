@@ -70,6 +70,12 @@ foreach ($script in $scripts) {
     }
     
     Pop-Location
+
+    # Remove ModelSim-generated transcript file from the scripts directory
+    $transcriptPath = Join-Path $PSScriptRoot "transcript"
+    if (Test-Path $transcriptPath) {
+        Remove-Item -Path $transcriptPath -Force -ErrorAction SilentlyContinue
+    }
     
     # Scan log for failures
     $logPath = Join-Path $logsDir $logFile
