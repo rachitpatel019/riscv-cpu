@@ -39,6 +39,7 @@ set required_files {
     "../rtl/core/8_wb/writeback.sv"
     "../rtl/core/hazard_control/forwarding_unit.sv"
     "../rtl/core/hazard_control/hazard_detection_unit.sv"
+    "PLL.v"
     "top.sv"
     "program.hex"
     "cpu.sdc"
@@ -99,6 +100,7 @@ set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/core/hazard_control/forwar
 set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/core/hazard_control/hazard_detection_unit.sv
 
 # Other
+set_global_assignment -name VERILOG_FILE PLL.v
 set_global_assignment -name SYSTEMVERILOG_FILE top.sv
 set_global_assignment -name HEX_FILE program.hex
 set_global_assignment -name SDC_FILE cpu.sdc

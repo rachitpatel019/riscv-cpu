@@ -16,15 +16,9 @@ module top (
     logic clk;
     logic reset;
 
-    // Power-on reset generation for the CPU
-    // The physical pushbuttons (KEY) are entirely dedicated to MMIO.
+    logic clk_125;
+    logic pll_locked;
     logic [3:0] reset_shift = 4'b1111;
-    always_ff @(posedge MAX10_CLK1_50) begin
-        reset_shift <= {1'b0, reset_shift[3:1]};
-    end
-    
-    assign clk = MAX10_CLK1_50;
-    assign reset = reset_shift[0];
 
     logic [31:0] out_pc;
     logic [31:0] out_writeback_data;
@@ -33,6 +27,26 @@ module top (
 
     logic [9:0]  cpu_leds;
     logic [23:0] cpu_hex;
+
+    // Instantiate PLL to generate 125 MHz clock from 50 MHz input
+    PLL pll_inst (
+        .inclk0(MAX10_CLK1_50),
+        .c0(clk_125),
+        .locked(pll_locked)
+    );
+
+    // Power-on reset generation for the CPU
+    // Reset shifts out when PLL is locked, and is held in reset when PLL is unlocked.
+    always_ff @(posedge clk_125 or negedge pll_locked) begin
+        if (!pll_locked) begin
+            reset_shift <= 4'b1111;
+        end else begin
+            reset_shift <= {1'b0, reset_shift[3:1]};
+        end
+    end
+    
+    assign clk = clk_125;
+    assign reset = reset_shift[0];
 
     // Core instantiation
     core cpu_core (
