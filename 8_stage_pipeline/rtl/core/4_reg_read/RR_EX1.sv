@@ -13,6 +13,7 @@ module RR_EX1 (
     input logic [4:0] rs2_in,
     input logic [4:0] rd_in,
     input logic [31:0] pc_in,
+    input logic [31:0] pc_plus_4_in,
 
     input logic uses_rs1_in,
     input logic uses_rs2_in,
@@ -39,6 +40,7 @@ module RR_EX1 (
     output logic [4:0] rs2_out,
     output logic [4:0] rd_out,
     output logic [31:0] pc_out,
+    output logic [31:0] pc_plus_4_out,
 
     output logic uses_rs1_out,
     output logic uses_rs2_out,
@@ -69,6 +71,7 @@ always_ff @(posedge clk) begin
         rs2_out <= 5'b0;
         rd_out <= 5'b0;
         pc_out <= 32'b0;
+        pc_plus_4_out <= 32'b0;
 
         uses_rs1_out <= 1'b0;
         uses_rs2_out <= 1'b0;
@@ -96,6 +99,7 @@ always_ff @(posedge clk) begin
         rs2_out <= rs2_in;
         rd_out <= rd_in;
         pc_out <= pc_in;
+        pc_plus_4_out <= pc_plus_4_in;
 
         uses_rs1_out <= uses_rs1_in;
         uses_rs2_out <= uses_rs2_in;

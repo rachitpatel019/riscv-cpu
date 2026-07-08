@@ -13,7 +13,8 @@ module pc_update (
     input logic stage4_pc_sel,
     input logic [31:0] stage4_pc_target,
 
-    output logic [31:0] pc
+    output logic [31:0] pc,
+    output logic [31:0] pc_plus_4
 );
 
 // Updates the program counter register on each clock cycle based on stall, jump, and reset signals.
@@ -34,5 +35,7 @@ always_ff @(posedge clk) begin
         pc <= pc + 32'd4;
     end
 end
+
+assign pc_plus_4 = pc + 32'd4;
 
 endmodule

@@ -17,7 +17,7 @@ Single cycle
 18,432 Memory bits
 
 8 stage pipeline
-~125 MHz
-2,431 Logic elements
-920 Registers
-67,584 Memory bits
+125.0 MHz
+2,796 Logic elements
+1,347 Registers
+69,632 Memory bits

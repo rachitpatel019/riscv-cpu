@@ -9,6 +9,7 @@ module EX1_EX2 (
     input logic flush,
 
     input logic [31:0] pc_in,
+    input logic [31:0] pc_plus_4_in,
     input logic [3:0] alu_op_in,
     input logic [31:0] imm_in,
     input logic branch_in,
@@ -32,6 +33,7 @@ module EX1_EX2 (
     input logic [1:0] counter_val_in,
 
     output logic [31:0] pc_out,
+    output logic [31:0] pc_plus_4_out,
     output logic [3:0] alu_op_out,
     output logic [31:0] imm_out,
     output logic branch_out,
@@ -59,6 +61,7 @@ module EX1_EX2 (
 always_ff @(posedge clk) begin
     if (reset || flush) begin
         pc_out <= 32'b0;
+        pc_plus_4_out <= 32'b0;
         alu_op_out <= 4'b0;
         imm_out <= 32'b0;
         branch_out <= 0;
@@ -80,6 +83,7 @@ always_ff @(posedge clk) begin
     end
     else begin
         pc_out <= pc_in;
+        pc_plus_4_out <= pc_plus_4_in;
         alu_op_out <= alu_op_in;
         imm_out <= imm_in;
         branch_out <= branch_in;

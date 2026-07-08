@@ -6,6 +6,7 @@ int tests_passed;
 int tests_failed;
 
 logic [31:0] pc;
+logic [31:0] pc_plus_4;
 logic [31:0] operand_a;
 logic [31:0] operand_b;
 logic branch;
@@ -44,6 +45,7 @@ task automatic drive(
     input logic i_predicted_taken = 0
 );
     pc = i_pc;
+    pc_plus_4 = i_pc + 4;
     operand_a = i_op_a;
     operand_b = i_op_b;
     branch = i_branch;

@@ -5,6 +5,7 @@ Aligns target address to 4-byte boundaries for JALR.
 
 module pc_target_calc (
     input logic [31:0] pc,
+    input logic [31:0] pc_plus_4,
     input logic [31:0] operand_a,
     input logic [31:0] operand_b,
     input logic branch,
@@ -37,7 +38,7 @@ always_comb begin
         if (actual_taken) begin
             pc_target = branch_target_in & 32'hFFFFFFFC;
         end else begin
-            pc_target = pc + 32'd4;
+            pc_target = pc_plus_4;
         end
     end
     else begin

@@ -9,6 +9,7 @@ module EX2_EX3 (
     input logic flush,
 
     input logic [31:0] pc_in,
+    input logic [31:0] pc_plus_4_in,
     input logic [31:0] imm_in,
     input logic branch_in,
     input logic jump_in,
@@ -33,6 +34,7 @@ module EX2_EX3 (
     input logic [1:0] counter_val_in,
 
     output logic [31:0] pc_out,
+    output logic [31:0] pc_plus_4_out,
     output logic [31:0] imm_out,
     output logic branch_out,
     output logic jump_out,
@@ -61,6 +63,7 @@ module EX2_EX3 (
 always_ff @(posedge clk) begin
     if (reset || flush) begin
         pc_out <= 32'b0;
+        pc_plus_4_out <= 32'b0;
         branch_out <= 0;
         jump_out <= 0;
         branch_type_out <= 3'b0;
@@ -83,6 +86,7 @@ always_ff @(posedge clk) begin
     end
     else begin
         pc_out <= pc_in;
+        pc_plus_4_out <= pc_plus_4_in;
         branch_out <= branch_in;
         jump_out <= jump_in;
         branch_type_out <= branch_type_in;

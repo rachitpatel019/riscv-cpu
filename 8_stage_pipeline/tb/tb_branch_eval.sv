@@ -5,14 +5,11 @@ int tests_total;
 int tests_passed;
 int tests_failed;
 
-logic [31:0] pc;
-logic [31:0] imm;
 logic [31:0] operand_a;
 logic [31:0] operand_b;
 logic [2:0] branch_type;
 
 logic condition_met;
-logic [31:0] branch_target;
 
 branch_eval dut (.*);
 
@@ -32,14 +29,10 @@ task automatic report_fatal(string id, string msg);
 endtask
 
 task automatic drive(
-    input logic [31:0] i_pc,
-    input logic [31:0] i_imm,
     input logic [31:0] i_op_a,
     input logic [31:0] i_op_b,
     input logic [2:0]  i_br_type
 );
-    pc = i_pc;
-    imm = i_imm;
     operand_a = i_op_a;
     operand_b = i_op_b;
     branch_type = i_br_type;
@@ -47,15 +40,14 @@ task automatic drive(
 endtask
 
 task automatic check(
-    input logic exp_cond,
-    input logic [31:0] exp_target
+    input logic exp_cond
 );
-    if (condition_met === exp_cond && branch_target === exp_target) begin
+    if (condition_met === exp_cond) begin
         tests_passed++;
         tests_total++;
     end else begin
-        report_error("CHECK", $sformatf("MISMATCH: Type=%b, ExpCond=%b, ActCond=%b, ExpTarget=%h, ActTarget=%h", 
-            branch_type, exp_cond, condition_met, exp_target, branch_target));
+        report_error("CHECK", $sformatf("MISMATCH: Type=%b, ExpCond=%b, ActCond=%b", 
+            branch_type, exp_cond, condition_met));
     end
 endtask
 
@@ -70,25 +62,25 @@ initial begin
     tests_failed = 0;
     report_info("TB", "Starting branch_eval tests.");
 
-    drive(32'h100, 32'h8, 32'h5, 32'h5, 3'b000); check(1, 32'h108);
-    drive(32'h100, 32'h8, 32'h5, 32'h6, 3'b000); check(0, 32'h108);
+    drive(32'h5, 32'h5, 3'b000); check(1);
+    drive(32'h5, 32'h6, 3'b000); check(0);
 
-    drive(32'h100, 32'h8, 32'h5, 32'h6, 3'b001); check(1, 32'h108);
-    drive(32'h100, 32'h8, 32'h5, 32'h5, 3'b001); check(0, 32'h108);
+    drive(32'h5, 32'h6, 3'b001); check(1);
+    drive(32'h5, 32'h5, 3'b001); check(0);
 
-    drive(32'h100, 32'h8, 32'hFFFFFFFE, 32'h00000001, 3'b100); check(1, 32'h108);
-    drive(32'h100, 32'h8, 32'h00000001, 32'hFFFFFFFE, 3'b100); check(0, 32'h108);
+    drive(32'hFFFFFFFE, 32'h00000001, 3'b100); check(1);
+    drive(32'h00000001, 32'hFFFFFFFE, 3'b100); check(0);
 
-    drive(32'h100, 32'h8, 32'h00000001, 32'hFFFFFFFE, 3'b101); check(1, 32'h108);
-    drive(32'h100, 32'h8, 32'hFFFFFFFE, 32'h00000001, 3'b101); check(0, 32'h108);
+    drive(32'h00000001, 32'hFFFFFFFE, 3'b101); check(1);
+    drive(32'hFFFFFFFE, 32'h00000001, 3'b101); check(0);
 
-    drive(32'h100, 32'h8, 32'h00000001, 32'hFFFFFFFE, 3'b110); check(1, 32'h108);
-    drive(32'h100, 32'h8, 32'hFFFFFFFE, 32'h00000001, 3'b110); check(0, 32'h108);
+    drive(32'h00000001, 32'hFFFFFFFE, 3'b110); check(1);
+    drive(32'hFFFFFFFE, 32'h00000001, 3'b110); check(0);
 
-    drive(32'h100, 32'h8, 32'hFFFFFFFE, 32'h00000001, 3'b111); check(1, 32'h108);
-    drive(32'h100, 32'h8, 32'h00000001, 32'hFFFFFFFE, 3'b111); check(0, 32'h108);
+    drive(32'hFFFFFFFE, 32'h00000001, 3'b111); check(1);
+    drive(32'h00000001, 32'hFFFFFFFE, 3'b111); check(0);
 
-    drive(32'h100, 32'hFFFFFFF8, 32'h0, 32'h0, 3'b000); check(1, 32'hF8);
+    drive(32'h0, 32'h0, 3'b000); check(1);
 
     report_info("TB", "All tests complete.");
     $display("--- branch_eval Test Summary ---");

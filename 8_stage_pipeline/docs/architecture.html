@@ -171,7 +171,7 @@
     <strong>Pipeline Depth:</strong> 8 stages<br>
     <strong>Memory:</strong> Harvard architecture (separate instruction and data memories)<br>
     <strong>FPGA Target:</strong> Intel/Altera (M9K BRAM inference)<br>
-    <strong>Features:</strong> Data forwarding, hazard detection with stalling, branch/jump resolution, MMIO peripherals<br>
+    <strong>Features:</strong> Data forwarding, hazard detection with stalling, branch target early calculation (Stage 4), Branch History Table (BHT) dynamic prediction, branch/jump resolution, MMIO peripherals<br>
     <strong>Top Module:</strong> <code>core</code>
 </div>
 
@@ -195,6 +195,7 @@
         <li><a href="#hazards">Hazard Detection and Stalling</a></li>
         <li><a href="#forwarding">Data Forwarding</a></li>
         <li><a href="#branches">Branch and Jump Handling</a></li>
+        <li><a href="#bht">Branch History Table (BHT)</a></li>
         <li><a href="#memory-system">Memory System</a></li>
         <li><a href="#mmio">Memory-Mapped I/O (MMIO)</a></li>
         <li><a href="#pipeline-registers">Pipeline Register Summary</a></li>
@@ -217,13 +218,13 @@
 </p>
 
 <ol>
-    <li><strong>Fetch (F)</strong> - PC generation and update</li>
+    <li><strong>Fetch (F)</strong> - PC generation and update; BHT lookup for branch prediction</li>
     <li><strong>Instruction Memory (IM)</strong> - Synchronous instruction memory read (1-cycle latency)</li>
     <li><strong>Decode (D)</strong> - Instruction decoding, control signal generation, immediate extraction</li>
-    <li><strong>Register Read (RR)</strong> - Register file read (synchronous, 1-cycle latency), forwarding decision</li>
+    <li><strong>Register Read (RR)</strong> - Register file read (synchronous, 1-cycle latency), forwarding decision, branch target address calculation (PC + imm)</li>
     <li><strong>Execute 1 (EX1)</strong> - Operand selection with forwarding muxes</li>
-    <li><strong>Execute 2 (EX2)</strong> - ALU computation, branch condition evaluation, branch target calculation</li>
-    <li><strong>Execute 3 / Memory (EX3/MEM)</strong> - PC target finalization, memory read/write initiation</li>
+    <li><strong>Execute 2 (EX2)</strong> - ALU computation, branch condition evaluation</li>
+    <li><strong>Execute 3 / Memory (EX3/MEM)</strong> - PC target finalization, BHT update, memory read/write initiation</li>
     <li><strong>Writeback (WB)</strong> - Write-back data selection and register file write</li>
 </ol>
 
@@ -231,8 +232,11 @@
     The processor uses a Harvard memory architecture with separate instruction and data memories.
     Both memories are synchronous (M9K BRAM-based), introducing one-cycle read latency each.
     Data hazards are resolved through a combination of stalling (hazard detection unit) and
-    data forwarding (forwarding unit). Branch and jump resolution occurs in Stage 7 (EX3/MEM),
-    with a flush penalty of 6 pipeline stages on taken branches and jumps.
+    data forwarding (forwarding unit). Branch target addresses are computed early in Stage 4 (RR)
+    using the decoded PC and immediate, eliminating the one-cycle adder from Stage 6's critical path.
+    A Branch History Table (BHT) provides dynamic taken/not-taken prediction at Stage 1 (Fetch),
+    reducing the taken-branch penalty when the prediction is correct. Final branch/jump resolution
+    still occurs in Stage 7 (EX3/MEM); a misprediction or unconditional jump incurs a 6-cycle flush penalty.
 </p>
 
 <!-- ============================================================ -->
@@ -248,19 +252,22 @@
   |  FETCH |->|  IMEM  |->| DECODE |->|REG READ|->|  EX1   |->|  EX2   |->|EX3/MEM |->|   WB   |
   |        |  |        |  |        |  |        |  |        |  |        |  |        |  |        |
   |pc_update| |instr_mem| |IF_ID   |  |regfile |  |data_sel|  |alu     |  |pc_tgt  |  |write-  |
-  |        |  |        |  |decode  |  |fwd_unit|  |        |  |br_eval |  |memory  |  |back    |
-  |        |  |        |  |imm_gen |  |ID_RR   |  |        |  |        |  |MEM_WB  |  |        |
-  |        |  |        |  |control |  |RR_EX1  |  |EX1_EX2 |  |EX2_EX3 |  |        |  |        |
+  |bht     |  |        |  |decode  |  |fwd_unit|  |        |  |br_eval |  |memory  |  |back    |
+  |        |  |        |  |imm_gen |  |br_tgt  |  |        |  |(cond)  |  |MEM_WB  |  |        |
+  |        |  |        |  |control |  |ID_RR   |  |        |  |        |  |bht_upd |  |        |
+  |        |  |        |  |        |  |RR_EX1  |  |EX1_EX2 |  |EX2_EX3 |  |        |  |        |
   +--------+  +--------+  +--------+  +--------+  +--------+  +--------+  +--------+  +--------+
-       |                                                                       |            |
-       +<----------------------------------------------------------------------+            |
-       |                        pc_sel, pc_target                                           |
-       |                                                                                    |
-       |    Forwarding Paths:                                                               |
-       |    E2_fwd_val  (EX2 -> EX1 data_sel)  = (wb_sel==10) ? PC+4 : alu_result          |
-       |    E3_fwd_val  (EX3 -> EX1 data_sel)  = (wb_sel==10) ? PC+4 : alu_result          |
-       |    W_fwd_val   (WB  -> EX1 data_sel)  = W_write_data  (currently unused)           |
-       |                                                                                    |
+       |<-- bht_prediction (taken/not-taken guess)                            |
+       |                                                                      |
+       +<--------------------------------------------------------------------+|
+       |                   pc_sel, pc_target (from pc_target_calc)            |
+       |                   bht_update (branch, outcome, PC) from Stage 7     |
+       |
+       |    Forwarding Paths:
+       |    E2_fwd_val  (EX2 -> EX1 data_sel)  = (wb_sel==10) ? PC+4 : alu_result
+       |    E3_fwd_val  (EX3 -> EX1 data_sel)  = (wb_sel==10) ? PC+4 : alu_result
+       |    W_fwd_val   (WB  -> EX1 data_sel)  = W_write_data  (currently unused)
+       |
        +<------------------------------- W_rd, W_write_data, W_reg_write -------------------+
                                          (Register File Write Port)
 
@@ -268,6 +275,10 @@
   Inputs from: D (rs1, rs2, uses_rs1, uses_rs2), RR (rd, reg_write), E1 (rd, reg_write),
                E2 (rd, mem_read), E3 (rd, mem_read)
   Output: stall_frontend -> stalls Stages 1-3, inserts bubble at ID_RR boundary
+
+  Branch Target Calculation (Stage 4 - RR):
+  branch_target = RR_pc + RR_imm  (combinational adder on ID_RR outputs)
+  Pipelined through RR_EX1 and EX1_EX2; used by pc_target_calc in Stage 7.
 </div>
 
 <!-- ============================================================ -->
@@ -540,8 +551,9 @@ mem_size (2b), mem_unsigned (1b), wb_sel (2b), branch (1b), jump (1b), branch_ty
 <h2 id="stage4">7. Stage 4 - Register Read (RR)</h2>
 
 <p>
-    Stage 4 reads operands from the register file (synchronous read, 1-cycle latency) and
-    computes forwarding select signals for Stage 5.
+    Stage 4 reads operands from the register file (synchronous read, 1-cycle latency),
+    computes forwarding select signals for Stage 5, and calculates the branch target address
+    (PC + sign-extended immediate) combinationally from the ID_RR register outputs.
 </p>
 
 <h3>7.1 Module: <code>regfile</code> (Register File)</h3>
@@ -580,16 +592,40 @@ mem_size (2b), mem_unsigned (1b), wb_sel (2b), branch (1b), jump (1b), branch_ty
     See <a href="#forwarding">Section 13: Data Forwarding</a> for full details.
 </p>
 
-<h3>7.3 Module: <code>RR_EX1</code> (Pipeline Register)</h3>
+<h3>7.3 Module: <code>branch_target_calc</code> (Branch Target Adder)</h3>
+<p>File: <code>rtl/core/4_reg_read/branch_target_calc.sv</code></p>
+<p>
+    Purely combinational adder that computes the branch target address from the ID_RR register outputs.
+    The result is registered through RR_EX1 and EX1_EX2 and consumed by <code>pc_target_calc</code>
+    in Stage 7. This early calculation removes the branch-target adder from Stage 6's critical path.
+</p>
+
+<h4>Port Interface</h4>
+<table>
+    <tr><th>Port</th><th>Direction</th><th>Width</th><th>Description</th></tr>
+    <tr><td><code>pc</code></td><td>input</td><td>32</td><td>PC of the branch instruction (from ID_RR, <code>RR_pc</code>)</td></tr>
+    <tr><td><code>imm</code></td><td>input</td><td>32</td><td>Sign-extended branch immediate (from ID_RR, <code>RR_imm</code>)</td></tr>
+    <tr><td><code>branch_target</code></td><td>output</td><td>32</td><td>Computed target: <code>pc + imm</code> (<code>RR_branch_target</code>)</td></tr>
+</table>
+
+<div class="note-box">
+    <strong>Scope:</strong> This module computes the B-type and J-type (JAL) PC-relative target only.
+    JALR targets depend on a register value (<code>rs1 + imm</code>), which is not available until EX1;
+    the JALR target continues to be computed by the ALU in Stage 6 and finalized by
+    <code>pc_target_calc</code> in Stage 7.
+</div>
+
+<h3>7.4 Module: <code>RR_EX1</code> (Pipeline Register)</h3>
 <p>File: <code>rtl/core/4_reg_read/RR_EX1.sv</code></p>
 <p>
-    Pipeline register at the Register-Read/EX1 boundary. Registers all data, control, and forwarding
-    select signals. On <code>reset</code> or <code>flush</code>, all outputs are zeroed. No stall input (this
-    register is never stalled; only the frontend stages 1-3 stall).
+    Pipeline register at the Register-Read/EX1 boundary. Registers all data, control, forwarding
+    select signals, and the early-computed branch target. On <code>reset</code> or <code>flush</code>,
+    all outputs are zeroed. No stall input (this register is never stalled; only the frontend stages 1-3 stall).
 </p>
 
 <h4>Registered Signals</h4>
-<p>All signals from ID_RR, plus: <code>forward_a_sel</code> (2b) and <code>forward_b_sel</code> (2b).</p>
+<p>All signals from ID_RR, plus: <code>forward_a_sel</code> (2b), <code>forward_b_sel</code> (2b),
+and <code>branch_target</code> (32b, computed by <code>branch_target_calc</code>).</p>
 
 <!-- ============================================================ -->
 <!-- 8. STAGE 5 - EXECUTE 1                                        -->
@@ -664,6 +700,8 @@ mem_size (2b), mem_unsigned (1b), wb_sel (2b).</p>
 
 <p>
     Stage 6 performs the main ALU computation and evaluates branch conditions.
+    Branch target calculation has been moved to Stage 4; the pre-computed target arrives
+    via the EX1_EX2 pipeline register and is passed through to Stage 7 without recomputation.
 </p>
 
 <h3>9.1 Module: <code>alu</code> (Arithmetic Logic Unit)</h3>
@@ -690,22 +728,21 @@ mem_size (2b), mem_unsigned (1b), wb_sel (2b).</p>
     ALU_PASS outputs B directly (used for LUI).
 </p>
 
-<h3>9.2 Module: <code>branch_eval</code> (Branch Evaluation Unit)</h3>
+<h3>9.2 Module: <code>branch_eval</code> (Branch Condition Evaluation Unit)</h3>
 <p>File: <code>rtl/core/6_ex2/branch_eval.sv</code></p>
 <p>
-    Evaluates branch conditions and computes the branch target address. Purely combinational.
+    Evaluates branch conditions only. Purely combinational. The branch target address is no longer
+    computed here; it arrives pre-computed from Stage 4 via the EX1_EX2 pipeline register
+    (<code>E2_branch_target</code>).
 </p>
 
 <h4>Port Interface</h4>
 <table>
     <tr><th>Port</th><th>Direction</th><th>Width</th><th>Description</th></tr>
-    <tr><td><code>pc</code></td><td>input</td><td>32</td><td>PC of the branch instruction (<code>E2_pc</code>)</td></tr>
-    <tr><td><code>imm</code></td><td>input</td><td>32</td><td>Branch offset immediate (<code>E2_imm</code>)</td></tr>
     <tr><td><code>operand_a</code></td><td>input</td><td>32</td><td>Source operand A (<code>E2_operand_a</code>)</td></tr>
     <tr><td><code>operand_b</code></td><td>input</td><td>32</td><td>Source operand B (<code>E2_operand_b</code>)</td></tr>
     <tr><td><code>branch_type</code></td><td>input</td><td>3</td><td>Branch condition type (funct3)</td></tr>
     <tr><td><code>condition_met</code></td><td>output</td><td>1</td><td>Branch condition result (<code>E2_condition_met</code>)</td></tr>
-    <tr><td><code>branch_target</code></td><td>output</td><td>32</td><td>Branch target address: <code>pc + imm</code> (<code>E2_branch_target</code>)</td></tr>
 </table>
 
 <h4>Branch Condition Evaluation</h4>
@@ -723,21 +760,23 @@ mem_size (2b), mem_unsigned (1b), wb_sel (2b).</p>
     <strong>Note:</strong> The branch condition evaluation in <code>branch_eval</code> operates on the
     raw operand values (operand_a and operand_b), which are the same values fed to the ALU.
     For branch instructions, <code>alu_src_a=0</code> and <code>alu_src_b=0</code>, so these are the
-    (possibly forwarded) register values. The branch target is always computed as <code>pc + imm</code>
-    regardless of the branch type.
+    (possibly forwarded) register values. The pre-computed branch target (<code>E2_branch_target</code>)
+    is passed through from the pipeline register unchanged.
 </div>
 
 <h3>9.3 Module: <code>EX2_EX3</code> (Pipeline Register)</h3>
 <p>File: <code>rtl/core/6_ex2/EX2_EX3.sv</code></p>
 <p>
-    Pipeline register at the EX2/EX3 boundary. Registers ALU result, branch evaluation outputs,
-    memory control, and writeback signals. On <code>reset</code> or <code>flush</code>, all outputs are zeroed.
+    Pipeline register at the EX2/EX3 boundary. Registers ALU result, branch condition result,
+    pre-computed branch target (originally from Stage 4), memory control, and writeback signals.
+    On <code>reset</code> or <code>flush</code>, all outputs are zeroed.
 </p>
 
 <h4>Registered Signals</h4>
 <p>PC (32b), imm (32b), branch (1b), jump (1b), branch_type (3b), reg_write (1b), rd (5b),
 operand_a (32b), operand_b (32b), rs2_data (32b), alu_result (32b), condition_met (1b),
-branch_target (32b), mem_read (1b), mem_write (1b), mem_size (2b), mem_unsigned (1b), wb_sel (2b).</p>
+branch_target (32b, pipelined from Stage 4), mem_read (1b), mem_write (1b), mem_size (2b),
+mem_unsigned (1b), wb_sel (2b).</p>
 
 <!-- ============================================================ -->
 <!-- 10. STAGE 7 - EXECUTE 3 / MEMORY                              -->
@@ -766,9 +805,9 @@ branch_target (32b), mem_read (1b), mem_write (1b), mem_size (2b), mem_unsigned 
     <tr><td><code>jump</code></td><td>input</td><td>1</td><td>Jump flag (<code>E3_jump</code>)</td></tr>
     <tr><td><code>branch_type</code></td><td>input</td><td>3</td><td>Branch type (unused in current logic)</td></tr>
     <tr><td><code>imm</code></td><td>input</td><td>32</td><td>Immediate value (<code>E3_imm</code>)</td></tr>
-    <tr><td><code>alu_result</code></td><td>input</td><td>32</td><td>ALU result (<code>E3_alu_result</code>)</td></tr>
+    <tr><td><code>alu_result</code></td><td>input</td><td>32</td><td>ALU result (<code>E3_alu_result</code>); used as JALR target</td></tr>
     <tr><td><code>condition_met_in</code></td><td>input</td><td>1</td><td>Branch condition result (<code>E3_condition_met</code>)</td></tr>
-    <tr><td><code>branch_target_in</code></td><td>input</td><td>32</td><td>Branch target from Stage 6 (<code>E3_branch_target</code>)</td></tr>
+    <tr><td><code>branch_target_in</code></td><td>input</td><td>32</td><td>Branch target pipelined from Stage 4 (<code>E3_branch_target</code>)</td></tr>
     <tr><td><code>pc_sel</code></td><td>output</td><td>1</td><td>PC redirect signal (<code>E3_pc_sel</code>)</td></tr>
     <tr><td><code>pc_target</code></td><td>output</td><td>32</td><td>Target PC value (<code>E3_pc_target</code>)</td></tr>
 </table>
@@ -983,7 +1022,8 @@ branch_target (32b), mem_read (1b), mem_write (1b), mem_size (2b), mem_unsigned 
 <h3>14.1 Resolution Point</h3>
 <p>
     Branches and jumps are resolved in Stage 7 (EX3/MEM) by the <code>pc_target_calc</code> module.
-    The <code>E3_pc_sel</code> signal (= <code>flush</code>) indicates a taken branch or jump.
+    The <code>E3_pc_sel</code> signal (= <code>flush</code>) indicates a taken branch or jump or a
+    BHT misprediction. The branch target address arrives pre-computed from Stage 4 via the pipeline.
 </p>
 
 <h3>14.2 Flush Mechanism</h3>
@@ -991,18 +1031,23 @@ branch_target (32b), mem_read (1b), mem_write (1b), mem_size (2b), mem_unsigned 
 <ul>
     <li><code>flush</code> signal is broadcast to all pipeline registers from IF_ID through EX2_EX3.</li>
     <li>All 6 pipeline stages between Fetch and EX3 are flushed (instructions converted to NOPs).</li>
-    <li><code>pc_update</code> loads the target PC on the next clock edge.</li>
+    <li><code>pc_update</code> loads the correct target PC on the next clock edge.</li>
     <li><code>instr_mem</code> sets <code>flush_reg</code> to output a NOP on the next cycle.</li>
+    <li>The BHT entry for the branch PC is updated with the actual outcome.</li>
 </ul>
 
 <h3>14.3 Branch Penalty</h3>
 <p>
-    Taken branches and jumps incur a <strong>6-cycle penalty</strong> (Stages 1-6 are flushed).
-    Not-taken branches incur no penalty (they flow through the pipeline normally).
+    Unconditional jumps (JAL, JALR) always incur a <strong>6-cycle flush penalty</strong>.
+    Conditional branches incur a penalty only on a BHT misprediction:
 </p>
+<ul>
+    <li><strong>BHT correct prediction (taken or not-taken):</strong> 0 extra cycles on top of normal flow.</li>
+    <li><strong>BHT misprediction:</strong> 6-cycle flush penalty (same as the no-prediction baseline).</li>
+</ul>
 <p>
-    There is no branch prediction in the current design. All branches are predicted not-taken
-    (the PC always increments by 4 unless redirected).
+    Not-taken branches that are correctly predicted incur no penalty. The BHT reduces the average
+    branch penalty compared to the prior always-predict-not-taken scheme.
 </p>
 
 <h3>14.4 Flush Signal Distribution</h3>
@@ -1018,15 +1063,103 @@ branch_target (32b), mem_read (1b), mem_write (1b), mem_size (2b), mem_unsigned 
 </table>
 
 <!-- ============================================================ -->
-<!-- 15. MEMORY SYSTEM                                             -->
+<!-- 15. BRANCH HISTORY TABLE (BHT)                               -->
 <!-- ============================================================ -->
-<h2 id="memory-system">15. Memory System</h2>
+<h2 id="bht">15. Branch History Table (BHT)</h2>
 
-<h3>15.1 Module: <code>memory</code> (Memory Interconnect)</h3>
+<h3>15.1 Module: <code>bht</code> (Branch History Table)</h3>
+<p>File: <code>rtl/core/1_fetch/bht.sv</code></p>
+<p>
+    A PC-indexed table of 2-bit saturating counters that provides dynamic taken/not-taken
+    branch predictions at Stage 1 (Fetch). The table is updated in Stage 7 (EX3/MEM) once
+    the actual branch outcome is known. No prediction is made for non-branch instructions.
+</p>
+
+<h4>Structure</h4>
+<table>
+    <tr><th>Parameter</th><th>Value</th><th>Description</th></tr>
+    <tr><td><code>BHT_ENTRIES</code></td><td>256 (default)</td><td>Number of table entries; must be a power of 2</td></tr>
+    <tr><td><code>INDEX_WIDTH</code></td><td>8</td><td>log2(BHT_ENTRIES); PC bits [9:2] used as index</td></tr>
+    <tr><td>Counter width</td><td>2 bits</td><td>Saturating counter per entry (Strongly Not-Taken = 2'b00, Weakly Not-Taken = 2'b01, Weakly Taken = 2'b10, Strongly Taken = 2'b11)</td></tr>
+</table>
+
+<h4>Prediction Interface (Stage 1 - Fetch)</h4>
+<table>
+    <tr><th>Port</th><th>Direction</th><th>Width</th><th>Description</th></tr>
+    <tr><td><code>clk</code></td><td>input</td><td>1</td><td>System clock</td></tr>
+    <tr><td><code>reset</code></td><td>input</td><td>1</td><td>Synchronous reset; initializes all counters to Weakly Not-Taken (2'b01)</td></tr>
+    <tr><td><code>fetch_pc</code></td><td>input</td><td>32</td><td>Current fetch PC (<code>F_pc</code>); used to index the table</td></tr>
+    <tr><td><code>prediction</code></td><td>output</td><td>1</td><td>Predicted outcome: 1 = Taken, 0 = Not-Taken (<code>bht_prediction</code>); MSB of the 2-bit counter</td></tr>
+</table>
+
+<h4>Update Interface (Stage 7 - EX3/MEM)</h4>
+<table>
+    <tr><th>Port</th><th>Direction</th><th>Width</th><th>Description</th></tr>
+    <tr><td><code>update_en</code></td><td>input</td><td>1</td><td>Update enable: asserted when a branch instruction exits Stage 7 (<code>E3_branch</code>)</td></tr>
+    <tr><td><code>update_pc</code></td><td>input</td><td>32</td><td>PC of the resolved branch (<code>E3_pc</code>); selects the table entry to update</td></tr>
+    <tr><td><code>taken</code></td><td>input</td><td>1</td><td>Actual branch outcome: 1 = Taken, 0 = Not-Taken (<code>E3_condition_met</code>)</td></tr>
+</table>
+
+<h4>2-Bit Saturating Counter State Machine</h4>
+<table>
+    <tr><th>State</th><th>Encoding</th><th>Prediction</th><th>On Taken</th><th>On Not-Taken</th></tr>
+    <tr><td>Strongly Not-Taken</td><td>2'b00</td><td>Not-Taken</td><td>Weakly Not-Taken</td><td>Strongly Not-Taken (saturate)</td></tr>
+    <tr><td>Weakly Not-Taken</td><td>2'b01</td><td>Not-Taken</td><td>Weakly Taken</td><td>Strongly Not-Taken</td></tr>
+    <tr><td>Weakly Taken</td><td>2'b10</td><td>Taken</td><td>Strongly Taken</td><td>Weakly Not-Taken</td></tr>
+    <tr><td>Strongly Taken</td><td>2'b11</td><td>Taken</td><td>Strongly Taken (saturate)</td><td>Weakly Taken</td></tr>
+</table>
+
+<h4>Prediction Usage in pc_update (Stage 1)</h4>
+<p>The BHT prediction signal (<code>bht_prediction</code>) is an input to <code>pc_update</code> alongside
+the existing <code>pc_sel</code> and <code>stall</code> signals. The updated priority for PC selection is:</p>
+<ol>
+    <li><code>reset</code> - PC resets to <code>32'b0</code></li>
+    <li><code>pc_sel</code> (branch/jump resolved in Stage 7, or misprediction correction) - PC loads <code>pc_target</code></li>
+    <li><code>stall</code> (hazard detected) - PC holds its current value</li>
+    <li><code>bht_prediction</code> (BHT predicts taken, branch instruction in flight) - PC loads the early branch target (requires the early target to be forwarded back from Stage 4; see note below)</li>
+    <li>Default - PC increments by 4 (<code>pc + 4</code>)</li>
+</ol>
+
+<div class="note-box">
+    <strong>Early target forwarding:</strong> For the BHT prediction to be useful, the branch target
+    computed in Stage 4 must be forwarded back to Stage 1 when a branch prediction is acted upon.
+    Because the branch target is only known after Stage 4, the earliest a predicted-taken branch can
+    redirect the PC is the cycle after the branch enters Stage 4, reducing the effective penalty
+    from 6 cycles (no prediction) to 3 cycles for a correctly predicted taken branch
+    (Stages 1-3 are flushed instead of Stages 1-6). For a correctly predicted not-taken branch,
+    the penalty is 0 cycles. Mispredictions still incur the full 6-cycle flush.
+</div>
+
+<div class="warning-box">
+    <strong>Structural hazard on simultaneous update and prediction:</strong> If the BHT update
+    port (from Stage 7) and the prediction read port (from Stage 1) address the same entry in the
+    same cycle, the update takes priority and the updated counter value is used for the prediction
+    in the following cycle. Read-before-write within the same cycle returns the old value.
+</div>
+
+<h3>15.2 BHT Timing and Compatibility Notes</h3>
+<ul>
+    <li>The BHT prediction is a combinational read from an array of registers, so it is available
+        within Stage 1 without adding a pipeline stage.</li>
+    <li>The BHT does not predict jump targets for JAL or JALR; those always flush and redirect
+        from Stage 7.</li>
+    <li>The BHT does not store branch target addresses; it only stores taken/not-taken history.
+        The actual target for a predicted-taken branch comes from the early-computed
+        <code>branch_target</code> pipelined from Stage 4.</li>
+    <li>No BHT index aliasing protection (e.g., tags) is implemented. Different PCs mapping to the
+        same index may interfere. This is an accepted limitation for the current area budget.</li>
+</ul>
+
+<!-- ============================================================ -->
+<!-- 16. MEMORY SYSTEM                                             -->
+<!-- ============================================================ -->
+<h2 id="memory-system">16. Memory System</h2>
+
+<h3>16.1 Module: <code>memory</code> (Memory Interconnect)</h3>
 <p>File: <code>rtl/core/7_ex3_mem/memory.sv</code></p>
 <p>
     Address decoder and memory router. Routes memory transactions to either data memory or MMIO
-    based on the most significant bit of the address.
+    based on the most significant bit of the address. (Section numbering updated; content unchanged.)
 </p>
 
 <h4>Address Map</h4>
@@ -1042,7 +1175,7 @@ branch_target (32b), mem_read (1b), mem_write (1b), mem_size (2b), mem_unsigned 
     and <code>mmio_read_data</code> based on this registered signal.
 </p>
 
-<h3>15.2 Module: <code>data_mem</code> (Data Memory)</h3>
+<h3>16.2 Module: <code>data_mem</code> (Data Memory)</h3>
 <p>File: <code>rtl/core/7_ex3_mem/data_mem.sv</code></p>
 <p>
     1024-entry x 32-bit synchronous data memory using M9K BRAM. Supports byte, halfword, and word
@@ -1081,9 +1214,9 @@ branch_target (32b), mem_read (1b), mem_write (1b), mem_size (2b), mem_unsigned 
 </table>
 
 <!-- ============================================================ -->
-<!-- 16. MMIO                                                      -->
+<!-- 17. MMIO                                                      -->
 <!-- ============================================================ -->
-<h2 id="mmio">16. Memory-Mapped I/O (MMIO)</h2>
+<h2 id="mmio">17. Memory-Mapped I/O (MMIO)</h2>
 
 <h3>Module: <code>mmio</code></h3>
 <p>File: <code>rtl/core/7_ex3_mem/mmio.sv</code></p>
@@ -1117,9 +1250,9 @@ branch_target (32b), mem_read (1b), mem_write (1b), mem_size (2b), mem_unsigned 
 </table>
 
 <!-- ============================================================ -->
-<!-- 17. PIPELINE REGISTER SUMMARY                                 -->
+<!-- 18. PIPELINE REGISTER SUMMARY                                 -->
 <!-- ============================================================ -->
-<h2 id="pipeline-registers">17. Pipeline Register Summary</h2>
+<h2 id="pipeline-registers">18. Pipeline Register Summary</h2>
 
 <table>
     <tr><th>Register</th><th>Location</th><th>Stall</th><th>Flush Source</th><th>Reset Value</th></tr>
@@ -1130,14 +1263,15 @@ branch_target (32b), mem_read (1b), mem_write (1b), mem_size (2b), mem_unsigned 
     <tr><td><code>regfile</code></td><td>Stage 4</td><td>No</td><td>No</td><td>All zeros (initialized)</td></tr>
     <tr><td><code>RR_EX1</code></td><td>Stage 4/5 boundary</td><td>No</td><td>Yes (<code>flush</code>)</td><td>All zeros</td></tr>
     <tr><td><code>EX1_EX2</code></td><td>Stage 5/6 boundary</td><td>No</td><td>Yes (<code>flush</code>)</td><td>All zeros</td></tr>
+    <!-- Note: RR_EX1 and EX1_EX2 now carry branch_target (32b) computed in Stage 4 -->
     <tr><td><code>EX2_EX3</code></td><td>Stage 6/7 boundary</td><td>No</td><td>Yes (<code>flush</code>)</td><td>All zeros</td></tr>
     <tr><td><code>MEM_WB</code></td><td>Stage 7/8 boundary</td><td>No</td><td>No (<code>1'b0</code>)</td><td>All zeros</td></tr>
 </table>
 
 <!-- ============================================================ -->
-<!-- 18. CONTROL SIGNAL REFERENCE                                  -->
+<!-- 19. CONTROL SIGNAL REFERENCE                                  -->
 <!-- ============================================================ -->
-<h2 id="control-signals">18. Control Signal Reference</h2>
+<h2 id="control-signals">19. Control Signal Reference</h2>
 
 <table>
     <tr><th>Signal</th><th>Width</th><th>Source</th><th>Description</th></tr>
@@ -1160,17 +1294,21 @@ branch_target (32b), mem_read (1b), mem_write (1b), mem_size (2b), mem_unsigned 
     <tr><td><code>forward_a_sel</code></td><td>2</td><td>forwarding_unit</td><td>Forwarding mux select for operand A</td></tr>
     <tr><td><code>forward_b_sel</code></td><td>2</td><td>forwarding_unit</td><td>Forwarding mux select for operand B</td></tr>
     <tr><td><code>pc_sel</code></td><td>1</td><td>pc_target_calc</td><td>1=redirect PC to target, 0=continue sequential</td></tr>
+    <tr><td><code>bht_prediction</code></td><td>1</td><td>bht</td><td>1=predict taken, 0=predict not-taken (MSB of 2-bit counter)</td></tr>
+    <tr><td><code>RR_branch_target</code></td><td>32</td><td>branch_target_calc (Stage 4)</td><td>Early computed PC+imm target; pipelined to Stage 7</td></tr>
 </table>
 
 <!-- ============================================================ -->
-<!-- 19. MODULE HIERARCHY                                          -->
+<!-- 20. MODULE HIERARCHY                                          -->
 <!-- ============================================================ -->
-<h2 id="module-hierarchy">19. Module Hierarchy</h2>
+<h2 id="module-hierarchy">20. Module Hierarchy</h2>
 
 <div class="pipeline-diagram">
 core (top-level)
 |
-+-- pc_update              [Stage 1: Fetch]
++-- pc_update              [Stage 1: Fetch - PC generation, BHT-guided redirect]
+|
++-- bht                    [Stage 1: Fetch - Branch History Table]
 |
 +-- instr_mem              [Stage 2: Instruction Memory]
 |
@@ -1184,21 +1322,23 @@ core (top-level)
 |
 +-- regfile                [Stage 4: Register Read]
 |
++-- branch_target_calc     [Stage 4: RR - Early Branch Target Adder (PC+imm)]
+|
 +-- forwarding_unit        [Hazard Control: Forwarding]
 |
-+-- RR_EX1                 [Stage 4/5 Pipeline Register]
++-- RR_EX1                 [Stage 4/5 Pipeline Register (carries branch_target)]
 |
 +-- data_sel               [Stage 5: EX1 - Operand Selection]
 |
-+-- EX1_EX2                [Stage 5/6 Pipeline Register]
++-- EX1_EX2                [Stage 5/6 Pipeline Register (carries branch_target)]
 |
 +-- alu                    [Stage 6: EX2 - ALU]
 |
-+-- branch_eval            [Stage 6: EX2 - Branch Evaluation]
++-- branch_eval            [Stage 6: EX2 - Branch Condition Evaluation only]
 |
-+-- EX2_EX3                [Stage 6/7 Pipeline Register]
++-- EX2_EX3                [Stage 6/7 Pipeline Register (carries branch_target)]
 |
-+-- pc_target_calc         [Stage 7: EX3 - PC Target Finalization]
++-- pc_target_calc         [Stage 7: EX3 - PC Target Finalization and BHT update trigger]
 |
 +-- memory                 [Stage 7: EX3 - Memory System]
 |   +-- data_mem
@@ -1212,31 +1352,36 @@ core (top-level)
 </div>
 
 <!-- ============================================================ -->
-<!-- 20. TIMING AND PERFORMANCE                                    -->
+<!-- 21. TIMING AND PERFORMANCE                                    -->
 <!-- ============================================================ -->
-<h2 id="timing">20. Timing and Performance</h2>
+<h2 id="timing">21. Timing and Performance</h2>
 
-<h3>20.1 Critical Path Candidates</h3>
+<h3>21.1 Critical Path Candidates</h3>
 <ul>
-    <li><strong>ALU path:</strong> EX1_EX2 register outputs through ALU combinational logic to EX2_EX3 register inputs (Stage 6).</li>
+    <li><strong>ALU path:</strong> EX1_EX2 register outputs through ALU combinational logic to EX2_EX3 register inputs (Stage 6). Stage 6 no longer contains the branch-target adder, reducing its combinational depth slightly.</li>
+    <li><strong>Branch target path (Stage 4):</strong> ID_RR register outputs through the branch_target_calc adder to RR_EX1 inputs. This is a new path added in Stage 4; the adder (32-bit ripple or fast-carry) must complete within the Stage 4 clock period.</li>
     <li><strong>Forwarding path:</strong> Forwarding unit combinational logic through RR_EX1 setup time (Stage 4).</li>
     <li><strong>Hazard detection path:</strong> Decode combinational outputs through hazard detection unit to stall_frontend and back to IF_ID/ID_RR/pc_update (Stage 3).</li>
     <li><strong>Memory path:</strong> Data memory read through alignment and sign-extension logic (Stage 7 to Stage 8).</li>
     <li><strong>Branch resolution path:</strong> pc_target_calc combinational logic feeding back to pc_update (Stage 7 to Stage 1).</li>
+    <li><strong>BHT prediction path:</strong> BHT combinational read from registers to pc_update input (Stage 1). Expected to be short; no new critical path is anticipated.</li>
 </ul>
 
-<h3>20.2 Performance Characteristics</h3>
+<h3>21.2 Performance Characteristics</h3>
 <table>
     <tr><th>Metric</th><th>Value</th><th>Notes</th></tr>
     <tr><td>Pipeline depth</td><td>8 stages</td><td>Deeper than classic 5-stage for better Fmax</td></tr>
-    <tr><td>Branch penalty (taken)</td><td>6 cycles</td><td>No branch prediction</td></tr>
-    <tr><td>Branch penalty (not-taken)</td><td>0 cycles</td><td>Default predict-not-taken</td></tr>
+    <tr><td>Branch penalty (taken, BHT correct)</td><td>3 cycles</td><td>Stages 1-3 flushed; target from Stage 4 used</td></tr>
+    <tr><td>Branch penalty (taken, BHT misprediction)</td><td>6 cycles</td><td>Full flush; Stages 1-6 cleared</td></tr>
+    <tr><td>Branch penalty (not-taken, BHT correct)</td><td>0 cycles</td><td>No redirect needed</td></tr>
+    <tr><td>Branch penalty (not-taken, BHT misprediction)</td><td>6 cycles</td><td>Full flush; Stages 1-6 cleared</td></tr>
+    <tr><td>Jump penalty (JAL / JALR)</td><td>6 cycles</td><td>No BHT prediction for jumps</td></tr>
     <tr><td>Load-use stall (worst case)</td><td>Up to 4 cycles</td><td>Depends on pipeline distance</td></tr>
     <tr><td>ALU-to-ALU forwarding</td><td>0 stall cycles</td><td>When producer is 2+ stages ahead</td></tr>
     <tr><td>IPC (ideal, no hazards)</td><td>1.0</td><td>Single-issue, in-order</td></tr>
 </table>
 
-<h3>20.3 Stall Cycle Breakdown</h3>
+<h3>21.3 Stall Cycle Breakdown</h3>
 <table>
     <tr><th>Hazard Scenario</th><th>Stall Cycles</th><th>Reason</th></tr>
     <tr><td>RAW: producer in RR (Stage 4), consumer in D (Stage 3)</td><td>1</td><td>1-stage gap; result not computed yet</td></tr>
@@ -1245,7 +1390,7 @@ core (top-level)
     <tr><td>Load-use: load in EX3 (Stage 7), consumer in D (Stage 3)</td><td>1+</td><td>Load data being read from memory</td></tr>
 </table>
 
-<h3>20.4 Pipeline Stage Boundary Registers</h3>
+<h3>21.4 Pipeline Stage Boundary Registers</h3>
 <p>
     Post-synthesis static timing analysis measures setup-path propagation delays between the following
     pipeline register boundaries. Each stage is defined by a source register (output flip-flops of the
@@ -1315,12 +1460,14 @@ core (top-level)
     sequential PC+4 increment path.
 </div>
 
-<h3>20.5 Per-Stage Propagation Delays</h3>
+<h3>21.5 Per-Stage Propagation Delays</h3>
 <p>
     The following worst-case setup-path data delays were measured by post-place-and-route static
-    timing analysis (Quartus Prime 24.1std, Lite Edition) against the placed-and-routed netlist.
-    Stage 6 (EX2 / ALU) has the longest combinational delay at 7.222 ns and sets the minimum
-    achievable clock period for this implementation.
+    timing analysis (Quartus Prime 24.1std, Lite Edition) against the prior netlist (before this
+    architectural update). Stage 6 (EX2 / ALU) had the longest combinational delay at 7.222 ns.
+    Moving the branch-target adder to Stage 4 is expected to slightly reduce Stage 6 delay;
+    Stage 4 delay is expected to increase modestly. Re-synthesis is required to confirm
+    post-change timing. The table below reflects the prior measured values for reference.
 </p>
 <table>
     <tr><th>Stage</th><th>Stage Name</th><th>Data Delay</th><th>Note</th></tr>
@@ -1334,7 +1481,7 @@ core (top-level)
     <tr><td>Stage 8</td><td>WB Logic</td><td>6.136 ns</td><td>Write-back mux to register file write port</td></tr>
 </table>
 
-<h3>20.6 Critical Path Analysis</h3>
+<h3>21.6 Critical Path Analysis</h3>
 <p>
     The following are the 10 worst-slack setup paths measured from the placed-and-routed netlist.
     All 10 paths terminate at the register file write port (<code>stage4_regfile</code>, the WB
@@ -1364,11 +1511,11 @@ core (top-level)
 </div>
 
 <!-- ============================================================ -->
-<!-- 21. CORNER CASES AND ASSUMPTIONS                              -->
+<!-- 22. CORNER CASES AND ASSUMPTIONS                              -->
 <!-- ============================================================ -->
-<h2 id="corner-cases">21. Corner Cases and Assumptions</h2>
+<h2 id="corner-cases">22. Corner Cases and Assumptions</h2>
 
-<h3>21.1 Assumptions</h3>
+<h3>22.1 Assumptions</h3>
 <ul>
     <li>All instructions are 32-bit aligned (PC[1:0] is always 00).</li>
     <li>Instruction memory is word-addressed using <code>pc[31:2]</code>; byte addressing within instruction words is not supported.</li>
@@ -1383,7 +1530,7 @@ core (top-level)
     <li>Program memory is loaded at synthesis time via <code>$readmemh("program.hex")</code>.</li>
 </ul>
 
-<h3>21.2 Known Corner Cases</h3>
+<h3>22.2 Known Corner Cases</h3>
 <ul>
     <li><strong>Register x0 handling:</strong> The register file suppresses writes to x0 and the hazard/forwarding
         units check for <code>rd != 5'b0</code> and <code>rsN != 5'b0</code> to avoid false dependencies on x0.</li>
@@ -1410,7 +1557,26 @@ core (top-level)
         (<code>rs1 + imm</code>).</li>
 </ul>
 
-<h3>21.3 Top-Level Core Ports</h3>
+<h3>22.3 Branch Target and BHT Corner Cases</h3>
+<ul>
+    <li><strong>JALR branch target:</strong> The early <code>branch_target_calc</code> in Stage 4 only covers
+        PC-relative targets (B-type, JAL). JALR targets require <code>rs1</code> which is not available until
+        Stage 5 (after forwarding). The JALR target is still computed by the ALU in Stage 6 and
+        the BHT does not provide predictions for JALR; full 6-cycle flush always applies.</li>
+    <li><strong>BHT index aliasing:</strong> Two branch instructions whose PCs alias to the same BHT index
+        may corrupt each other's counter state. No tag bits are stored. This is a known limitation.</li>
+    <li><strong>Simultaneous BHT update and fetch:</strong> If the update PC (from Stage 7) aliases the
+        fetch PC (from Stage 1) in the same cycle, the update takes effect on the following cycle.
+        The current fetch prediction uses the pre-update counter value.</li>
+    <li><strong>Branch instruction in stall:</strong> When <code>stall_frontend</code> is asserted, the
+        fetch PC holds and the BHT lookup is re-presented with the same PC on successive cycles.
+        No spurious update or prediction change occurs because <code>update_en</code> is gated by
+        <code>E3_branch</code>, which is independent of the stall signal.</li>
+    <li><strong>Reset state:</strong> All BHT counters reset to Weakly Not-Taken (2'b01), providing a
+        conservative not-taken default consistent with the prior predict-not-taken baseline.</li>
+</ul>
+
+<h3>22.4 Top-Level Core Ports</h3>
 <table>
     <tr><th>Port</th><th>Direction</th><th>Width</th><th>Description</th></tr>
     <tr><td><code>clk</code></td><td>input</td><td>1</td><td>System clock</td></tr>

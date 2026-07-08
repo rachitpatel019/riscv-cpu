@@ -168,6 +168,17 @@ logic [1:0] W_wb_sel;
 logic [31:0] W_write_data;
 logic [31:0] W_wb_intermediate;
 
+logic [31:0] F_pc_plus_4;
+logic [31:0] IM_pc_plus_4;
+logic [31:0] D_pc_plus_4;
+logic [31:0] IDRR_pc_plus_4;
+logic [31:0] E1_pc_plus_4;
+logic [31:0] E2_pc_plus_4;
+logic [31:0] E3_pc_plus_4;
+logic [31:0] W_pc_plus_4;
+logic W_mem_read;
+logic [31:0] W_mem_read_data_raw;
+
 // Flush control logic based on program counter selection.
 assign flush = E3_pc_sel;
 logic stage4_flush;
@@ -182,7 +193,8 @@ pc_update stage1_fetch (
     .pc_target(E3_pc_target),
     .stage4_pc_sel(IDRR_predict_taken),
     .stage4_pc_target(IDRR_branch_target),
-    .pc(F_pc)
+    .pc(F_pc),
+    .pc_plus_4(F_pc_plus_4)
 );
 
 // Stage 2: Instruction Memory access. Retrieves instructions from memory.
@@ -192,7 +204,9 @@ instr_mem stage2_imem (
     .stall(stall_frontend),
     .flush(flush || stage4_flush),
     .pc(F_pc),
+    .pc_plus_4(F_pc_plus_4),
     .pc_out(IM_pc_out),
+    .pc_plus_4_out(IM_pc_plus_4),
     .instruction(IM_instruction)
 );
 
@@ -203,8 +217,10 @@ IF_ID stage3_if_id_reg (
     .stall(stall_frontend),
     .flush(flush || stage4_flush),
     .pc_in(IM_pc_out),
+    .pc_plus_4_in(IM_pc_plus_4),
     .instruction_in(IM_instruction),
     .pc_out(D_pc),
+    .pc_plus_4_out(D_pc_plus_4),
     .instruction_out(D_instruction)
 );
 
@@ -244,6 +260,7 @@ ID_RR stage3_id_rr_reg (
     .rs2_in(D_rs2),
     .rd_in(D_rd),
     .pc_in(D_pc_out),
+    .pc_plus_4_in(D_pc_plus_4),
     .uses_rs1_in(D_uses_rs1),
     .uses_rs2_in(D_uses_rs2),
     .alu_op_in(D_alu_op),
@@ -263,6 +280,7 @@ ID_RR stage3_id_rr_reg (
     .rs2_out(IDRR_rs2),
     .rd_out(IDRR_rd),
     .pc_out(IDRR_pc),
+    .pc_plus_4_out(IDRR_pc_plus_4),
     .uses_rs1_out(IDRR_uses_rs1),
     .uses_rs2_out(IDRR_uses_rs2),
     .alu_op_out(IDRR_alu_op),
@@ -362,6 +380,7 @@ RR_EX1 stage4_rr_ex1_reg (
     .rs2_in(IDRR_rs2),
     .rd_in(IDRR_rd),
     .pc_in(IDRR_pc),
+    .pc_plus_4_in(IDRR_pc_plus_4),
     .uses_rs1_in(IDRR_uses_rs1),
     .uses_rs2_in(IDRR_uses_rs2),
     .alu_op_in(IDRR_alu_op),
@@ -386,6 +405,7 @@ RR_EX1 stage4_rr_ex1_reg (
     .rs2_out(E1_rs2),
     .rd_out(E1_rd),
     .pc_out(E1_pc),
+    .pc_plus_4_out(E1_pc_plus_4),
     .uses_rs1_out(E1_uses_rs1),
     .uses_rs2_out(E1_uses_rs2),
     .alu_op_out(E1_alu_op),
@@ -408,8 +428,8 @@ RR_EX1 stage4_rr_ex1_reg (
 );
 
 // Forwarding data path assignments for downstream execution stages.
-assign E2_fwd_val = (E2_wb_sel == 2'b10) ? E2_pc + 32'd4 : E2_alu_result;
-assign E3_fwd_val = (E3_wb_sel == 2'b10) ? E3_pc + 32'd4 : E3_alu_result;
+assign E2_fwd_val = (E2_wb_sel == 2'b10) ? E2_pc_plus_4 : E2_alu_result;
+assign E3_fwd_val = (E3_wb_sel == 2'b10) ? E3_pc_plus_4 : E3_alu_result;
 assign W_fwd_val = W_write_data;
 
 // Stage 5: Data selector. Multiplexes register operands and forwarded values.
@@ -424,7 +444,6 @@ data_sel stage5_data_sel (
     .forward_b_sel(E1_forward_b_sel),
     .fwd_ex2_data(E3_fwd_val),
     .fwd_ex3_data(W_fwd_val),
-    .fwd_wb_data(32'b0),
     .operand_a(E1_operand_a),
     .operand_b(E1_operand_b),
     .rs2_data_out(E1_rs2_data_fwd)
@@ -436,6 +455,7 @@ EX1_EX2 stage5_ex1_ex2_reg (
     .reset(reset),
     .flush(flush),
     .pc_in(E1_pc),
+    .pc_plus_4_in(E1_pc_plus_4),
     .alu_op_in(E1_alu_op),
     .imm_in(E1_immediate),
     .branch_in(E1_branch),
@@ -455,6 +475,7 @@ EX1_EX2 stage5_ex1_ex2_reg (
     .branch_target_in(E1_branch_target),
     .counter_val_in(E1_counter_val),
     .pc_out(E2_pc),
+    .pc_plus_4_out(E2_pc_plus_4),
     .alu_op_out(E2_alu_op),
     .imm_out(E2_imm),
     .branch_out(E2_branch),
@@ -497,6 +518,7 @@ EX2_EX3 stage6_ex2_ex3_reg (
     .reset(reset),
     .flush(flush),
     .pc_in(E2_pc),
+    .pc_plus_4_in(E2_pc_plus_4),
     .imm_in(E2_imm),
     .branch_in(E2_branch),
     .jump_in(E2_jump),
@@ -517,6 +539,7 @@ EX2_EX3 stage6_ex2_ex3_reg (
     .wb_sel_in(E2_wb_sel),
     .counter_val_in(E2_counter_val),
     .pc_out(E3_pc),
+    .pc_plus_4_out(E3_pc_plus_4),
     .imm_out(E3_imm),
     .branch_out(E3_branch),
     .jump_out(E3_jump),
@@ -541,6 +564,7 @@ EX2_EX3 stage6_ex2_ex3_reg (
 // Stage 7: Program Counter target calculator. Selects jump or branch targets.
 pc_target_calc stage7_calc (
     .pc(E3_pc),
+    .pc_plus_4(E3_pc_plus_4),
     .operand_a(E3_operand_a),
     .operand_b(E3_operand_b),
     .branch(E3_branch),
@@ -556,38 +580,41 @@ pc_target_calc stage7_calc (
 );
 
 // Pre-writeback selection multiplexer.
-assign W_wb_intermediate = (E3_wb_sel == 2'b10) ? E3_pc + 32'd4 : E3_alu_result;
+assign W_wb_intermediate = (E3_wb_sel == 2'b10) ? E3_pc_plus_4 : E3_alu_result;
 
 // Stage 7: Writeback phase pipeline register. Registers memory or ALU writeback values.
 MEM_WB stage7_mem_wb_reg (
     .clk(clk),
     .reset(reset),
-    .flush(1'b0), 
     .rd_in(E3_rd),
     .reg_write_in(E3_reg_write),
     .alu_result_in(W_wb_intermediate),
-    .mem_read_data_in(32'b0),
+    .mem_read_data_in(W_mem_read_data_raw),
+    .mem_read_in(E3_mem_read),
     .wb_sel_in(E3_wb_sel),
     .pc_in(E3_pc),
+    .pc_plus_4_in(E3_pc_plus_4),
     .rd_out(W_rd),
     .reg_write_out(W_reg_write),
     .alu_result_out(W_alu_result),
-    .mem_read_data_out(),
+    .mem_read_data_out(W_mem_read_data),
+    .mem_read_out(W_mem_read),
     .wb_sel_out(W_wb_sel),
-    .pc_out(W_pc)
+    .pc_out(W_pc),
+    .pc_plus_4_out(W_pc_plus_4)
 );
 
 // Stage 8: Data Memory interconnect. Interfaces to data BRAM and MMIO registers.
 memory stage8_memory_system (
     .clk(clk),
     .reset(reset),
-    .mem_read(E3_mem_read),
-    .mem_write(E3_mem_write),
-    .address(E3_alu_result),
-    .write_data(E3_rs2_data),
-    .mem_size(E3_mem_size),
-    .mem_unsigned(E3_mem_unsigned),
-    .read_data(W_mem_read_data),
+    .mem_read(E2_mem_read),
+    .mem_write(E2_mem_write),
+    .address(E2_alu_result),
+    .write_data(E2_rs2_data),
+    .mem_size(E2_mem_size),
+    .mem_unsigned(E2_mem_unsigned),
+    .read_data(W_mem_read_data_raw),
     .mmio_keys(mmio_keys),
     .mmio_switches(mmio_switches),
     .mmio_leds(mmio_leds),

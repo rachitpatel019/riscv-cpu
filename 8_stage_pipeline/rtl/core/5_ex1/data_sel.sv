@@ -16,7 +16,6 @@ module data_sel (
 
     input logic [31:0] fwd_ex2_data,
     input logic [31:0] fwd_ex3_data,
-    input logic [31:0] fwd_wb_data,
 
     output logic [31:0] operand_a,
     output logic [31:0] operand_b,
