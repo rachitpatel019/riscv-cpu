@@ -11,6 +11,10 @@ LDFLAGS = "-T ../linker.ld"
 CRT0 = "../crt0.s"
 
 def main():
+    # Change directory to the directory containing this script so relative paths work
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    os.chdir(script_dir)
+
     # Find the C source file in the current directory
     c_files = [f for f in os.listdir('.') if f.endswith('.c')]
     if not c_files:
@@ -23,22 +27,27 @@ def main():
     bin_file = f"{base_name}.bin"
     hex_file = "program.hex"
 
-    print(f"Building {src_file}...")
+    print(f"Building {src_file} in {script_dir}...")
+
+    # Helper to run commands (entering WSL if on Windows)
+    def run_command(cmd):
+        if os.name == 'nt':
+            cmd = f"wsl {cmd}"
+        print(f"Running: {cmd}")
+        subprocess.run(cmd, shell=True, check=True)
 
     # 1. Compile and Link
     compile_cmd = f"{CC} {CFLAGS} {LDFLAGS} {CRT0} {src_file} -o {elf_file}"
-    print(f"Running: {compile_cmd}")
     try:
-        subprocess.run(compile_cmd, shell=True, check=True)
+        run_command(compile_cmd)
     except subprocess.CalledProcessError:
         print("Error: Compilation failed.")
         sys.exit(1)
 
     # 2. Create Binary
     objcopy_cmd = f"{OBJCOPY} -O binary {elf_file} {bin_file}"
-    print(f"Running: {objcopy_cmd}")
     try:
-        subprocess.run(objcopy_cmd, shell=True, check=True)
+        run_command(objcopy_cmd)
     except subprocess.CalledProcessError:
         print("Error: objcopy failed.")
         sys.exit(1)

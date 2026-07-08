@@ -3,6 +3,9 @@
 onerror {quit -code 1 -f}
 onbreak {quit -f}
 
+# Navigate to the script's directory so relative paths work
+cd [file normalize [file dirname [info script]]]
+
 if [file exists work] {
     vdel -lib work -all
 }
