@@ -560,9 +560,20 @@ mem_size (2b), mem_unsigned (1b), wb_sel (2b), branch (1b), jump (1b), branch_ty
 <p>File: <code>rtl/core/4_reg_read/regfile.sv</code></p>
 <p>
     32-entry x 32-bit register file with two synchronous read ports and one synchronous write port.
-    Register <code>x0</code> is hardwired to zero (writes to <code>x0</code> are suppressed).
-    Supports read-during-write forwarding: if the write address matches a read address in the same cycle,
-    the write data is forwarded to the read output.
+    To guarantee dedicated block RAM (BRAM) mapping on the FPGA target (such as Intel M9K blocks) and eliminate
+    LUT-based soft-logic usage, the register file uses two identical replicated RAM arrays: <code>registers_a</code>
+    and <code>registers_b</code>. Each replicated block is configured as a Simple Dual-Port (1R1W) BRAM.
+</p>
+<p>
+    Write operations update both <code>registers_a</code> and <code>registers_b</code> simultaneously to keep the BRAM
+    states synchronized. Read port 1 (rs1) reads from <code>registers_a</code>, and read port 2 (rs2) reads from
+    <code>registers_b</code>. Register <code>x0</code> is hardwired to zero (writes to <code>x0</code> are suppressed,
+    and it always reads as zero).
+</p>
+<p>
+    Supports explicit synchronous read-during-write forwarding: if a register is written and read in the same cycle,
+    the write data is forwarded directly to the registered read outputs on the next clock edge, avoiding read collisions
+    within the physical BRAM cells.
 </p>
 
 <h4>Port Interface</h4>
@@ -582,7 +593,7 @@ mem_size (2b), mem_unsigned (1b), wb_sel (2b), branch (1b), jump (1b), branch_ty
     <strong>Note:</strong> The register file uses synchronous reads (clocked), which means the read data
     appears one cycle after the address is presented. This is why the register file read occupies its own
     pipeline stage (Stage 4). The read addresses come from the ID_RR register (end of Stage 3), and the
-    read data emerges at the input to Stage 5 (EX1).
+    read data emerges at the input to Stage 5 (EX1), preserving the 8-stage pipeline.
 </div>
 
 <h3>7.2 Module: <code>forwarding_unit</code></h3>
