@@ -64,7 +64,7 @@ For detailed instructions on compiling and running custom C programs using the t
 
 ## Synthesis & Performance Metrics
 
-Performance benchmarks collected from Altera Quartus Prime synthesis are recorded in [cpu_benchmarks.md](cpu_benchmarks.md):
+Performance benchmarks collected from Altera Quartus Prime synthesis:
 
 | Design Version | Clock Frequency ($F_{max}$) | Logic Elements (LEs) | Registers | Memory Bits |
 | :--- | :--- | :--- | :--- | :--- |

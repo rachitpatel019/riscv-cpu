@@ -14,10 +14,10 @@ proc verify_file {path} {
     }
 }
 # Navigate to logs directory
-cd [file normalize [file join [file dirname [info script]] ../logs]]
+cd [file normalize [file join [file dirname [info script]] ../scripts]]
 
 # Clean up ModelSim-generated transcript files
-file delete -force ../scripts/transcript
+if {[file normalize ../scripts/transcript] != [file normalize transcript]} { file delete -force ../scripts/transcript }
 file delete -force transcript
 
 # Verify required inputs
@@ -53,8 +53,8 @@ verify_file ../../tb/tb_core.sv
 
 
 # Copy configuration and program files
-file copy -force ../scripts/modelsim.ini modelsim.ini
-file copy -force ../scripts/program.hex program.hex
+if {[file normalize ../scripts/modelsim.ini] != [file normalize modelsim.ini]} { file copy -force ../scripts/modelsim.ini modelsim.ini }
+if {[file normalize ../scripts/program.hex] != [file normalize program.hex]} { file copy -force ../scripts/program.hex program.hex }
 
 # Create work library
 if [file exists work] {
@@ -103,6 +103,7 @@ run -all
 
 # Cleanup work library
 if {[file exists work]} { file delete -force work }
-if {[file exists modelsim.ini]} { file delete -force modelsim.ini }
-if {[file exists program.hex]} { file delete -force program.hex }
+if {[file normalize ../scripts/modelsim.ini] != [file normalize modelsim.ini]} { file delete -force modelsim.ini }
+if {[file normalize ../scripts/program.hex] != [file normalize program.hex]} { file delete -force program.hex }
 quit -f
+

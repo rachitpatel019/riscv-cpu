@@ -3,8 +3,6 @@ Archive/single_cycle/fpga/db
 Archive/single_cycle/fpga/incremental_db
 Archive/single_cycle/fpga/output_files
 
-Archive/5_stage_pipeline/sim/scripts/work
-Archive/5_stage_pipeline/sim/logs
 Archive/5_stage_pipeline/fpga/db
 Archive/5_stage_pipeline/fpga/incremental_db
 Archive/5_stage_pipeline/fpga/output_files

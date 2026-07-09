@@ -8,10 +8,10 @@ proc verify_file {path} {
         quit -code 1 -f
     }
 }
-cd [file normalize [file join [file dirname [info script]] ../logs]]
+cd [file normalize [file join [file dirname [info script]] ../scripts]]
 
 # Clean up ModelSim-generated transcript files
-file delete -force ../scripts/transcript
+if {[file normalize ../scripts/transcript] != [file normalize transcript]} { file delete -force ../scripts/transcript }
 file delete -force transcript
 
 # Verify required inputs
@@ -21,7 +21,7 @@ verify_file ../../packages/decoder_pkg.sv
 verify_file ../../rtl/core/6_ex2/alu.sv
 verify_file ../../tb/tb_alu.sv
 
-file copy -force ../scripts/modelsim.ini modelsim.ini
+if {[file normalize ../scripts/modelsim.ini] != [file normalize modelsim.ini]} { file copy -force ../scripts/modelsim.ini modelsim.ini }
 if {[file exists work]} { vdel -all }
 vlib work
 vmap work work
@@ -29,6 +29,7 @@ vlog -sv ../../packages/alu_pkg.sv ../../packages/decoder_pkg.sv ../../rtl/core/
 vsim -batch -L work -voptargs=+acc work.tb_alu
 run -all
 if {[file exists work]} { file delete -force work }
-if {[file exists modelsim.ini]} { file delete -force modelsim.ini }
-if {[file exists program.hex]} { file delete -force program.hex }
+if {[file normalize ../scripts/modelsim.ini] != [file normalize modelsim.ini]} { file delete -force modelsim.ini }
+if {[file normalize ../scripts/program.hex] != [file normalize program.hex]} { file delete -force program.hex }
 quit -f
+

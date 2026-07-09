@@ -53,8 +53,8 @@ foreach ($script in $scripts) {
 
     Write-Host "`n>>> Executing $script..." -ForegroundColor Cyan
 
-    # Run from the logs directory so the work library and copied files land there.
-    Push-Location $logsDir
+    # Run from the scripts directory so the intermediate logs land there.
+    Push-Location $PSScriptRoot
 
     # Run vsim in batch mode, printing output directly to the terminal.
     # No -l flag so no log file is generated.
@@ -75,12 +75,8 @@ foreach ($script in $scripts) {
 
     Pop-Location
 
-    # Clean up copied files in the logs directory
-    $logsIni = Join-Path $logsDir "modelsim.ini"
-    if (Test-Path $logsIni) { Remove-Item -Path $logsIni -Force -ErrorAction SilentlyContinue }
-    $logsHex = Join-Path $logsDir "program.hex"
-    if (Test-Path $logsHex) { Remove-Item -Path $logsHex -Force -ErrorAction SilentlyContinue }
-    $logsLog = Join-Path $logsDir "vsim.log"
+    # Clean up intermediate simulation logs in the scripts directory
+    $logsLog = Join-Path $PSScriptRoot "vsim.log"
     if (Test-Path $logsLog) { Remove-Item -Path $logsLog -Force -ErrorAction SilentlyContinue }
 
     # Remove any ModelSim-generated transcript stubs from the scripts directory
@@ -109,7 +105,7 @@ if ($failed.Count -eq 0) {
     Write-Host "ALL TESTS PASSED ($($passed.Count)/$($scripts.Count))" -ForegroundColor Green
 
     # Clean up the work directory now that all tests have passed
-    $workDir = Join-Path $logsDir "work"
+    $workDir = Join-Path $PSScriptRoot "work"
     if (Test-Path $workDir) {
         Write-Host "Cleaning up work directory..." -ForegroundColor Cyan
         Remove-Item -Path $workDir -Recurse -Force -ErrorAction SilentlyContinue
