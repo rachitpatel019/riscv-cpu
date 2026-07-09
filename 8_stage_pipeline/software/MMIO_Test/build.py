@@ -73,5 +73,10 @@ def main():
 
     print(f"Successfully generated {hex_file} ({len(data)//4} words).")
 
+    # 4. Clean up intermediate ELF file
+    if os.path.exists(elf_file):
+        print(f"Removing intermediate ELF file: {elf_file}")
+        os.remove(elf_file)
+
 if __name__ == "__main__":
     main()

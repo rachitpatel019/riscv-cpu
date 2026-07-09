@@ -39,7 +39,6 @@ To maximize clock frequency ($F_{max}$) on FPGA targets, the pipeline divides cl
 ### Key Features
 *   **Harvard Architecture:** Separated synchronous instruction and data memories.
 *   **Hazard Resolution:** A combination of stalling (via the hazard detection unit) and bypass data-forwarding (via the forwarding unit) resolves pipeline dependencies.
-*   **Early Branch Adder:** Target calculation is computed in Stage 4 (RR) instead of Stage 6 (EX2) to shorten the critical path.
 *   **Dynamic Branch Prediction:** A Stage 1 Branch History Table (BHT) minimizes the taken-branch penalty to 3 cycles when correctly predicted (otherwise, a mispredicted branch or unconditional jump flushes the preceding 6 stages).
 
 ---
@@ -54,6 +53,12 @@ The CPU includes an MMIO interface designed for the **DE10-Lite FPGA Board**, de
 | `0x80000004` | Write-Only | 24-bit | $6 \times$ 7-segment hex displays (`HEX0`-`HEX5`) |
 | `0x80000008` | Read-Only | 10-bit | Slide Switches (`SW[9:0]`) |
 | `0x8000000C` | Read-Only | 2-bit | Pushbutton Keys (`KEY[1:0]`) |
+
+## C Software Development & Execution Constraints
+
+For detailed instructions on compiling and running custom C programs using the toolchain, utilizing the software helper libraries, and an overview of the CPU's architectural constraints, refer to:
+
+*   [Running Custom Programs Guide](running_custom_programs.md)
 
 ---
 

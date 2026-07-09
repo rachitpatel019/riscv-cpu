@@ -23,16 +23,24 @@ SECTIONS
     .data :
     {
         . = ALIGN(4);
+        _data_start = .;
         *(.data)
         *(.data.*)
-    } > RAM
+        . = ALIGN(4);
+        _data_end = .;
+    } > RAM AT > ROM
+
+    _data_load = LOADADDR(.data);
 
     .bss :
     {
         . = ALIGN(4);
+        _bss_start = .;
         *(.bss)
         *(.bss.*)
         *(COMMON)
+        . = ALIGN(4);
+        _bss_end = .;
     } > RAM
 
     /DISCARD/ :
