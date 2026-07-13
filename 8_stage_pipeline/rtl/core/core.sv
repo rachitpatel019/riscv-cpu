@@ -181,8 +181,12 @@ logic [31:0] W_mem_read_data_raw;
 
 // Flush control logic based on program counter selection.
 assign flush = E3_pc_sel;
+logic IDRR_is_jal;
+assign IDRR_is_jal = IDRR_jump && !IDRR_uses_rs1;
+logic stage4_pc_sel;
+assign stage4_pc_sel = IDRR_predict_taken || IDRR_is_jal;
 logic stage4_flush;
-assign stage4_flush = IDRR_predict_taken;
+assign stage4_flush = stage4_pc_sel;
 
 // Stage 1: Instruction Fetch. Computes the next PC value.
 pc_update stage1_fetch (
@@ -191,7 +195,7 @@ pc_update stage1_fetch (
     .stall(stall_frontend),
     .pc_sel(E3_pc_sel),
     .pc_target(E3_pc_target),
-    .stage4_pc_sel(IDRR_predict_taken),
+    .stage4_pc_sel(stage4_pc_sel),
     .stage4_pc_target(IDRR_branch_target),
     .pc(F_pc),
     .pc_plus_4(F_pc_plus_4)
@@ -393,7 +397,7 @@ RR_EX1 stage4_rr_ex1_reg (
     .mem_unsigned_in(IDRR_mem_unsigned),
     .wb_sel_in(IDRR_wb_sel),
     .branch_in(IDRR_branch),
-    .jump_in(IDRR_jump),
+    .jump_in(IDRR_jump && IDRR_uses_rs1),
     .branch_type_in(IDRR_branch_type),
     .predicted_taken_in(IDRR_predict_taken),
     .forward_a_sel_in(IDRR_forward_a_sel),
@@ -640,10 +644,6 @@ hazard_detection_unit hazard_unit (
     .RR_rd(IDRR_rd),
     .E1_reg_write(E1_reg_write),
     .E1_rd(E1_rd),
-    .E2_mem_read(E2_mem_read),
-    .E2_rd(E2_rd),
-    .E3_mem_read(E3_mem_read),
-    .E3_rd(E3_rd),
     .stall(stall_frontend)
 );
 

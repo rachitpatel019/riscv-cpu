@@ -18,7 +18,7 @@ module instr_mem (
     output logic [31:0] instruction
 );
 
-localparam MEM_DEPTH = 1024;
+localparam MEM_DEPTH = 16384;
 
 (* ramstyle = "M9K" *) logic [31:0] instruction_memory [0:MEM_DEPTH-1];
 

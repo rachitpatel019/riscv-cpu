@@ -235,8 +235,9 @@
     data forwarding (forwarding unit). Branch target addresses are computed early in Stage 4 (RR)
     using the decoded PC and immediate, eliminating the one-cycle adder from Stage 6's critical path.
     A Branch History Table (BHT) provides dynamic taken/not-taken prediction at Stage 1 (Fetch),
-    reducing the taken-branch penalty when the prediction is correct. Final branch/jump resolution
-    still occurs in Stage 7 (EX3/MEM); a misprediction or unconditional jump incurs a 6-cycle flush penalty.
+    reducing the taken-branch penalty when the prediction is correct. Unconditional JAL jumps are
+    resolved early in Stage 4 (RR), incurring a 3-cycle flush penalty. Final branch and JALR jump
+    resolution occurs in Stage 7 (EX3/MEM); a branch misprediction or JALR jump incurs a 6-cycle flush penalty.
 </p>
 
 <!-- ============================================================ -->
@@ -245,8 +246,8 @@
 <h2 id="pipeline-diagram">2. Pipeline Diagram</h2>
 
 <div class="pipeline-diagram">
-                       stall_frontend                        flush (E3_pc_sel)
-                       |                                     |
+                       stall_frontend      flush (stage4_flush / E3_pc_sel)
+                       |                   |
   +--------+  +--------+  +--------+  +--------+  +--------+  +--------+  +--------+  +--------+
   | Stage 1|  | Stage 2|  | Stage 3|  | Stage 4|  | Stage 5|  | Stage 6|  | Stage 7|  | Stage 8|
   |  FETCH |->|  IMEM  |->| DECODE |->|REG READ|->|  EX1   |->|  EX2   |->|EX3/MEM |->|   WB   |
@@ -259,26 +260,26 @@
   +--------+  +--------+  +--------+  +--------+  +--------+  +--------+  +--------+  +--------+
        |<-- bht_prediction (taken/not-taken guess)                            |
        |                                                                      |
-       +<--------------------------------------------------------------------+|
+       +<------------------------------------------- stage4_pc_sel -----------+
+       |<---------------------------------------------------------------------+|
        |                   pc_sel, pc_target (from pc_target_calc)            |
        |                   bht_update (branch, outcome, PC) from Stage 7     |
        |
        |    Forwarding Paths:
        |    E2_fwd_val  (EX2 -> EX1 data_sel)  = (wb_sel==10) ? PC+4 : alu_result
        |    E3_fwd_val  (EX3 -> EX1 data_sel)  = (wb_sel==10) ? PC+4 : alu_result
-       |    W_fwd_val   (WB  -> EX1 data_sel)  = W_write_data  (currently unused)
+       |    W_fwd_val   (WB  -> EX1 data_sel)  = W_write_data
        |
        +<------------------------------- W_rd, W_write_data, W_reg_write -------------------+
                                          (Register File Write Port)
 
   Hazard Detection Unit:
-  Inputs from: D (rs1, rs2, uses_rs1, uses_rs2), RR (rd, reg_write), E1 (rd, reg_write),
-               E2 (rd, mem_read), E3 (rd, mem_read)
+  Inputs from: D (rs1, rs2, uses_rs1, uses_rs2), RR (rd, reg_write), E1 (rd, reg_write)
   Output: stall_frontend -> stalls Stages 1-3, inserts bubble at ID_RR boundary
 
   Branch Target Calculation (Stage 4 - RR):
   branch_target = RR_pc + RR_imm  (combinational adder on ID_RR outputs)
-  Pipelined through RR_EX1 and EX1_EX2; used by pc_target_calc in Stage 7.
+  Pipelined through RR_EX1 and EX1_EX2; used by pc_target_calc in Stage 7 and early JAL in Stage 4.
 </div>
 
 <!-- ============================================================ -->
@@ -947,10 +948,6 @@ mem_unsigned (1b), wb_sel (2b).</p>
     <tr><td><code>RR_rd</code></td><td>input</td><td>5</td><td>ID_RR output</td><td>Destination register of RR instruction</td></tr>
     <tr><td><code>E1_reg_write</code></td><td>input</td><td>1</td><td>RR_EX1 output</td><td>Instruction in EX1 stage writes a register</td></tr>
     <tr><td><code>E1_rd</code></td><td>input</td><td>5</td><td>RR_EX1 output</td><td>Destination register of EX1 instruction</td></tr>
-    <tr><td><code>E2_mem_read</code></td><td>input</td><td>1</td><td>EX1_EX2 output</td><td>Instruction in EX2 is a load</td></tr>
-    <tr><td><code>E2_rd</code></td><td>input</td><td>5</td><td>EX1_EX2 output</td><td>Destination register of EX2 instruction</td></tr>
-    <tr><td><code>E3_mem_read</code></td><td>input</td><td>1</td><td>EX2_EX3 output</td><td>Instruction in EX3 is a load</td></tr>
-    <tr><td><code>E3_rd</code></td><td>input</td><td>5</td><td>EX2_EX3 output</td><td>Destination register of EX3 instruction</td></tr>
     <tr><td><code>stall</code></td><td>output</td><td>1</td><td>-</td><td>Stall signal (<code>stall_frontend</code>)</td></tr>
 </table>
 
@@ -962,11 +959,6 @@ mem_unsigned (1b), wb_sel (2b).</p>
         ahead and its result is not yet available anywhere for forwarding.</li>
     <li><strong>EX1 stage dependency:</strong> Instruction in EX1 (Stage 5) writes to a register that
         the instruction in Decode reads. This covers the 2-stage gap where the result is not yet computed.</li>
-    <li><strong>EX2 load-use hazard:</strong> Instruction in EX2 (Stage 6) is a load (<code>E2_mem_read</code>)
-        and its destination matches a source register in Decode. Load data is not available until after
-        the memory read completes.</li>
-    <li><strong>EX3 load-use hazard:</strong> Instruction in EX3 (Stage 7) is a load (<code>E3_mem_read</code>)
-        and its destination matches a source register in Decode. Memory read data is still being fetched.</li>
 </ol>
 
 <h4>Stall Effect</h4>
@@ -1032,29 +1024,30 @@ mem_unsigned (1b), wb_sel (2b).</p>
 
 <h3>14.1 Resolution Point</h3>
 <p>
-    Branches and jumps are resolved in Stage 7 (EX3/MEM) by the <code>pc_target_calc</code> module.
-    The <code>E3_pc_sel</code> signal (= <code>flush</code>) indicates a taken branch or jump or a
-    BHT misprediction. The branch target address arrives pre-computed from Stage 4 via the pipeline.
+    Unconditional JAL jumps are resolved early in Stage 4 (RR) by the <code>stage4_pc_sel</code> logic using
+    the early branch target calculator. Conditional branches and JALR jumps are resolved in Stage 7 (EX3/MEM)
+    by the <code>pc_target_calc</code> module. The redirect signal (<code>stage4_pc_sel</code> in Stage 4 or
+    <code>E3_pc_sel</code> in Stage 7) triggers a pipeline flush.
 </p>
 
 <h3>14.2 Flush Mechanism</h3>
-<p>When <code>E3_pc_sel</code> is asserted:</p>
+<p>When a redirect is asserted:</p>
 <ul>
-    <li><code>flush</code> signal is broadcast to all pipeline registers from IF_ID through EX2_EX3.</li>
-    <li>All 6 pipeline stages between Fetch and EX3 are flushed (instructions converted to NOPs).</li>
-    <li><code>pc_update</code> loads the correct target PC on the next clock edge.</li>
-    <li><code>instr_mem</code> sets <code>flush_reg</code> to output a NOP on the next cycle.</li>
-    <li>The BHT entry for the branch PC is updated with the actual outcome.</li>
+    <li>For early JAL resolution in Stage 4: the <code>stage4_flush</code> signal flushes Stages 2 and 3 (IMEM and IF_ID).</li>
+    <li>For Stage 7 branch/JALR resolution: the <code>flush</code> signal (driven by <code>E3_pc_sel</code>) is broadcast to all pipeline registers from IF_ID through EX2_EX3, clearing all 6 in-flight stages.</li>
+    <li>The <code>pc_update</code> module loads the correct target PC on the next clock edge.</li>
+    <li>The BHT entry for the resolved branch is updated with the actual outcome.</li>
 </ul>
 
-<h3>14.3 Branch Penalty</h3>
+<h3>14.3 Branch and Jump Penalty</h3>
 <p>
-    Unconditional jumps (JAL, JALR) always incur a <strong>6-cycle flush penalty</strong>.
-    Conditional branches incur a penalty only on a BHT misprediction:
+    Unconditional jumps and conditional branches incur the following penalties:
 </p>
 <ul>
-    <li><strong>BHT correct prediction (taken or not-taken):</strong> 0 extra cycles on top of normal flow.</li>
-    <li><strong>BHT misprediction:</strong> 6-cycle flush penalty (same as the no-prediction baseline).</li>
+    <li><strong>Unconditional JAL Jump:</strong> 3-cycle flush penalty (resolved in Stage 4).</li>
+    <li><strong>Unconditional JALR Jump:</strong> 6-cycle flush penalty (resolved in Stage 7).</li>
+    <li><strong>Conditional Branch (correct prediction):</strong> 0 extra cycles (for predicted not-taken) or 3 cycles (for predicted taken, redirected in Stage 4).</li>
+    <li><strong>Conditional Branch (misprediction):</strong> 6-cycle flush penalty (redirected in Stage 7).</li>
 </ul>
 <p>
     Not-taken branches that are correctly predicted incur no penalty. The BHT reduces the average
@@ -1386,8 +1379,9 @@ core (top-level)
     <tr><td>Branch penalty (taken, BHT misprediction)</td><td>6 cycles</td><td>Full flush; Stages 1-6 cleared</td></tr>
     <tr><td>Branch penalty (not-taken, BHT correct)</td><td>0 cycles</td><td>No redirect needed</td></tr>
     <tr><td>Branch penalty (not-taken, BHT misprediction)</td><td>6 cycles</td><td>Full flush; Stages 1-6 cleared</td></tr>
-    <tr><td>Jump penalty (JAL / JALR)</td><td>6 cycles</td><td>No BHT prediction for jumps</td></tr>
-    <tr><td>Load-use stall (worst case)</td><td>Up to 4 cycles</td><td>Depends on pipeline distance</td></tr>
+    <tr><td>Jump penalty (JAL)</td><td>3 cycles</td><td>Resolved early in Stage 4</td></tr>
+    <tr><td>Jump penalty (JALR)</td><td>6 cycles</td><td>Resolved in Stage 7</td></tr>
+    <tr><td>Load-use stall (worst case)</td><td>Up to 2 cycles</td><td>Stalls only when load is in RR or EX1</td></tr>
     <tr><td>ALU-to-ALU forwarding</td><td>0 stall cycles</td><td>When producer is 2+ stages ahead</td></tr>
     <tr><td>IPC (ideal, no hazards)</td><td>1.0</td><td>Single-issue, in-order</td></tr>
 </table>
@@ -1395,10 +1389,12 @@ core (top-level)
 <h3>21.3 Stall Cycle Breakdown</h3>
 <table>
     <tr><th>Hazard Scenario</th><th>Stall Cycles</th><th>Reason</th></tr>
-    <tr><td>RAW: producer in RR (Stage 4), consumer in D (Stage 3)</td><td>1</td><td>1-stage gap; result not computed yet</td></tr>
-    <tr><td>RAW: producer in EX1 (Stage 5), consumer in D (Stage 3)</td><td>1+</td><td>2-stage gap; result not computed yet</td></tr>
-    <tr><td>Load-use: load in EX2 (Stage 6), consumer in D (Stage 3)</td><td>1+</td><td>Load data not available from memory</td></tr>
-    <tr><td>Load-use: load in EX3 (Stage 7), consumer in D (Stage 3)</td><td>1+</td><td>Load data being read from memory</td></tr>
+    <tr><td>RAW (all): producer in RR (Stage 4), consumer in D (Stage 3)</td><td>2</td><td>Stalled until producer moves to EX2; then forwarded from EX3/WB</td></tr>
+    <tr><td>RAW (all): producer in EX1 (Stage 5), consumer in D (Stage 3)</td><td>1</td><td>Stalled until producer moves to EX2; then forwarded from EX3/WB</td></tr>
+    <tr><td>Load-use (adjacent): load in RR, consumer in D</td><td>2</td><td>Stalls for 2 cycles; data available in Stage 8</td></tr>
+    <tr><td>Load-use (1 nop): load in EX1, consumer in D</td><td>1</td><td>Stalls for 1 cycle; data available in Stage 8</td></tr>
+    <tr><td>Load-use (2 nops): load in EX2, consumer in D</td><td>0</td><td>No stall; forwarded from WB (Stage 8) to EX1 (Stage 5)</td></tr>
+    <tr><td>Load-use (3 nops): load in EX3, consumer in D</td><td>0</td><td>No stall; bypassed via regfile read-during-write</td></tr>
 </table>
 
 <h3>21.4 Pipeline Stage Boundary Registers</h3>
@@ -1570,10 +1566,10 @@ core (top-level)
 
 <h3>22.3 Branch Target and BHT Corner Cases</h3>
 <ul>
+    <li><strong>JAL early resolution:</strong> JAL is resolved in Stage 4 (RR) and its target redirects the PC, flushing Stages 2-3. When JAL reaches Stage 7, its jump control is filtered to prevent double redirection, while JALR still redirects normally in Stage 7.</li>
     <li><strong>JALR branch target:</strong> The early <code>branch_target_calc</code> in Stage 4 only covers
         PC-relative targets (B-type, JAL). JALR targets require <code>rs1</code> which is not available until
-        Stage 5 (after forwarding). The JALR target is still computed by the ALU in Stage 6 and
-        the BHT does not provide predictions for JALR; full 6-cycle flush always applies.</li>
+        Stage 5 (after forwarding). The JALR target is still computed by the ALU in Stage 6 and JALR is resolved in Stage 7, incurring a 6-cycle flush penalty.</li>
     <li><strong>BHT index aliasing:</strong> Two branch instructions whose PCs alias to the same BHT index
         may corrupt each other's counter state. No tag bits are stored. This is a known limitation.</li>
     <li><strong>Simultaneous BHT update and fetch:</strong> If the update PC (from Stage 7) aliases the

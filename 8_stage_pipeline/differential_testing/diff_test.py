@@ -11,6 +11,10 @@ TESTS_DIR = os.path.join(SCRIPT_DIR, "tests")
 ENV_DIR = os.path.join(SCRIPT_DIR, "env")
 LINKER_LD = os.path.join(SCRIPT_DIR, "linker.ld")
 
+# Global counters for test progress
+RUNNING_TEST_IDX = 0
+TOTAL_TEST_COUNT = 0
+
 # Temporary build outputs (Windows paths)
 ELF_FILE = os.path.join(SCRIPT_DIR, "test.elf")
 BIN_FILE = os.path.join(SCRIPT_DIR, "test.bin")
@@ -115,10 +119,16 @@ def parse_signature_file(sig_path):
 
 def run_test(test_file):
     """Execute differential test for a single test case using pre-compiled artifacts."""
+    global RUNNING_TEST_IDX, TOTAL_TEST_COUNT
+    RUNNING_TEST_IDX += 1
+    
     test_basename = os.path.basename(test_file)
     test_name = os.path.splitext(test_basename)[0]
     print(f"\n==================================================")
-    print(f"[RUNNING] Test: {test_basename}")
+    if TOTAL_TEST_COUNT > 0:
+        print(f"[RUNNING] Test {RUNNING_TEST_IDX}/{TOTAL_TEST_COUNT}: {test_basename}")
+    else:
+        print(f"[RUNNING] Test: {test_basename}")
     print(f"==================================================")
     
     # 1. Locate pre-compiled build artifacts
@@ -334,6 +344,9 @@ def main():
         sys.exit(1)
 
     print(f"Found {len(test_files)} assembly test cases.")
+    
+    global TOTAL_TEST_COUNT
+    TOTAL_TEST_COUNT = len(test_files)
     
     passed_tests = []
     failed_tests = []
