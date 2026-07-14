@@ -61,6 +61,6 @@ When writing custom programs, you must adhere to the physical hardware constrain
 * **No Hardware Multiplication/Division (RV32M):** Must use the software emulation routines provided in [helper.h](8_stage_pipeline/software/helper.h).
 * **No Hardware Floating-Point (RV32F/D):** Floating-point operations (`float`, `double`) are unsupported.
 * **Harvard Bus Separation (No ROM-to-RAM copy of static globals):** The CPU separates instruction ROM and data RAM into distinct buses, both starting at address `0x00000000`. Since load instructions (`lw`) only read from RAM, the CPU cannot read constants (`.rodata`) or copy initial values (`.data` section) from the instruction ROM at runtime. Statically-initialized globals (like `int x = 42;`) are therefore not supported.
-* **Strict Memory Limits:** Instruction code (`.text`) must fit within the **4 KB ROM** limit, and RAM variables/stack frames must fit within the **4 KB RAM** limit.
+* **Strict Memory Limits:** Instruction code (`.text`) must fit within the **64 KB ROM** limit, and RAM variables/stack frames must fit within the **64 KB RAM** limit.
 * **No Standard C Library (libc):** Standard functions like `printf()` or `malloc()` are unavailable.
 * **No OS/Privileged Modes:** The CPU has no supervisor modes, virtual memory, page tables, interrupts, or CSR registers.

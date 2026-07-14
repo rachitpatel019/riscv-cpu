@@ -71,7 +71,7 @@ Performance benchmarks collected from Altera Quartus Prime synthesis:
 | **Single Cycle** | ~48 MHz | 10,587 | 8,522 | 0 |
 | **5-Stage Pipeline (Unoptimized)** | ~92 MHz | 11,262 | 8,817 | 0 |
 | **5-Stage Pipeline (Sync Reads)** | ~70 MHz | 1,828 | 393 | 18,432 |
-| **8-Stage Pipeline (Active)** | **125.0 MHz** | **2,796** | **1,347** | **69,632** |
+| **8-Stage Pipeline (Active)** | **125.0 MHz** | **2,796** | **1,347** | **1,052,672** |
 
 ---
 

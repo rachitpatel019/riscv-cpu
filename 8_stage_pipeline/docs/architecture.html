@@ -375,7 +375,7 @@
 <h3>Module: <code>instr_mem</code></h3>
 <p>File: <code>rtl/core/2_imem/instr_mem.sv</code></p>
 <p>
-    Synchronous instruction memory modeled as a 1024-entry ROM/RAM array, initialized from
+    Synchronous instruction memory modeled as a 16384-entry ROM/RAM array, initialized from
     <code>program.hex</code> via <code>$readmemh</code>. Uses M9K BRAM inference on Intel/Altera FPGAs.
     The synchronous read introduces a 1-cycle latency, justifying a dedicated pipeline stage.
 </p>
@@ -402,7 +402,7 @@
 <h4>Memory Parameters</h4>
 <table>
     <tr><th>Parameter</th><th>Value</th><th>Description</th></tr>
-    <tr><td><code>MEM_DEPTH</code></td><td>1024</td><td>Number of 32-bit instruction words (4 KiB)</td></tr>
+    <tr><td><code>MEM_DEPTH</code></td><td>16384</td><td>Number of 32-bit instruction words (64 KiB)</td></tr>
 </table>
 
 <!-- ============================================================ -->
@@ -1182,14 +1182,14 @@ the existing <code>pc_sel</code> and <code>stall</code> signals. The updated pri
 <h3>16.2 Module: <code>data_mem</code> (Data Memory)</h3>
 <p>File: <code>rtl/core/7_ex3_mem/data_mem.sv</code></p>
 <p>
-    1024-entry x 32-bit synchronous data memory using M9K BRAM. Supports byte, halfword, and word
+    16384-entry x 32-bit synchronous data memory using M9K BRAM. Supports byte, halfword, and word
     accesses with alignment logic. Read data is available one cycle after the address is presented.
 </p>
 
 <h4>Memory Parameters</h4>
 <table>
     <tr><th>Parameter</th><th>Value</th><th>Description</th></tr>
-    <tr><td><code>MEM_DEPTH</code></td><td>1024</td><td>Number of 32-bit words (4 KiB)</td></tr>
+    <tr><td><code>MEM_DEPTH</code></td><td>16384</td><td>Number of 32-bit words (64 KiB)</td></tr>
 </table>
 
 <h4>Write Behavior</h4>
