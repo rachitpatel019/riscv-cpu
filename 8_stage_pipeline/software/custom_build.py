@@ -9,7 +9,7 @@ import sys
 # Examples:
 #   TARGET_C_FILE = "MMIO_Test/mmio_test.c"
 #   TARGET_C_FILE = "ALU_Test/alu_test.c"
-TARGET_C_FILE = "MMIO_Test/mmio_test.c"
+TARGET_C_FILE = "Benchmark/benchmark.c"
 # ==============================================================================
 
 # Toolchain configuration
@@ -52,9 +52,14 @@ def main():
         print(f"Running: {cmd}")
         subprocess.run(cmd, shell=True, check=True)
 
-    # Convert paths to forward slashes for compatibility under WSL/Linux environments
+    # Convert paths to absolute WSL paths for compatibility under WSL/Linux environments
     def to_wsl_path(path):
-        return path.replace('\\', '/')
+        abs_path = os.path.abspath(path)
+        if len(abs_path) > 1 and abs_path[1] == ':':
+            drive = abs_path[0].lower()
+            rest = abs_path[2:].replace('\\', '/')
+            return f"/mnt/{drive}{rest}"
+        return abs_path.replace('\\', '/')
 
     linker_wsl = to_wsl_path(linker_script)
     crt0_wsl = to_wsl_path(crt0_file)
