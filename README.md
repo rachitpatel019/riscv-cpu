@@ -18,7 +18,7 @@ A detailed architectural specification of the active design is available in [arc
 *   [Archive/](Archive) — Historical processor design iterations:
     *   [single_cycle/](Archive/single_cycle) — Baseline Single-Cycle design.
     *   [5_stage_pipeline/](Archive/5_stage_pipeline) — Baseline 5-Stage Pipeline design.
-*   [cpu_benchmarks.md](cpu_benchmarks.md) — Comparative synthesis metrics (Fmax, logic elements, registers) across various design versions.
+*   [8_stage_pipeline/docs/specs.md](8_stage_pipeline/docs/specs.md) — Synthesis performance metrics (LUT utilization, $F_{max}$) and power dissipation analysis.
 
 ---
 
@@ -62,16 +62,11 @@ For detailed instructions on compiling and running custom C programs using the t
 
 ---
 
-## Synthesis & Performance Metrics
+## Synthesis, Performance & Power Specs
 
-Performance benchmarks collected from Altera Quartus Prime synthesis:
+Detailed CPU hardware specifications, including FPGA resource utilization (LEs, registers), maximum clock frequency ($F_{max}$), and dynamic/static power dissipation analysis, are available in the specifications guide:
 
-| Design Version | Clock Frequency ($F_{max}$) | Logic Elements (LEs) | Registers | Memory Bits |
-| :--- | :--- | :--- | :--- | :--- |
-| **Single Cycle** | ~48 MHz | 10,587 | 8,522 | 0 |
-| **5-Stage Pipeline (Unoptimized)** | ~92 MHz | 11,262 | 8,817 | 0 |
-| **5-Stage Pipeline (Sync Reads)** | ~70 MHz | 1,828 | 393 | 18,432 |
-| **8-Stage Pipeline (Active)** | **125.0 MHz** | **2,796** | **1,347** | **1,052,672** |
+*   [Synthesis & Power Specifications](8_stage_pipeline/docs/cpu_specs.md)
 
 ---
 
