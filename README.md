@@ -18,7 +18,7 @@ A detailed architectural specification of the active design is available in [arc
 *   [Archive/](Archive) — Historical processor design iterations:
     *   [single_cycle/](Archive/single_cycle) — Baseline Single-Cycle design.
     *   [5_stage_pipeline/](Archive/5_stage_pipeline) — Baseline 5-Stage Pipeline design.
-*   [8_stage_pipeline/docs/specs.md](8_stage_pipeline/docs/specs.md) — Synthesis performance metrics (LUT utilization, $F_{max}$) and power dissipation analysis.
+*   [8_stage_pipeline/docs/cpu_specs.md](8_stage_pipeline/docs/cpu_specs.md) — Synthesis performance metrics (LUT utilization, $F_{max}$) and power dissipation analysis.
 
 ---
 
@@ -58,7 +58,7 @@ The CPU includes an MMIO interface designed for the **DE10-Lite FPGA Board**, de
 
 For detailed instructions on compiling and running custom C programs using the toolchain, utilizing the software helper libraries, and an overview of the CPU's architectural constraints, refer to:
 
-*   [Running Custom Programs Guide](running_custom_programs.md)
+*   [Running Custom Programs Guide](8_stage_pipeline/docs/running_custom_programs.md)
 
 ---
 
