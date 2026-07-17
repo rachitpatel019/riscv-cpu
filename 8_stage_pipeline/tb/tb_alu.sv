@@ -10,6 +10,7 @@ logic [31:0] B;
 logic [3:0] control;
 
 logic [31:0] result;
+logic [31:0] adder_result;
 
 alu dut (.*);
 

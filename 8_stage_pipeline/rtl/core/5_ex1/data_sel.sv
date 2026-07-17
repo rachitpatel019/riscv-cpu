@@ -14,6 +14,7 @@ module data_sel (
     input logic [1:0] forward_a_sel,
     input logic [1:0] forward_b_sel,
 
+    input logic [31:0] fwd_ex1_data,
     input logic [31:0] fwd_ex2_data,
     input logic [31:0] fwd_ex3_data,
 
@@ -28,6 +29,7 @@ logic [31:0] rs2_final;
 // Forwarding multiplexer for register operand A (rs1).
 always_comb begin
     case (forward_a_sel)
+        2'b11: rs1_final = fwd_ex1_data;
         2'b01: rs1_final = fwd_ex2_data;
         2'b10: rs1_final = fwd_ex3_data;
         default: rs1_final = rs1_data;
@@ -40,6 +42,7 @@ assign operand_a = alu_src_a ? pc : rs1_final;
 // Forwarding multiplexer for register operand B (rs2).
 always_comb begin
     case (forward_b_sel)
+        2'b11: rs2_final = fwd_ex1_data;
         2'b01: rs2_final = fwd_ex2_data;
         2'b10: rs2_final = fwd_ex3_data;
         default: rs2_final = rs2_data;

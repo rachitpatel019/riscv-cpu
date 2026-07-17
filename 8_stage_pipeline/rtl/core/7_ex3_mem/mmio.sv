@@ -30,26 +30,26 @@ logic [23:0] hex_reg;
 assign out_leds = led_reg;
 assign out_hex = hex_reg;
 
-// Synchronous writing to LEDs and 7-segment register spaces using write address.
+// Synchronous writing to LEDs and 7-segment register spaces using write address bit [2].
 always_ff @(posedge clk) begin
     if (reset) begin
         led_reg <= 10'b0;
         hex_reg <= 24'b0;
     end else if (mem_write) begin
-        case (write_address)
-            32'h80000000: led_reg <= write_data[9:0];
-            32'h80000004: hex_reg <= write_data[23:0];
+        case (write_address[2])
+            1'b0: led_reg <= write_data[9:0];  // 32'h80000000
+            1'b1: hex_reg <= write_data[23:0]; // 32'h80000004
             default: ;
         endcase
     end
 end
 
-// Synchronous reading from switches and keys register spaces using read address.
+// Synchronous reading from switches and keys register spaces using read address bits [3:2].
 always_ff @(posedge clk) begin
     if (mem_read) begin
-        case (read_address)
-            32'h80000008: read_data <= {22'b0, sw_switches};
-            32'h8000000C: read_data <= {30'b0, sw_keys};
+        case (read_address[3:2])
+            2'b10:   read_data <= {22'b0, sw_switches}; // 32'h80000008
+            2'b11:   read_data <= {30'b0, sw_keys};     // 32'h8000000C
             default: read_data <= 32'b0;
         endcase
     end else begin

@@ -97,9 +97,9 @@ initial begin
     // Test Case 1: No dependency (no stall)
     drive(5'd1, 5'd2, 1, 1, 0, 0, 5'd0, 0, 0, 5'd0); check(0);
 
-    // Test Case 2: Adjacent ALU dependency (producer in RR / Stage 4) - stalls for 1 cycle
-    drive(5'd1, 5'd2, 1, 1, 1, 0, 5'd1, 0, 0, 5'd0); check(1);
-    drive(5'd1, 5'd2, 1, 1, 1, 0, 5'd2, 0, 0, 5'd0); check(1);
+    // Test Case 2: Adjacent ALU dependency (producer in RR / Stage 4) - no stall (forwarded)
+    drive(5'd1, 5'd2, 1, 1, 1, 0, 5'd1, 0, 0, 5'd0); check(0);
+    drive(5'd1, 5'd2, 1, 1, 1, 0, 5'd2, 0, 0, 5'd0); check(0);
 
     // Test Case 3: Adjacent LOAD dependency (producer in RR / Stage 4) - stalls for 2 cycles
     drive(5'd1, 5'd2, 1, 1, 1, 1, 5'd1, 0, 0, 5'd0); check(1);

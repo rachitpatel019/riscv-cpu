@@ -24,7 +24,7 @@ module hazard_detection_unit (
 always_comb begin
     stall = 1'b0;
 
-    if (RR_reg_write && (RR_rd != 5'b0)) begin
+    if (RR_reg_write && RR_mem_read && (RR_rd != 5'b0)) begin
         if ((RR_rd == D_rs1 && D_uses_rs1) || (RR_rd == D_rs2 && D_uses_rs2)) begin
             stall = 1'b1;
         end

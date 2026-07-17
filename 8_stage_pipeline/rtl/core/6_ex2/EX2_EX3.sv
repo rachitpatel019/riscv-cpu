@@ -23,6 +23,7 @@ module EX2_EX3 (
     input logic [31:0] operand_b_in,
     input logic [31:0] rs2_data_in,
     input logic [31:0] alu_result_in,
+    input logic [31:0] load_store_address_in,
     input logic condition_met_in,
     input logic [31:0] branch_target_in,
 
@@ -48,6 +49,7 @@ module EX2_EX3 (
     output logic [31:0] operand_b_out,
     output logic [31:0] rs2_data_out,
     output logic [31:0] alu_result_out,
+    output logic [31:0] load_store_address_out,
     output logic condition_met_out,
     output logic [31:0] branch_target_out,
 
@@ -74,6 +76,7 @@ always_ff @(posedge clk) begin
         operand_b_out <= 32'b0;
         rs2_data_out <= 32'b0;
         alu_result_out <= 32'b0;
+        load_store_address_out <= 32'b0;
         condition_met_out <= 0;
         branch_target_out <= 32'b0;
         imm_out <= 32'b0;
@@ -97,6 +100,7 @@ always_ff @(posedge clk) begin
         operand_b_out <= operand_b_in;
         rs2_data_out <= rs2_data_in;
         alu_result_out <= alu_result_in;
+        load_store_address_out <= load_store_address_in;
         condition_met_out <= condition_met_in;
         branch_target_out <= branch_target_in;
         imm_out <= imm_in;

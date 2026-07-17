@@ -9,6 +9,10 @@ module forwarding_unit (
     input logic IDRR_uses_rs1,
     input logic IDRR_uses_rs2,
 
+    input logic E1_reg_write,
+    input logic E1_mem_read,
+    input logic [4:0] E1_rd,
+
     input logic E2_reg_write,
     input logic E2_mem_read,
     input logic [4:0] E2_rd,
@@ -26,7 +30,10 @@ always_comb begin
     forward_b_sel = 2'b00;
 
     if (IDRR_uses_rs1 && (IDRR_rs1 != 5'b0)) begin
-        if (E2_reg_write && !E2_mem_read && (E2_rd == IDRR_rs1)) begin
+        if (E1_reg_write && !E1_mem_read && (E1_rd == IDRR_rs1)) begin
+            forward_a_sel = 2'b11;
+        end
+        else if (E2_reg_write && !E2_mem_read && (E2_rd == IDRR_rs1)) begin
             forward_a_sel = 2'b01;
         end
         else if (E3_reg_write && (E3_rd == IDRR_rs1)) begin
@@ -35,7 +42,10 @@ always_comb begin
     end
 
     if (IDRR_uses_rs2 && (IDRR_rs2 != 5'b0)) begin
-        if (E2_reg_write && !E2_mem_read && (E2_rd == IDRR_rs2)) begin
+        if (E1_reg_write && !E1_mem_read && (E1_rd == IDRR_rs2)) begin
+            forward_b_sel = 2'b11;
+        end
+        else if (E2_reg_write && !E2_mem_read && (E2_rd == IDRR_rs2)) begin
             forward_b_sel = 2'b01;
         end
         else if (E3_reg_write && (E3_rd == IDRR_rs2)) begin
