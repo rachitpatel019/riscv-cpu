@@ -29,11 +29,15 @@ module top (
     logic [23:0] cpu_hex;
 
     // Instantiate PLL to generate 125 MHz clock from 50 MHz input
+    /*
     PLL pll_inst (
         .inclk0(MAX10_CLK1_50),
         .c0(clk_125),
         .locked(pll_locked)
     );
+    */
+    assign clk_125 = MAX10_CLK1_50;
+    assign pll_locked = 1'b1;
 
     // Power-on reset generation for the CPU
     // Reset shifts out when PLL is locked, and is held in reset when PLL is unlocked.

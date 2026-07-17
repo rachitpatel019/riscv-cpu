@@ -15,7 +15,7 @@ logic [1:0] forward_a_sel;
 logic [1:0] forward_b_sel;
 logic [31:0] fwd_ex2_data;
 logic [31:0] fwd_ex3_data;
-logic [31:0] fwd_wb_data;
+logic [31:0] fwd_ex1_data;
 
 logic [31:0] operand_a;
 logic [31:0] operand_b;
@@ -54,7 +54,7 @@ task automatic drive(
     forward_b_sel = i_fwd_b_sel;
     fwd_ex2_data = i_ex2;
     fwd_ex3_data = i_ex3;
-    fwd_wb_data = i_wb;
+    fwd_ex1_data = i_wb;
     #1;
 endtask
 
@@ -85,6 +85,8 @@ initial begin
     drive(32'h100, 32'h1, 32'h2, 32'h3, 0, 0, 2'b01, 2'b01, 32'hA, 32'hB, 32'hC); check(32'hA, 32'hA, 32'hA);
     
     drive(32'h100, 32'h1, 32'h2, 32'h3, 0, 0, 2'b10, 2'b10, 32'hA, 32'hB, 32'hC); check(32'hB, 32'hB, 32'hB);
+
+    drive(32'h100, 32'h1, 32'h2, 32'h3, 0, 0, 2'b11, 2'b11, 32'hA, 32'hB, 32'hC); check(32'hC, 32'hC, 32'hC);
 
     drive(32'h100, 32'h1, 32'h2, 32'h3, 0, 1, 0, 2'b01, 32'hA, 32'hB, 32'hC); check(32'h1, 32'h3, 32'hA);
 

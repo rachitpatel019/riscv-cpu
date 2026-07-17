@@ -8,7 +8,8 @@ module alu (
     input logic [31:0] B,
     input logic [3:0] control,
 
-    output logic [31:0] result
+    output logic [31:0] result,
+    output logic [31:0] adder_result
 );
 
 import alu_package::*;
@@ -28,6 +29,7 @@ logic sltu_res;
 
 // Evaluation of arithmetic and logical operations.
 assign add_res = A + B;
+assign adder_result = add_res;
 assign sub_res = A - B;
 assign and_res = A & B;
 assign or_res = A | B;

@@ -131,6 +131,7 @@ logic [31:0] E2_operand_a;
 logic [31:0] E2_operand_b;
 logic [31:0] E2_rs2_data;
 logic [31:0] E2_alu_result;
+logic [31:0] E2_load_store_address;
 logic E2_condition_met;
 logic [31:0] E2_branch_target;
 logic E2_predict_taken;
@@ -151,6 +152,7 @@ logic [31:0] E3_operand_a;
 logic [31:0] E3_operand_b;
 logic [31:0] E3_rs2_data;
 logic [31:0] E3_alu_result;
+logic [31:0] E3_load_store_address;
 logic E3_condition_met;
 logic [31:0] E3_branch_target;
 logic E3_predict_taken;
@@ -317,6 +319,9 @@ forwarding_unit fwd_unit (
     .IDRR_rs2(IDRR_rs2),
     .IDRR_uses_rs1(IDRR_uses_rs1),
     .IDRR_uses_rs2(IDRR_uses_rs2),
+    .E1_reg_write(E1_reg_write),
+    .E1_mem_read(E1_mem_read),
+    .E1_rd(E1_rd),
     .E2_reg_write(E2_reg_write),
     .E2_mem_read(E2_mem_read),
     .E2_rd(E2_rd),
@@ -426,6 +431,7 @@ data_sel stage5_data_sel (
     .alu_src_b(E1_alu_src_b),
     .forward_a_sel(E1_forward_a_sel),
     .forward_b_sel(E1_forward_b_sel),
+    .fwd_ex1_data(E2_alu_result),
     .fwd_ex2_data(E3_fwd_val),
     .fwd_ex3_data(W_fwd_val),
     .operand_a(E1_operand_a),
@@ -485,7 +491,8 @@ alu stage6_alu (
     .A(E2_operand_a),
     .B(E2_operand_b),
     .control(E2_alu_op),
-    .result(E2_alu_result)
+    .result(E2_alu_result),
+    .adder_result(E2_load_store_address)
 );
 
 // Stage 6: Branch evaluator. Computes branch condition results.
@@ -514,6 +521,7 @@ EX2_EX3 stage6_ex2_ex3_reg (
     .operand_b_in(E2_operand_b),
     .rs2_data_in(E2_rs2_data),
     .alu_result_in(E2_alu_result),
+    .load_store_address_in(E2_load_store_address),
     .condition_met_in(E2_condition_met),
     .branch_target_in(E2_branch_target),
     .mem_read_in(E2_mem_read),
@@ -535,6 +543,7 @@ EX2_EX3 stage6_ex2_ex3_reg (
     .operand_b_out(E3_operand_b),
     .rs2_data_out(E3_rs2_data),
     .alu_result_out(E3_alu_result),
+    .load_store_address_out(E3_load_store_address),
     .condition_met_out(E3_condition_met),
     .branch_target_out(E3_branch_target),
     .mem_read_out(E3_mem_read),
@@ -593,10 +602,10 @@ memory stage8_memory_system (
     .clk(clk),
     .reset(reset),
     .mem_read(E2_mem_read),
-    .read_address(E2_alu_result),
+    .read_address(E2_load_store_address),
     .read_mem_size(E2_mem_size),
     .mem_write(E3_mem_write),
-    .write_address(E3_alu_result),
+    .write_address(E3_load_store_address),
     .write_data(E3_rs2_data),
     .write_mem_size(E3_mem_size),
     .mem_unsigned(E2_mem_unsigned),
