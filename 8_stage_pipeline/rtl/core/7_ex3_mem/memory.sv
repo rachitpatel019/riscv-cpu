@@ -1,16 +1,21 @@
 /*
 System memory interconnect and memory controller.
-Decodes addresses to route requests to data memory or MMIO.
+Decodes addresses to route requests to data memory or MMIO with split read/write ports.
 */
 
 module memory (
     input logic clk,
     input logic reset,
+
     input logic mem_read,
+    input logic [31:0] read_address,
+    input logic [1:0] read_mem_size,
+
     input logic mem_write,
-    input logic [31:0] address,
+    input logic [31:0] write_address,
     input logic [31:0] write_data,
-    input logic [1:0] mem_size,
+    input logic [1:0] write_mem_size,
+
     input logic mem_unsigned,
 
     output logic [31:0] read_data,
@@ -22,7 +27,8 @@ module memory (
     output logic [23:0] mmio_hex
 );
 
-logic is_mmio;
+logic is_mmio_read;
+logic is_mmio_write;
 
 logic dmem_read;
 logic dmem_write;
@@ -36,32 +42,36 @@ logic [31:0] mmio_read_data;
 logic is_mmio_reg;
 
 // Address decoders and write/read enable signal generators for memory and MMIO.
-assign is_mmio = (address[31] == 1'b1);
+assign is_mmio_read = (read_address[31] == 1'b1);
+assign is_mmio_write = (write_address[31] == 1'b1);
 
-assign dmem_read = mem_read & !is_mmio;
-assign dmem_write = mem_write & !is_mmio;
-assign mmio_read = mem_read & is_mmio;
-assign mmio_write = mem_write & is_mmio;
+assign dmem_read = mem_read & !is_mmio_read;
+assign dmem_write = mem_write & !is_mmio_write;
+assign mmio_read = mem_read & is_mmio_read;
+assign mmio_write = mem_write & is_mmio_write;
 
-// Instantiates the core data memory (BRAM).
+// Instantiates the core data memory (BRAM) as Simple Dual-Port.
 data_mem dmem (
     .clk(clk),
     .mem_read(dmem_read),
+    .read_address(read_address),
+    .read_mem_size(read_mem_size),
     .mem_write(dmem_write),
-    .address(address),
+    .write_address(write_address),
     .write_data(write_data),
-    .mem_size(mem_size),
+    .write_mem_size(write_mem_size),
     .mem_unsigned(mem_unsigned),
     .read_data(dmem_read_data)
 );
 
-// Instantiates the Memory Mapped I/O controller.
+// Instantiates the Memory Mapped I/O controller with split addresses.
 mmio mmio_inst (
     .clk(clk),
     .reset(reset),
     .mem_read(mmio_read),
+    .read_address(read_address),
     .mem_write(mmio_write),
-    .address(address),
+    .write_address(write_address),
     .write_data(write_data),
     .read_data(mmio_read_data),
     .sw_keys(mmio_keys),
@@ -72,7 +82,7 @@ mmio mmio_inst (
 
 // Synchronous register stage to track whether the active access was MMIO.
 always_ff @(posedge clk) begin
-    is_mmio_reg <= is_mmio;
+    is_mmio_reg <= is_mmio_read;
 end
 
 // Selects final read data from MMIO or data memory based on registers.

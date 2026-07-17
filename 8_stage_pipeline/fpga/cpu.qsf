@@ -96,7 +96,7 @@ set_global_assignment -name LAST_QUARTUS_VERSION "24.1std.0 Lite Edition"
 set_global_assignment -name PHYSICAL_SYNTHESIS_COMBO_LOGIC ON
 set_global_assignment -name PHYSICAL_SYNTHESIS_REGISTER_RETIMING ON
 
-set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/core/1_fetch/branch_predictor.sv
+set_global_assignment -name NUM_PARALLEL_PROCESSORS ALL
 set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/core/7_ex3_mem/mmio.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/core/7_ex3_mem/memory.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../packages/alu_pkg.sv
