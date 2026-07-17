@@ -78,7 +78,6 @@ logic [1:0] IDRR_counter_val;
 logic [1:0] E1_counter_val;
 logic [1:0] E2_counter_val;
 logic [1:0] E3_counter_val;
-logic [1:0] E2_next_counter;
 logic [1:0] E3_next_counter;
 logic [1:0] E1_forward_a_sel;
 logic [1:0] E1_forward_b_sel;
@@ -112,7 +111,6 @@ logic [31:0] E1_operand_a;
 logic [31:0] E1_operand_b;
 logic [31:0] E1_rs2_data_fwd;
 
-logic [31:0] E2_fwd_val;
 logic [31:0] E3_fwd_val;
 logic [31:0] W_fwd_val;
 
@@ -343,14 +341,7 @@ bht stage4_bht (
     .write_counter_in(E3_next_counter)
 );
 
-// Stage 6 and Stage 7 Next Counter computation
-always_comb begin
-    if (E2_condition_met)
-        E2_next_counter = (E2_counter_val == 2'b11) ? 2'b11 : E2_counter_val + 2'b01;
-    else
-        E2_next_counter = (E2_counter_val == 2'b00) ? 2'b00 : E2_counter_val - 2'b01;
-end
-
+// Stage 7 Next Counter computation
 always_comb begin
     if (E3_condition_met)
         E3_next_counter = (E3_counter_val == 2'b11) ? 2'b11 : E3_counter_val + 2'b01;
@@ -358,18 +349,8 @@ always_comb begin
         E3_next_counter = (E3_counter_val == 2'b00) ? 2'b00 : E3_counter_val - 2'b01;
 end
 
-// BHT Bypass logic
-always_comb begin
-    if (E3_branch && (E3_pc[11:2] == IDRR_pc[11:2])) begin
-        IDRR_counter_val = E3_next_counter;
-    end
-    else if (E2_branch && (E2_pc[11:2] == IDRR_pc[11:2])) begin
-        IDRR_counter_val = E2_next_counter;
-    end
-    else begin
-        IDRR_counter_val = BRAM_counter_out;
-    end
-end
+// Branch History Table counter selection
+assign IDRR_counter_val = BRAM_counter_out;
 
 // Predict taken if MSB of the counter is 1
 assign IDRR_predict_taken = IDRR_branch && (IDRR_counter_val[1] == 1'b1);
@@ -432,7 +413,6 @@ RR_EX1 stage4_rr_ex1_reg (
 );
 
 // Forwarding data path assignments for downstream execution stages.
-assign E2_fwd_val = (E2_wb_sel == 2'b10) ? E2_pc_plus_4 : E2_alu_result;
 assign E3_fwd_val = (E3_wb_sel == 2'b10) ? E3_pc_plus_4 : E3_alu_result;
 assign W_fwd_val = W_write_data;
 
@@ -608,15 +588,17 @@ MEM_WB stage7_mem_wb_reg (
     .pc_plus_4_out(W_pc_plus_4)
 );
 
-// Stage 8: Data Memory interconnect. Interfaces to data BRAM and MMIO registers.
+// Stage 8: Data Memory interconnect. Interfaces to data BRAM and MMIO registers with split read/write ports.
 memory stage8_memory_system (
     .clk(clk),
     .reset(reset),
     .mem_read(E2_mem_read),
-    .mem_write(E2_mem_write),
-    .address(E2_alu_result),
-    .write_data(E2_rs2_data),
-    .mem_size(E2_mem_size),
+    .read_address(E2_alu_result),
+    .read_mem_size(E2_mem_size),
+    .mem_write(E3_mem_write),
+    .write_address(E3_alu_result),
+    .write_data(E3_rs2_data),
+    .write_mem_size(E3_mem_size),
     .mem_unsigned(E2_mem_unsigned),
     .read_data(W_mem_read_data_raw),
     .mmio_keys(mmio_keys),
@@ -641,8 +623,10 @@ hazard_detection_unit hazard_unit (
     .D_uses_rs1(D_uses_rs1),
     .D_uses_rs2(D_uses_rs2),
     .RR_reg_write(IDRR_reg_write),
+    .RR_mem_read(IDRR_mem_read),
     .RR_rd(IDRR_rd),
     .E1_reg_write(E1_reg_write),
+    .E1_mem_read(E1_mem_read),
     .E1_rd(E1_rd),
     .stall(stall_frontend)
 );

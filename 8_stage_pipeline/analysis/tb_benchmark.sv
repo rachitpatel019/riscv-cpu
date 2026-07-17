@@ -41,7 +41,7 @@ always @(posedge clk) begin
     end else begin
         // Monitor writes to MMIO LEDs (0x80000000)
         if (dut.stage8_memory_system.mmio_inst.mem_write && 
-            dut.stage8_memory_system.mmio_inst.address == 32'h80000000) begin
+            dut.stage8_memory_system.mmio_inst.write_address == 32'h80000000) begin
             if (dut.stage8_memory_system.mmio_inst.write_data[9:0] == 10'h3FF) begin
                 benchmark_active <= 1;
                 started <= 1;

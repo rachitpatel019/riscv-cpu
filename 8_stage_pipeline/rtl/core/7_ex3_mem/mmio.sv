@@ -6,9 +6,12 @@ Routes accesses to FPGA switches, keys, LEDs, and 7-segment displays.
 module mmio (
     input logic clk,
     input logic reset,
+
     input logic mem_read,
+    input logic [31:0] read_address,
+
     input logic mem_write,
-    input logic [31:0] address,
+    input logic [31:0] write_address,
     input logic [31:0] write_data,
 
     output logic [31:0] read_data,
@@ -27,13 +30,13 @@ logic [23:0] hex_reg;
 assign out_leds = led_reg;
 assign out_hex = hex_reg;
 
-// Synchronous writing to LEDs and 7-segment register spaces.
+// Synchronous writing to LEDs and 7-segment register spaces using write address.
 always_ff @(posedge clk) begin
     if (reset) begin
         led_reg <= 10'b0;
         hex_reg <= 24'b0;
     end else if (mem_write) begin
-        case (address)
+        case (write_address)
             32'h80000000: led_reg <= write_data[9:0];
             32'h80000004: hex_reg <= write_data[23:0];
             default: ;
@@ -41,10 +44,10 @@ always_ff @(posedge clk) begin
     end
 end
 
-// Synchronous reading from switches and keys register spaces.
+// Synchronous reading from switches and keys register spaces using read address.
 always_ff @(posedge clk) begin
     if (mem_read) begin
-        case (address)
+        case (read_address)
             32'h80000008: read_data <= {22'b0, sw_switches};
             32'h8000000C: read_data <= {30'b0, sw_keys};
             default: read_data <= 32'b0;
