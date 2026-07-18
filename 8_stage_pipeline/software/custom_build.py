@@ -9,7 +9,7 @@ import sys
 # Examples:
 #   TARGET_C_FILE = "MMIO_Test/mmio_test.c"
 #   TARGET_C_FILE = "ALU_Test/alu_test.c"
-TARGET_C_FILE = "Stress_Test/stress_test.c"
+TARGET_C_FILE = "Benchmark/benchmark.c"
 # ==============================================================================
 
 # Toolchain configuration

@@ -83,16 +83,30 @@ Modular SystemVerilog testbenches are run sequentially via a PowerShell simulati
     ```
 
 ### 2. Differential Testing Flow
-The differential testing suite ([differential_testing/](8_stage_pipeline/differential_testing)) verifies the RTL execution instruction-by-instruction against the reference Spike ISA simulator.
-*   **Test Cases:** The assembly test cases in [differential_testing/tests/](8_stage_pipeline/differential_testing/tests) were downloaded from the official RISC-V Architecture Test suite: [riscv-arch-test (RV32I tests)](https://github.com/riscv/riscv-arch-test/tree/act4/tests/rv32i/I).
+The differential testing suite ([differential_testing/](8_stage_pipeline/differential_testing)) verifies the RTL execution instruction-by-instruction against the reference Spike ISA simulator. It consists of two sub-suites:
+
+#### A. ISA Compliance Testing
+Verifies the CPU against the standard RISC-V Architectural Test Suite (RV32I Base Instruction Set) to ensure compliance with the instruction set specification.
 *   **Tool Requirements:** ModelSim (`vsim`), Python 3, Windows Subsystem for Linux (WSL) containing the RISC-V GNU toolchain (`riscv64-unknown-elf-gcc`, `riscv64-unknown-elf-objcopy`, `riscv64-unknown-elf-nm`) and the Spike simulator.
-*   **Compilation:** Compile assembly tests into program memory hex files:
+*   **Compilation:** Compile compliance assembly tests into program and data memory hex files:
     ```powershell
-    python 8_stage_pipeline/differential_testing/generate_hex.py
+    python 8_stage_pipeline/differential_testing/ISA/generate_hex.py
     ```
-*   **Running Differential Tests:** Run trace-matching on a specific test (e.g. `I-add-00.S`):
+*   **Running Regression Suite:** Run the trace-matching regression suite on all tests:
     ```powershell
-    python 8_stage_pipeline/differential_testing/diff_test.py --test I-add-00.S
+    python 8_stage_pipeline/differential_testing/ISA/isa_diff_test.py
+    ```
+*   **Running a Specific Test:** Run trace-matching on a specific assembly test (e.g. `I-add-00.S`):
+    ```powershell
+    python 8_stage_pipeline/differential_testing/ISA/isa_diff_test.py --test I-add-00.S
+    ```
+
+#### B. C Program Benchmark Testing
+Verifies the CPU against a complex C-based benchmark program that exercises multiple hazard conditions, register forwarding, branch predictor feedback loops, and memory accesses.
+*   **Tool Requirements:** ModelSim (`vsim`), Python 3, Windows Subsystem for Linux (WSL) containing the RISC-V GNU toolchain (`riscv64-unknown-elf-gcc`, `riscv64-unknown-elf-objcopy`, `riscv64-unknown-elf-nm`) and the Spike simulator.
+*   **Running the Benchmark:** Compiles `benchmark.c` dynamically, initializes memories, co-simulates RTL and Spike, and performs step-by-step instruction verification (spanning over 34,000 register write commits):
+    ```powershell
+    python 8_stage_pipeline/differential_testing/Benchmark_Test/benchmark_diff_test.py
     ```
 
 ---

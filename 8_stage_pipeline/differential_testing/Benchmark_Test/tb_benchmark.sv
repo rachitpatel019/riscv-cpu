@@ -1,6 +1,6 @@
 `timescale 1ns / 1ps
 
-module tb_stress;
+module tb_benchmark;
 
 localparam CLK_PERIOD = 10;
 localparam MAX_CYCLES = 250000;

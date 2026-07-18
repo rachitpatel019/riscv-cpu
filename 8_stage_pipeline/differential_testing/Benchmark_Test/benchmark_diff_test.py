@@ -85,22 +85,22 @@ def parse_trace_file(trace_path):
     return trace
 
 def main():
-    parser = argparse.ArgumentParser(description="Stress Test Differential Testing Framework")
+    parser = argparse.ArgumentParser(description="Benchmark Differential Testing Framework")
     parser.add_argument("--keep", action="store_true", help="Keep temporary files after execution")
     args = parser.parse_args()
 
     print("==================================================")
-    print("RUNNING STRESS TEST DIFFERENTIAL TESTING")
+    print("RUNNING BENCHMARK DIFFERENTIAL TESTING")
     print("==================================================")
 
-    # 1. Compile stress_test.c with crt0_diff.s and ISA/linker.ld
-    print("[INFO] Compiling stress_test.c to ELF...")
-    c_src = os.path.join(SCRIPT_DIR, "../../software/Stress_Test/stress_test.c")
+    # 1. Compile benchmark.c with crt0_diff.s and ISA/linker.ld
+    print("[INFO] Compiling benchmark.c to ELF...")
+    c_src = os.path.join(SCRIPT_DIR, "../../software/Benchmark/benchmark.c")
     linker_script = os.path.join(SCRIPT_DIR, "linker.ld")
     crt0_file = os.path.join(SCRIPT_DIR, "crt0_diff.s")
 
     if not os.path.exists(c_src):
-        print(f"[ERROR] Stress test source file not found at {c_src}!")
+        print(f"[ERROR] Benchmark source file not found at {c_src}!")
         sys.exit(1)
     if not os.path.exists(linker_script):
         print(f"[ERROR] Linker script not found at {linker_script}!")
@@ -205,7 +205,7 @@ def main():
         "../../rtl/core/hazard_control/forwarding_unit.sv",
         "../../rtl/core/hazard_control/hazard_detection_unit.sv",
         "../../rtl/core/core.sv",
-        "tb_stress.sv"
+        "tb_benchmark.sv"
     ]
 
     vlog_cmd = ["vlog", "-work", "work"] + vlog_files
@@ -222,7 +222,7 @@ def main():
         os.remove(RTL_TRACE)
 
     vsim_args = [
-        "vsim", "-c", "-onfinish", "exit", "-voptargs=+acc", "work.tb_stress",
+        "vsim", "-c", "-onfinish", "exit", "-voptargs=+acc", "work.tb_benchmark",
         f"+TOHOST_ADDR={tohost_addr:x}",
         "-do", "run -all; quit -f"
     ]
@@ -285,11 +285,11 @@ def main():
         mismatch = True
 
     if mismatch:
-        print("\n[RESULT] STRESS TEST DIFFERENTIAL TESTING: FAILED (RTL Bug Found)")
+        print("\n[RESULT] BENCHMARK DIFFERENTIAL TESTING: FAILED (RTL Bug Found)")
         sys.exit(1)
     else:
         print(f"\n[SUCCESS] Trace Match! Checked all {compare_len} instructions successfully.")
-        print("[RESULT] STRESS TEST DIFFERENTIAL TESTING: PASS")
+        print("[RESULT] BENCHMARK DIFFERENTIAL TESTING: PASS")
         if not args.keep:
             cleanup_temp_files()
             if os.path.exists(work_dir):
