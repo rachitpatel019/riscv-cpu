@@ -117,6 +117,7 @@ def main():
 
     compile_cmd = [
         "riscv64-unknown-elf-gcc", "-march=rv32i", "-mabi=ilp32", "-nostdlib",
+        "-O3", "-flto", "-fsched-pressure", "-fno-align-loops", "-fno-align-jumps", "-fno-align-functions", "-mtune=rocket",
         "-T" + wsl_linker, wsl_crt0, wsl_src, "-o", wsl_elf
     ]
     try:
