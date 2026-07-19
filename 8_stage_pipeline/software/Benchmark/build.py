@@ -6,7 +6,9 @@ import sys
 TOOLCHAIN_PREFIX = "riscv64-unknown-elf-"
 CC = f"{TOOLCHAIN_PREFIX}gcc"
 OBJCOPY = f"{TOOLCHAIN_PREFIX}objcopy"
-CFLAGS = "-march=rv32i -mabi=ilp32 -nostdlib"
+CFLAGS = "-march=rv32i -mabi=ilp32 -nostdlib -O3 -flto -fsched-pressure -fno-align-loops -fno-align-jumps -fno-align-functions -mtune=rocket"
+
+
 
 def to_wsl_path(win_path):
     abs_path = os.path.abspath(win_path)

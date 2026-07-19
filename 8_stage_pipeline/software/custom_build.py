@@ -16,7 +16,7 @@ TARGET_C_FILE = "Benchmark/benchmark.c"
 TOOLCHAIN_PREFIX = "riscv64-unknown-elf-"
 CC = f"{TOOLCHAIN_PREFIX}gcc"
 OBJCOPY = f"{TOOLCHAIN_PREFIX}objcopy"
-CFLAGS = "-march=rv32i -mabi=ilp32 -nostdlib"
+CFLAGS = "-march=rv32i -mabi=ilp32 -nostdlib -O3 -flto -fsched-pressure -fno-align-loops -fno-align-jumps -fno-align-functions -mtune=rocket"
 
 def main():
     # Change directory to the directory containing this script (software/)
