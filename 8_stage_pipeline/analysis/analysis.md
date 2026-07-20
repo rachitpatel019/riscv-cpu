@@ -14,9 +14,20 @@ These physical specifications represent the synthesized gate-level netlist of th
 | **Logic Utilization** | **2,931 / 49,760 LEs** (6%) | [cpu.fit.summary](../fpga/output_files/cpu.fit.summary) |
 | **Register Usage** | **1,303 registers** | [cpu.fit.summary](../fpga/output_files/cpu.fit.summary) |
 | **BRAM Usage** | **1,052,672 bits** (63% capacity) | [cpu.fit.summary](../fpga/output_files/cpu.fit.summary) |
-| **Static Power** | **90.38 mW** | [cpu.pow.summary](../fpga/output_files/cpu.pow.summary) |
-| **Dynamic Power** | **103.03 mW** (94.07 mW Core + 8.96 mW I/O) | [cpu.pow.summary](../fpga/output_files/cpu.pow.summary) |
-| **Total Power** | **193.40 mW** | [cpu.pow.summary](../fpga/output_files/cpu.pow.summary) |
+| **Static Power** | **90.38 mW** | [cpu.pow.rpt](../fpga/output_files/cpu.pow.rpt) |
+| **Dynamic Power** | **79.37 mW** (69.15 mW Block + 10.22 mW Routing) | [cpu.pow.rpt](../fpga/output_files/cpu.pow.rpt) |
+| **Total Power** | **169.75 mW** | [cpu.pow.rpt](../fpga/output_files/cpu.pow.rpt) |
+
+### Design Version Comparison
+
+The table below compares the active 8-Stage Pipeline processor against previous iterations of the RISC-V CPU design implemented in the repository:
+
+| Design Version | Clock Frequency ($F_{\text{max}}$) | Logic Elements (LEs) | Registers | IMEM Capacity | DMEM Capacity |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Single Cycle** | ~48 MHz | 10,587 | 8,522 | 1 KiB (256 words) | 1 KiB (256 words) |
+| **5-Stage Pipeline (Unoptimized)** | ~92 MHz | 11,262 | 8,817 | 1 KiB (256 words) | 1 KiB (256 words) |
+| **5-Stage Pipeline (Sync Reads)** | ~70 MHz | 1,828 | 393 | 1 KiB (256 words) | 1 KiB (256 words) |
+| **8-Stage Pipeline (Active)** | **127.29 MHz** | **2,931** | **1,303** | **64 KiB (16,384 words)** | **64 KiB (16,384 words)** |
 
 ---
 
@@ -69,7 +80,7 @@ All metrics below are measured by [tb_benchmark.sv](tb_benchmark.sv) in simulati
 
 | Metric | Value | Reference / Formula |
 | :--- | :--- | :--- |
-| **Energy Per Instruction (EPI)** | **2.323 nJ/instruction** | $(\text{Total Power} \times \text{Execution Time}) / \text{Instructions Retired}$ |
-| **Performance Per Watt** | **4.3045 × 10⁸ inst/J** | $\text{Instructions Retired} / \text{Total Energy}$ |
-| **MIPS/Watt** | **438.37 MIPS/W** | $\text{MIPS} / \text{Total Power (W)}$ |
+| **Energy Per Instruction (EPI)** | **2.039 nJ/instruction** | $(\text{Total Power} \times \text{Execution Time}) / \text{Instructions Retired}$ |
+| **Performance Per Watt** | **4.9043 × 10⁸ inst/J** | $\text{Instructions Retired} / \text{Total Energy}$ |
+| **MIPS/Watt** | **499.44 MIPS/W** | $\text{MIPS} / \text{Total Power (W)}$ |
 | **Area Efficiency** | **28.93 KIPS/LE** | $\text{MIPS} / \text{Logic Elements}$ (with 2,931 LEs) |
