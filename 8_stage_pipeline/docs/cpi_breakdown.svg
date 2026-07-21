@@ -1,0 +1,22 @@
+<svg width="600" height="180" viewBox="0 0 600 180" fill="none" xmlns="http://www.w3.org/2000/svg" style="background:#1e293b; border-radius:8px; border:1px solid #475569; font-family: sans-serif;">
+  <!-- Title -->
+  <text x="20" y="30" fill="#38bdf8" font-size="14" font-weight="bold">CPI Contribution Breakdown (Total: 24,273 Cycles)</text>
+  <!-- Stacked Bar -->
+  <rect x="50" y="55" width="332" height="30" rx="3" fill="#38bdf8" />
+  <rect x="384" y="55" width="113" height="30" rx="3" fill="#fb923c" />
+  <rect x="499" y="55" width="51" height="30" rx="3" fill="#ef4444" />
+  <rect x="552" y="55" width="2" height="30" rx="1" fill="#c084fc" />
+  <!-- Legend / Labels -->
+  <!-- Ideal -->
+  <rect x="50" y="105" width="12" height="12" rx="2" fill="#38bdf8" />
+  <text x="70" y="115" fill="#e2e8f0" font-size="11">Ideal Execution: 16,166 cycles (66.6%)</text>
+  <!-- Branch Penalties -->
+  <rect x="50" y="130" width="12" height="12" rx="2" fill="#fb923c" />
+  <text x="70" y="140" fill="#e2e8f0" font-size="11">Branch Penalties: 5,517 cycles (22.7%)</text>
+  <!-- Load-Use Stalls -->
+  <rect x="340" y="105" width="12" height="12" rx="2" fill="#ef4444" />
+  <text x="360" y="115" fill="#e2e8f0" font-size="11">Load-Use Stalls: 2,660 cycles (11.0%)</text>
+  <!-- Jump Penalties -->
+  <rect x="340" y="130" width="12" height="12" rx="2" fill="#c084fc" />
+  <text x="360" y="140" fill="#e2e8f0" font-size="11">Jump Penalties: 30 cycles (0.1%)</text>
+</svg>
