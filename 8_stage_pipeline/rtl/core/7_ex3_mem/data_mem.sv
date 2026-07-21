@@ -22,7 +22,7 @@ module data_mem (
 
 localparam MEM_DEPTH = 16384;
 
-(* ramstyle = "M9K" *) logic [31:0] memory [0:MEM_DEPTH-1];
+(* ramstyle = "M9K" *) logic [31:0] memory [0:MEM_DEPTH-1] = '{default: 32'b0};
 
 logic [31:0] current_word;
 logic [31:0] shifted_word;

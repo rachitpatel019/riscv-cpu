@@ -156,6 +156,7 @@ typedef enum logic [1:0] {
     BUBBLE_JUMP
 } bubble_t;
 
+bubble_t pipe_IM;
 bubble_t pipe_D;
 bubble_t pipe_RR;
 bubble_t pipe_EX1;
@@ -168,6 +169,7 @@ longint measured_jump_penalty_cycles;
 
 always @(posedge clk) begin
     if (reset) begin
+        pipe_IM  <= BUBBLE_NONE;
         pipe_D   <= BUBBLE_NONE;
         pipe_RR  <= BUBBLE_NONE;
         pipe_EX1 <= BUBBLE_NONE;
@@ -237,7 +239,20 @@ always @(posedge clk) begin
         end else if (dut.stall_frontend) begin
             pipe_D <= pipe_D; // Held on stall
         end else begin
-            pipe_D <= BUBBLE_NONE;
+            pipe_D <= pipe_IM;
+        end
+
+        // Shift Stage 1 to IM
+        if (dut.flush) begin
+            if (stage7_jump) pipe_IM <= BUBBLE_JUMP;
+            else             pipe_IM <= BUBBLE_BRANCH;
+        end else if (dut.stage4_flush) begin
+            if (stage4_jump) pipe_IM <= BUBBLE_JUMP;
+            else             pipe_IM <= BUBBLE_BRANCH;
+        end else if (dut.stall_frontend) begin
+            pipe_IM <= pipe_IM; // Held on stall
+        end else begin
+            pipe_IM <= BUBBLE_NONE;
         end
 
         // Accumulate penalty cycles at the Writeback stage
