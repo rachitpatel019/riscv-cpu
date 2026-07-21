@@ -88,37 +88,9 @@ The table below compares the active 8-Stage Pipeline processor against previous 
 | **5-Stage Pipeline (BRAM-based memory)** | ~70 MHz | 1,828 | 393 | 1 KiB (256 words) | 1 KiB (256 words) |
 | **8-Stage Pipeline (Active)** | **127.29 MHz** | **2,931** | **1,303** | **64 KiB (16,384 words)** | **64 KiB (16,384 words)** |
 
-<div align="center" style="margin: 20px 0;">
-<svg width="100%" height="240" viewBox="0 0 650 240" fill="none" xmlns="http://www.w3.org/2000/svg" style="background:#1e293b; border-radius:8px; border:1px solid #475569; font-family: sans-serif;">
-<!-- Title -->
-<text x="20" y="35" fill="#38bdf8" font-size="14" font-weight="bold">Maximum Operating Frequency (Fmax) Scaling</text>
-<!-- Grid Lines -->
-<line x1="220" y1="60" x2="220" y2="200" stroke="#475569" stroke-width="1" />
-<line x1="345" y1="60" x2="345" y2="200" stroke="#334155" stroke-dasharray="4" />
-<line x1="470" y1="60" x2="470" y2="200" stroke="#334155" stroke-dasharray="4" />
-<line x1="595" y1="60" x2="595" y2="200" stroke="#334155" stroke-dasharray="4" />
-<text x="220" y="215" fill="#94a3b8" font-size="10" text-anchor="middle">0 MHz</text>
-<text x="345" y="215" fill="#94a3b8" font-size="10" text-anchor="middle">50 MHz</text>
-<text x="470" y="215" fill="#94a3b8" font-size="10" text-anchor="middle">100 MHz</text>
-<text x="595" y="215" fill="#94a3b8" font-size="10" text-anchor="middle">150 MHz</text>
-<!-- Bar 1: Single Cycle -->
-<text x="20" y="85" fill="#e2e8f0" font-size="12" font-weight="600">Single Cycle</text>
-<rect x="220" y="72" width="120" height="20" rx="3" fill="#64748b" />
-<text x="340" y="86" fill="#cbd5e1" font-size="11" font-weight="bold" dx="5">48 MHz</text>
-<!-- Bar 2: 5-Stage (BRAM-based) -->
-<text x="20" y="120" fill="#e2e8f0" font-size="12" font-weight="600">5-Stage (BRAM-based memory)</text>
-<rect x="220" y="107" width="175" height="20" rx="3" fill="#475569" />
-<text x="395" y="121" fill="#cbd5e1" font-size="11" font-weight="bold" dx="5">70 MHz</text>
-<!-- Bar 3: 5-Stage (LUT-based) -->
-<text x="20" y="155" fill="#e2e8f0" font-size="12" font-weight="600">5-Stage (LUT-based memory)</text>
-<rect x="220" y="142" width="230" height="20" rx="3" fill="#0284c7" />
-<text x="450" y="156" fill="#cbd5e1" font-size="11" font-weight="bold" dx="5">92 MHz</text>
-<!-- Bar 4: 8-Stage (Active) -->
-<text x="20" y="190" fill="#38bdf8" font-size="12" font-weight="bold">8-Stage (Active)</text>
-<rect x="220" y="177" width="318.2" height="20" rx="3" fill="#38bdf8" />
-<text x="538.2" y="191" fill="#38bdf8" font-size="11" font-weight="bold" dx="5">127.29 MHz</text>
-</svg>
-</div>
+<p align="center">
+  <img src="fmax_scaling.svg" alt="Maximum Operating Frequency (Fmax) Scaling" width="650">
+</p>
 
 ---
 
@@ -182,30 +154,9 @@ The performance below was evaluated on the [benchmark.c](../software/Benchmark/b
 
 $$\text{CPI} = 1.0000 \text (Ideal) + 0.1645 \text (Stalls) + 0.3413 \text (Branch Penalties) + 0.0019 \text (Jump Penalties) - 0.0062 \text (Stall-Flush Overlap)$$
 
-<div align="center" style="margin: 20px 0;">
-<svg width="100%" height="180" viewBox="0 0 600 180" fill="none" xmlns="http://www.w3.org/2000/svg" style="background:#1e293b; border-radius:8px; border:1px solid #475569; font-family: sans-serif;">
-<!-- Title -->
-<text x="20" y="30" fill="#38bdf8" font-size="14" font-weight="bold">CPI Contribution Breakdown (Total: 24,273 Cycles)</text>
-<!-- Stacked Bar -->
-<rect x="50" y="55" width="332" height="30" rx="3" fill="#38bdf8" />
-<rect x="384" y="55" width="113" height="30" rx="3" fill="#fb923c" />
-<rect x="499" y="55" width="51" height="30" rx="3" fill="#ef4444" />
-<rect x="552" y="55" width="2" height="30" rx="1" fill="#c084fc" />
-<!-- Legend / Labels -->
-<!-- Ideal -->
-<rect x="50" y="105" width="12" height="12" rx="2" fill="#38bdf8" />
-<text x="70" y="115" fill="#e2e8f0" font-size="11">Ideal Execution: 16,166 cycles (66.6%)</text>
-<!-- Branch Penalties -->
-<rect x="50" y="130" width="12" height="12" rx="2" fill="#fb923c" />
-<text x="70" y="140" fill="#e2e8f0" font-size="11">Branch Penalties: 5,517 cycles (22.7%)</text>
-<!-- Load-Use Stalls -->
-<rect x="340" y="105" width="12" height="12" rx="2" fill="#ef4444" />
-<text x="360" y="115" fill="#e2e8f0" font-size="11">Load-Use Stalls: 2,660 cycles (11.0%)</text>
-<!-- Jump Penalties -->
-<rect x="340" y="130" width="12" height="12" rx="2" fill="#c084fc" />
-<text x="360" y="140" fill="#e2e8f0" font-size="11">Jump Penalties: 30 cycles (0.1%)</text>
-</svg>
-</div>
+<p align="center">
+  <img src="cpi_breakdown.svg" alt="CPI Contribution Breakdown" width="600">
+</p>
 
 ---
 

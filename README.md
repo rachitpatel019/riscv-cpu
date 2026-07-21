@@ -8,7 +8,7 @@ This repository contains a SystemVerilog implementation of a 32-bit RISC-V proce
 
 Comprehensive guides and technical documentation are available under [8_stage_pipeline/docs/](8_stage_pipeline/docs/):
 
-*   📄 **[Architecture Specification](8_stage_pipeline/docs/architecture.html)**
+*   📄 **[Architecture Specification](8_stage_pipeline/docs/architecture.html)** ([Rendered Web Version](https://htmlpreview.github.io/?https://github.com/rachitpatel019/riscv-cpu/blob/master/8_stage_pipeline/docs/architecture.html))
     *   *Pipeline stages, dynamic branch predictor, data forwarding/hazard logic, MMIO addresses, core ports, and a glossary of FPGA terminology.*
 *   📊 **[Technical Report](8_stage_pipeline/docs/technical_report.md)**
     *   *Fmax measurements, static/dynamic power dissipation, per-stage timing slacks, CPI workload analysis, and co-simulation verification logs.*
