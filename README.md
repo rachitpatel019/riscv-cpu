@@ -1,127 +1,61 @@
 # Pipelined RISC-V (RV32I) CPU
 
-This repository contains a SystemVerilog implementation of a 32-bit RISC-V processor conforming to the **RV32I Base Integer Instruction Set**. The primary active design is a high-performance, balanced **8-Stage Pipeline CPU** optimized for execution on Intel/Altera FPGAs. 
+This repository contains a SystemVerilog implementation of a 32-bit RISC-V processor conforming to the **RV32I Base Integer Instruction Set**. The primary active design is a high-performance, balanced **8-Stage Pipeline CPU** optimized for execution on Intel/Altera FPGAs.
 
-A detailed architectural specification of the active design is available in [architecture.html](8_stage_pipeline/docs/architecture.html).
+---
+
+## Documentation
+
+Comprehensive guides and technical documentation are available under [8_stage_pipeline/docs/](8_stage_pipeline/docs/):
+
+*   📄 **[Architecture Specification](8_stage_pipeline/docs/architecture.html)**
+    *   *Pipeline stages, dynamic branch predictor, data forwarding/hazard logic, MMIO addresses, core ports, and a glossary of FPGA terminology.*
+*   📊 **[Technical Report](8_stage_pipeline/docs/technical_report.md)**
+    *   *Fmax measurements, static/dynamic power dissipation, per-stage timing slacks, CPI workload analysis, and co-simulation verification logs.*
+*   ⚙️ **[Script & Automation Guide](8_stage_pipeline/docs/script_guide.md)**
+    *   *System requirements, toolchain versions (GCC, Python, Quartus, ModelSim), compilation commands, and verification harnesses.*
 
 ---
 
 ## Repository Structure
 
-*   [8_stage_pipeline/](8_stage_pipeline) — Main active processor design.
-    *   [rtl/core/](8_stage_pipeline/rtl/core) — SystemVerilog pipeline stages, hazard control, and top-level [core.sv](8_stage_pipeline/rtl/core/core.sv).
-    *   [tb/](8_stage_pipeline/tb) — Unit testbenches for individual modules.
-    *   [sim/](8_stage_pipeline/sim) — Simulation setup, including ModelSim DO scripts and the PowerShell regression runner [run_all.ps1](8_stage_pipeline/sim/scripts/run_all.ps1).
-    *   [fpga/](8_stage_pipeline/fpga) — Quartus synthesis project files, [top.sv](8_stage_pipeline/fpga/top.sv) module, compilation scripts ([compile.tcl](8_stage_pipeline/fpga/compile.tcl)), and JTAG programming script ([program.ps1](8_stage_pipeline/fpga/program.ps1)).
-    *   [software/](8_stage_pipeline/software) — Custom C-based test programs with compilation scripts targeting the processor via the RISC-V GNU Toolchain.
-    *   [differential_testing/](8_stage_pipeline/differential_testing) — Co-simulation verification suite comparing RTL execution traces against the Spike ISA simulator.
-*   [Archive/](Archive) — Historical processor design iterations:
-    *   [single_cycle/](Archive/single_cycle) — Baseline Single-Cycle design.
-    *   [5_stage_pipeline/](Archive/5_stage_pipeline) — Baseline 5-Stage Pipeline design.
-*   [8_stage_pipeline/docs/cpu_specs.md](8_stage_pipeline/docs/cpu_specs.md) — Synthesis performance metrics (LUT utilization, $F_{max}$) and power dissipation analysis.
+*   **[8_stage_pipeline/](8_stage_pipeline/)** — Main processor design folder.
+    *   `rtl/core/` — SystemVerilog pipeline stages, hazard control, and top-level [core.sv](8_stage_pipeline/rtl/core/core.sv).
+    *   `tb/` — Unit testbenches for individual logic blocks.
+    *   `sim/` — Simulation setups, ModelSim macros (`.do` files), and regression test scripts.
+    *   `fpga/` — Quartus synthesis project, timing/power analysis setups, and hardware ports.
+    *   `software/` — Custom C-based test programs, startup code (`crt0.s`), and build scripts.
+    *   `differential_testing/` — Trace-matching co-simulation suites against reference Spike ISS.
+*   **[Archive/](Archive/)** — Historical baseline designs.
+    *   `single_cycle/` — Baseline single-cycle CPU.
+    *   `5_stage_pipeline/` — Baseline 5-stage CPU (implemented in both LUT-based and BRAM-based memories).
 
 ---
 
-## 8-Stage Pipeline Architecture Spec
+## Quick Start Summary
 
-To maximize clock frequency ($F_{max}$) on FPGA targets, the pipeline divides classic processor stages into a balanced 8-stage configuration, reducing the critical paths (such as memory read latency and branch addition).
+All automation scripts are designed to be run from the repository root directory. For full parameters, refer to the [Script Guide](8_stage_pipeline/docs/script_guide.md).
 
-### Pipeline Stages
-1.  **Fetch (F):** PC update logic. Includes a **Branch History Table (BHT)** for dynamic taken/not-taken branch prediction.
-2.  **Instruction Memory (IM):** Synchronous instruction memory read (introducing a 1-cycle latency).
-3.  **Decode (D):** Instruction decode, immediate extraction, control signal generation, and hazard detection.
-4.  **Register Read (RR):** Synchronous register file read (1-cycle latency) and early **Branch Target Calculation** (PC + Immediate).
-5.  **Execute 1 (EX1):** Forwarding multiplexing and operand operand selection.
-6.  **Execute 2 (EX2):** ALU execution and branch condition verification.
-7.  **Execute 3 / Memory (EX3/MEM):** Branch resolution, dynamic predictor feedback, memory read/write access.
-8.  **Writeback (WB):** Writeback data multiplexing and register file write.
-
-### Key Features
-*   **Harvard Architecture:** Separated synchronous instruction and data memories.
-*   **Hazard Resolution:** A combination of stalling (via the hazard detection unit) and bypass data-forwarding (via the forwarding unit) resolves pipeline dependencies.
-*   **Dynamic Branch Prediction:** A Stage 1 Branch History Table (BHT) minimizes the taken-branch penalty to 3 cycles when correctly predicted (otherwise, a mispredicted branch or unconditional jump flushes the preceding 6 stages).
-
----
-
-## Memory-Mapped I/O (MMIO)
-
-The CPU includes an MMIO interface designed for the **DE10-Lite FPGA Board**, defined in [mmio.sv](8_stage_pipeline/rtl/core/7_ex3_mem/mmio.sv). Peripherals are mapped as follows:
-
-| Register Address | Access Type | Width | Mapped Board Hardware |
-|---|---|---|---|
-| `0x80000000` | Write-Only | 10-bit | Green/Red LEDs (`LEDR[9:0]`) |
-| `0x80000004` | Write-Only | 24-bit | $6 \times$ 7-segment hex displays (`HEX0`-`HEX5`) |
-| `0x80000008` | Read-Only | 10-bit | Slide Switches (`SW[9:0]`) |
-| `0x8000000C` | Read-Only | 2-bit | Pushbutton Keys (`KEY[1:0]`) |
-
-## C Software Development & Execution Constraints
-
-For detailed instructions on compiling and running custom C programs using the toolchain, utilizing the software helper libraries, and an overview of the CPU's architectural constraints, refer to:
-
-*   [Running Custom Programs Guide](8_stage_pipeline/docs/running_custom_programs.md)
-
----
-
-## Synthesis, Performance & Power Specs
-
-Detailed CPU hardware specifications, including FPGA resource utilization (LEs, registers), maximum clock frequency ($F_{max}$), and dynamic/static power dissipation analysis, are available in the specifications guide:
-
-*   [Synthesis & Power Specifications](8_stage_pipeline/docs/cpu_specs.md)
-
----
-
-## Verification & Testing
-
-The project uses two verification methodologies: modular unit simulations and differential trace-matching co-simulations. **All scripts are designed to be executed directly from the root directory of the repository.**
-
-### 1. Regression Unit Simulations
-Modular SystemVerilog testbenches are run sequentially via a PowerShell simulation script.
-*   **Tool Requirement:** ModelSim or QuestaSim (`vsim`) in your system PATH.
-*   **Execution:** 
+### 1. Verification & Simulation
+*   **RTL Unit Regressions:** Run sequentially in ModelSim/QuestaSim:
     ```powershell
     ./8_stage_pipeline/sim/scripts/run_all.ps1
     ```
-
-### 2. Differential Testing Flow
-The differential testing suite ([differential_testing/](8_stage_pipeline/differential_testing)) verifies the RTL execution instruction-by-instruction against the reference Spike ISA simulator. It consists of two sub-suites:
-
-#### A. ISA Compliance Testing
-Verifies the CPU against the standard RISC-V Architectural Test Suite (RV32I Base Instruction Set) to ensure compliance with the instruction set specification.
-*   **Tool Requirements:** ModelSim (`vsim`), Python 3, Windows Subsystem for Linux (WSL) containing the RISC-V GNU toolchain (`riscv64-unknown-elf-gcc`, `riscv64-unknown-elf-objcopy`, `riscv64-unknown-elf-nm`) and the Spike simulator.
-*   **Compilation:** Compile compliance assembly tests into program and data memory hex files:
-    ```powershell
-    python 8_stage_pipeline/differential_testing/ISA/generate_hex.py
-    ```
-*   **Running Regression Suite:** Run the trace-matching regression suite on all tests:
+*   **ISA Compliance Diff-Tests:** Verify RV32I opcodes against the Spike simulator trace:
     ```powershell
     python 8_stage_pipeline/differential_testing/ISA/isa_diff_test.py
     ```
-*   **Running a Specific Test:** Run trace-matching on a specific assembly test (e.g. `I-add-00.S`):
-    ```powershell
-    python 8_stage_pipeline/differential_testing/ISA/isa_diff_test.py --test I-add-00.S
-    ```
-
-#### B. C Program Benchmark Testing
-Verifies the CPU against a complex C-based benchmark program that exercises multiple hazard conditions, register forwarding, branch predictor feedback loops, and memory accesses.
-*   **Tool Requirements:** ModelSim (`vsim`), Python 3, Windows Subsystem for Linux (WSL) containing the RISC-V GNU toolchain (`riscv64-unknown-elf-gcc`, `riscv64-unknown-elf-objcopy`, `riscv64-unknown-elf-nm`) and the Spike simulator.
-*   **Running the Benchmark:** Compiles `benchmark.c` dynamically, initializes memories, co-simulates RTL and Spike, and performs step-by-step instruction verification (spanning over 34,000 register write commits):
+*   **Benchmark Trace Diff-Tests:** Co-simulate a complex C program:
     ```powershell
     python 8_stage_pipeline/differential_testing/Benchmark_Test/benchmark_diff_test.py
     ```
 
----
-
-## FPGA Compilation & Deployment
-
-The physical hardware target is the Intel MAX 10 FPGA (specifically the **10M50DAF484C7G** device on the Terasic DE10-Lite development board). **All scripts are designed to be executed directly from the root directory of the repository.**
-
-*   **Synthesis Compilation:** Compile and generate the programming SOF bitstream:
-    1.  Ensure Quartus Prime executable directories are in your system PATH.
-    2.  Execute the Tcl script:
-        ```powershell
-        quartus_sh -t 8_stage_pipeline/fpga/compile.tcl
-        ```
-*   **Device Programming:** Program the MAX 10 FPGA through a connected USB-Blaster cable:
+### 2. FPGA Synthesis & Programming
+*   **Full Synthesis & Fitting:** Compile the Quartus project:
+    ```powershell
+    quartus_sh -t 8_stage_pipeline/fpga/compile.tcl
+    ```
+*   **FPGA Device Flashing:** Upload compiled SOF bitstream dynamically to MAX 10 FPGA over JTAG:
     ```powershell
     ./8_stage_pipeline/fpga/program.ps1
     ```

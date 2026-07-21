@@ -12,7 +12,7 @@ if (-not (Get-Command vsim -ErrorAction SilentlyContinue)) {
     exit 1
 }
 
-# Verify that required input files exist in the analysis directory
+# Verify that required input files exist in the benchmark directory
 $doScript = Join-Path $scriptDir "run_benchmark.do"
 $tbFile = Join-Path $scriptDir "tb_benchmark.sv"
 $hexFile = Join-Path $scriptDir "program.hex"
@@ -30,7 +30,7 @@ Write-Host "--------------------------------------------------" -ForegroundColor
 Write-Host "Starting 8-Stage RISC-V CPU Benchmark Simulation" -ForegroundColor Cyan
 Write-Host "--------------------------------------------------" -ForegroundColor Cyan
 
-# Run from the analysis directory so the relative paths and hex file load correctly.
+# Run from the benchmark directory so the relative paths and hex file load correctly.
 Push-Location $scriptDir
 
 # Run vsim in batch mode, printing output directly to the terminal.
@@ -51,7 +51,7 @@ if ($null -eq $process -or -not $process.HasExited) {
 
 Pop-Location
 
-# Remove any ModelSim-generated transcript stubs from the analysis directory
+# Remove any ModelSim-generated transcript stubs from the benchmark directory
 $transcriptPath = Join-Path $scriptDir "transcript"
 if (Test-Path $transcriptPath) {
     Remove-Item -Path $transcriptPath -Force -ErrorAction SilentlyContinue

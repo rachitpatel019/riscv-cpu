@@ -159,7 +159,58 @@
         border-top: 1px solid var(--border);
         margin: 2rem 0;
     }
+/* Mermaid styles */
+    .mermaid {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin: 1.5rem 0;
+        display: flex;
+        justify-content: center;
+    }
+    /* Timing Table styles */
+    .timing-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 1.5rem 0;
+        font-size: 0.85rem;
+    }
+    .timing-table th, .timing-table td {
+        border: 1px solid var(--border);
+        padding: 0.4rem;
+        text-align: center;
+        font-family: 'Consolas', 'Courier New', monospace;
+    }
+    .timing-table th {
+        background: var(--surface-alt);
+        color: var(--accent);
+    }
+    .stage-badge-f  { background-color: var(--stage-fetch); color: #0f172a; font-weight: bold; padding: 0.15rem 0.4rem; border-radius: 3px; }
+    .stage-badge-im { background-color: var(--stage-imem); color: #0f172a; font-weight: bold; padding: 0.15rem 0.4rem; border-radius: 3px; }
+    .stage-badge-d  { background-color: var(--stage-decode); color: #0f172a; font-weight: bold; padding: 0.15rem 0.4rem; border-radius: 3px; }
+    .stage-badge-rr { background-color: var(--stage-rr); color: #0f172a; font-weight: bold; padding: 0.15rem 0.4rem; border-radius: 3px; }
+    .stage-badge-e1 { background-color: var(--stage-ex1); color: #0f172a; font-weight: bold; padding: 0.15rem 0.4rem; border-radius: 3px; }
+    .stage-badge-e2 { background-color: var(--stage-ex2); color: #0f172a; font-weight: bold; padding: 0.15rem 0.4rem; border-radius: 3px; }
+    .stage-badge-e3 { background-color: var(--stage-ex3); color: #0f172a; font-weight: bold; padding: 0.15rem 0.4rem; border-radius: 3px; }
+    .stage-badge-wb { background-color: var(--stage-wb); color: #0f172a; font-weight: bold; padding: 0.15rem 0.4rem; border-radius: 3px; }
+    .stage-badge-stall { background-color: var(--hazard); color: #ffffff; font-weight: bold; padding: 0.15rem 0.4rem; border-radius: 3px; }
+    .stage-badge-flush { background-color: #475569; color: #e2e8f0; font-style: italic; padding: 0.15rem 0.4rem; border-radius: 3px; }
 </style>
+<script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+<script>
+    mermaid.initialize({
+        startOnLoad: true,
+        theme: 'dark',
+        themeVariables: {
+            background: '#1e293b',
+            primaryColor: '#0ea5e9',
+            primaryTextColor: '#e2e8f0',
+            lineColor: '#38bdf8',
+            secondaryColor: '#334155'
+        }
+    });
+</script>
 </head>
 <body>
 
@@ -181,28 +232,58 @@
 <div class="toc">
     <h3>Table of Contents</h3>
     <ol>
-        <li><a href="#overview">Architecture Overview</a></li>
-        <li><a href="#pipeline-diagram">Pipeline Diagram</a></li>
-        <li><a href="#packages">Packages</a></li>
+        <li><a href="#overview">Architecture Overview</a>
+            <ul>
+                <li><a href="#signal-naming">Signal Naming Conventions</a></li>
+            </ul>
+        </li>
+        <li><a href="#pipeline-diagram">Pipeline Diagram</a>
+            <ul>
+                <li><a href="#timing-diagram">Pipeline Timing Diagram</a></li>
+                <li><a href="#datapath-diagrams">Top-Level Datapath and Diagrams</a></li>
+            </ul>
+        </li>
+        <li><a href="#packages">Packages</a>
+            <ul>
+                <li><a href="#isa-tables">Full ISA Instruction Tables</a></li>
+            </ul>
+        </li>
         <li><a href="#stage1">Stage 1 - Fetch (F)</a></li>
         <li><a href="#stage2">Stage 2 - Instruction Memory (IM)</a></li>
         <li><a href="#stage3">Stage 3 - Decode (D)</a></li>
-        <li><a href="#stage4">Stage 4 - Register Read (RR)</a></li>
+        <li><a href="#stage4">Stage 4 - Register Read (RR)</a>
+            <ul>
+                <li><a href="#regfile-org">Register File Organization &amp; Replicated BRAMs</a></li>
+            </ul>
+        </li>
         <li><a href="#stage5">Stage 5 - Execute 1 (EX1)</a></li>
         <li><a href="#stage6">Stage 6 - Execute 2 (EX2)</a></li>
         <li><a href="#stage7">Stage 7 - Execute 3 / Memory (EX3/MEM)</a></li>
         <li><a href="#stage8">Stage 8 - Writeback (WB)</a></li>
-        <li><a href="#hazards">Hazard Detection and Stalling</a></li>
+        <li><a href="#hazards">Hazard Detection and Stalling</a>
+            <ul>
+                <li><a href="#hazard-flowchart">Hazard Detection Flowchart</a></li>
+            </ul>
+        </li>
         <li><a href="#forwarding">Data Forwarding</a></li>
         <li><a href="#branches">Branch and Jump Handling</a></li>
-        <li><a href="#bht">Branch History Table (BHT)</a></li>
+        <li><a href="#bht">Branch History Table (BHT)</a>
+            <ul>
+                <li><a href="#bht-state-diagram">Branch Predictor State Diagram</a></li>
+            </ul>
+        </li>
         <li><a href="#memory-system">Memory System</a></li>
         <li><a href="#mmio">Memory-Mapped I/O (MMIO)</a></li>
         <li><a href="#pipeline-registers">Pipeline Register Summary</a></li>
         <li><a href="#control-signals">Control Signal Reference</a></li>
-        <li><a href="#module-hierarchy">Module Hierarchy</a></li>
+        <li><a href="#module-hierarchy">Module Hierarchy</a>
+            <ul>
+                <li><a href="#module-dependency">Module Dependency Graph</a></li>
+            </ul>
+        </li>
         <li><a href="#timing">Timing and Performance</a></li>
         <li><a href="#corner-cases">Corner Cases and Assumptions</a></li>
+        <li><a href="#glossary">Glossary of FPGA Terminology</a></li>
     </ol>
 </div>
 
@@ -241,6 +322,22 @@
     Final branch and JALR jump resolution occurs in Stage 7 (EX3/MEM); a branch misprediction or JALR jump
     incurs a 6-cycle flush penalty.
 </p>
+
+<h3 id="signal-naming">1.1 Signal Naming Conventions</h3>
+<p>
+    The codebase employs strict signal naming prefixes to reflect the pipeline stage in which a signal originates or is consumed. This prevents synthesis errors and makes tracing cross-stage paths straightforward.
+</p>
+<table>
+    <tr><th>Prefix</th><th>Pipeline Stage</th><th>Description / Examples</th></tr>
+    <tr><td><code>F_</code></td><td>Fetch (Stage 1)</td><td>Signals active in the Instruction Fetch stage. e.g., <code>F_pc</code></td></tr>
+    <tr><td><code>IM_</code></td><td>IMEM Read (Stage 2)</td><td>Signals active in the Instruction Memory read stage. e.g., <code>IM_instruction</code></td></tr>
+    <tr><td><code>D_</code></td><td>Decode (Stage 3)</td><td>Signals decoded from the instruction. e.g., <code>D_rs1</code>, <code>D_alu_op</code></td></tr>
+    <tr><td><code>IDRR_</code> / <code>RR_</code></td><td>Register Read (Stage 4)</td><td>Signals related to register read and early branch target evaluation. e.g., <code>IDRR_rs1_data</code>, <code>RR_branch_target</code></td></tr>
+    <tr><td><code>E1_</code> / <code>EX1_</code></td><td>Execute 1 (Stage 5)</td><td>Signals active during operand selection and forwarding. e.g., <code>E1_operand_a</code></td></tr>
+    <tr><td><code>E2_</code> / <code>EX2_</code></td><td>Execute 2 (Stage 6)</td><td>Signals active during ALU calculation and branch evaluation. e.g., <code>E2_alu_result</code></td></tr>
+    <tr><td><code>E3_</code> / <code>EX3_</code> / <code>MEM_</code></td><td>EX3 / Memory (Stage 7)</td><td>Signals active during memory routing and final PC resolution. e.g., <code>E3_pc_target</code>, <code>E3_pc_sel</code></td></tr>
+    <tr><td><code>W_</code> / <code>WB_</code></td><td>Writeback (Stage 8)</td><td>Signals written to the register file. e.g., <code>W_write_data</code>, <code>W_reg_write</code></td></tr>
+</table>
 
 <!-- ============================================================ -->
 <!-- 2. PIPELINE DIAGRAM                                           -->
@@ -283,6 +380,157 @@
   Branch Target Calculation (Stage 4 - RR):
   branch_target = RR_pc + RR_imm  (combinational adder in core.sv)
   Pipelined through RR_EX1 and EX1_EX2; used by pc_target_calc in Stage 7 and early JAL in Stage 4.
+</div>
+
+<h3 id="timing-diagram">2.2 Pipeline Timing Diagram</h3>
+<p>
+    The following table illustrates the progression of consecutive instructions through all 8 stages of the pipeline over sequential clock cycles.
+</p>
+<table class="timing-table">
+    <tr>
+        <th>Instruction</th>
+        <th>Cycle 1</th>
+        <th>Cycle 2</th>
+        <th>Cycle 3</th>
+        <th>Cycle 4</th>
+        <th>Cycle 5</th>
+        <th>Cycle 6</th>
+        <th>Cycle 7</th>
+        <th>Cycle 8</th>
+        <th>Cycle 9</th>
+        <th>Cycle 10</th>
+    </tr>
+    <tr>
+        <td><code>Inst 1: ADD x1, x2, x3</code></td>
+        <td><span class="stage-badge-f">F</span></td>
+        <td><span class="stage-badge-im">IM</span></td>
+        <td><span class="stage-badge-d">D</span></td>
+        <td><span class="stage-badge-rr">RR</span></td>
+        <td><span class="stage-badge-e1">E1</span></td>
+        <td><span class="stage-badge-e2">E2</span></td>
+        <td><span class="stage-badge-e3">E3</span></td>
+        <td><span class="stage-badge-wb">WB</span></td>
+        <td></td>
+        <td></td>
+    </tr>
+    <tr>
+        <td><code>Inst 2: SUB x4, x5, x6</code></td>
+        <td></td>
+        <td><span class="stage-badge-f">F</span></td>
+        <td><span class="stage-badge-im">IM</span></td>
+        <td><span class="stage-badge-d">D</span></td>
+        <td><span class="stage-badge-rr">RR</span></td>
+        <td><span class="stage-badge-e1">E1</span></td>
+        <td><span class="stage-badge-e2">E2</span></td>
+        <td><span class="stage-badge-e3">E3</span></td>
+        <td><span class="stage-badge-wb">WB</span></td>
+        <td></td>
+    </tr>
+    <tr>
+        <td><code>Inst 3: LW x7, 0(x1)</code></td>
+        <td></td>
+        <td></td>
+        <td><span class="stage-badge-f">F</span></td>
+        <td><span class="stage-badge-im">IM</span></td>
+        <td><span class="stage-badge-d">D</span></td>
+        <td><span class="stage-badge-rr">RR</span></td>
+        <td><span class="stage-badge-e1">E1</span></td>
+        <td><span class="stage-badge-e2">E2</span></td>
+        <td><span class="stage-badge-e3">E3</span></td>
+        <td><span class="stage-badge-wb">WB</span></td>
+    </tr>
+    <tr>
+        <td><code>Inst 4: OR x8, x7, x9</code> (RAW Stall)</td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td><span class="stage-badge-f">F</span></td>
+        <td><span class="stage-badge-im">IM</span></td>
+        <td><span class="stage-badge-d">D</span></td>
+        <td><span class="stage-badge-stall">STALL</span></td>
+        <td><span class="stage-badge-rr">RR</span></td>
+        <td><span class="stage-badge-e1">E1</span></td>
+        <td><span class="stage-badge-e2">E2</span></td>
+    </tr>
+</table>
+
+<!-- ============================================================ -->
+<!-- 2.5 TOP-LEVEL DATAPATH AND DIAGRAMS                           -->
+<!-- ============================================================ -->
+<h2 id="datapath-diagrams">2.5 Top-Level Datapath and Diagrams</h2>
+<p>
+    This section contains the block diagrams of the CPU architecture and the detailed datapath interconnects.
+</p>
+
+<h3>2.5.1 Top-Level Block Diagram</h3>
+<p>
+    The diagram below shows the high-level progression of instruction flow and the primary control links.
+</p>
+<div class="mermaid">
+graph LR
+    F[Stage 1: Fetch] --> IM[Stage 2: IMEM Read]
+    IM --> D[Stage 3: Decode]
+    D --> RR[Stage 4: Reg Read]
+    RR --> E1[Stage 5: Execute 1]
+    E1 --> E2[Stage 6: Execute 2]
+    E2 --> E3[Stage 7: EX3/MEM]
+    E3 --> WB[Stage 8: Writeback]
+    WB -.->|Register Writeback| RR
+    E3 -.->|Branch/Jump Redirect| F
+    RR -.->|Predict Taken Redirect| F
+</div>
+
+<h3>2.5.2 Datapath Diagram</h3>
+<p>
+    A detailed view of the functional units and stage boundaries, highlighting the control signals, multiplexers, and hardware blocks.
+</p>
+<div class="mermaid">
+graph TD
+    subgraph ST1 [Stage 1: Fetch]
+        PC[PC Register] --> IMEM_ADDR[Instruction Memory Address]
+    end
+    subgraph ST2 [Stage 2: IMEM]
+        IMEM[Instruction Memory] --> INSTR[Instruction Latch]
+    end
+    subgraph ST3 [Stage 3: Decode]
+        DEC[Decode Logic] --> RS1_ADDR[rs1]
+        DEC --> RS2_ADDR[rs2]
+        DEC --> IMM[Immediate Generator]
+        DEC --> CTRL[Control Unit]
+    end
+    subgraph ST4 [Stage 4: Reg Read]
+        RF[Register File Replicated BRAMs]
+        BHT[Branch History Table]
+        ADD_TGT[Early Target Adder: PC + Imm]
+    end
+    subgraph ST5 [Stage 5: EX1]
+        MUX_A[Operand A Mux]
+        MUX_B[Operand B Mux]
+    end
+    subgraph ST6 [Stage 6: EX2]
+        ALU[ALU Unit]
+        BEV[Branch Eval Unit]
+    end
+    subgraph ST7 [Stage 7: EX3/MEM]
+        DMEM[Data Memory BRAM]
+        MMIO[MMIO Router]
+        PTG[PC Target Calc]
+    end
+    subgraph ST8 [Stage 8: WB]
+        MUX_WB[Writeback Mux]
+    end
+
+    INSTR --> DEC
+    RS1_ADDR & RS2_ADDR --> RF
+    RF --> MUX_A & MUX_B
+    MUX_A & MUX_B --> ALU
+    ALU --> DMEM & MMIO & MUX_WB
+    DMEM & MMIO --> MUX_WB
+    MUX_WB -->|Writeback Data| RF
+    
+    HU[Hazard Detection Unit] -.->|Stall Frontend / Flush ID_RR| PC
+    HU -.->|Stall Frontend / Flush ID_RR| INSTR
+    FU[Forwarding Unit] -.->|EX2/EX3/WB Bypass Selects| MUX_A & MUX_B
 </div>
 
 <!-- ============================================================ -->
@@ -344,6 +592,68 @@
     <tr><td><code>F7_SUB_SRA</code></td><td>7'b0100000</td><td>Selects SUB (with F3_ADD_SUB) or SRA (with F3_SRL_SRA)</td></tr>
 </table>
 
+<h3>3.3 Full ISA Instruction Tables</h3>
+<p>
+    The processor implements the standard 32-bit RV32I base user-level ISA. The table below lists all supported instructions, their formats, and functional descriptions.
+</p>
+<table>
+    <thead>
+        <tr>
+            <th>Instruction</th>
+            <th>Type</th>
+            <th>Opcode (7-bit)</th>
+            <th>funct3 (3-bit)</th>
+            <th>funct7 (7-bit)</th>
+            <th>Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr><td><code>ADD rd, rs1, rs2</code></td><td>R</td><td>0110011</td><td>000</td><td>0000000</td><td>rd = rs1 + rs2</td></tr>
+        <tr><td><code>SUB rd, rs1, rs2</code></td><td>R</td><td>0110011</td><td>000</td><td>0100000</td><td>rd = rs1 - rs2</td></tr>
+        <tr><td><code>SLL rd, rs1, rs2</code></td><td>R</td><td>0110011</td><td>001</td><td>0000000</td><td>rd = rs1 &lt;&lt; rs2[4:0] (logical)</td></tr>
+        <tr><td><code>SLT rd, rs1, rs2</code></td><td>R</td><td>0110011</td><td>010</td><td>0000000</td><td>rd = (rs1 &lt; rs2) ? 1 : 0 (signed)</td></tr>
+        <tr><td><code>SLTU rd, rs1, rs2</code></td><td>R</td><td>0110011</td><td>011</td><td>0000000</td><td>rd = (rs1 &lt; rs2) ? 1 : 0 (unsigned)</td></tr>
+        <tr><td><code>XOR rd, rs1, rs2</code></td><td>R</td><td>0110011</td><td>100</td><td>0000000</td><td>rd = rs1 ^ rs2</td></tr>
+        <tr><td><code>SRL rd, rs1, rs2</code></td><td>R</td><td>0110011</td><td>101</td><td>0000000</td><td>rd = rs1 &gt;&gt; rs2[4:0] (logical)</td></tr>
+        <tr><td><code>SRA rd, rs1, rs2</code></td><td>R</td><td>0110011</td><td>101</td><td>0100000</td><td>rd = rs1 &gt;&gt; rs2[4:0] (arithmetic)</td></tr>
+        <tr><td><code>OR rd, rs1, rs2</code></td><td>R</td><td>0110011</td><td>110</td><td>0000000</td><td>rd = rs1 | rs2</td></tr>
+        <tr><td><code>AND rd, rs1, rs2</code></td><td>R</td><td>0110011</td><td>111</td><td>0000000</td><td>rd = rs1 &amp; rs2</td></tr>
+        
+        <tr><td><code>ADDI rd, rs1, imm</code></td><td>I</td><td>0010011</td><td>000</td><td>-</td><td>rd = rs1 + imm</td></tr>
+        <tr><td><code>SLTI rd, rs1, imm</code></td><td>I</td><td>0010011</td><td>010</td><td>-</td><td>rd = (rs1 &lt; imm) ? 1 : 0 (signed)</td></tr>
+        <tr><td><code>SLTIU rd, rs1, imm</code></td><td>I</td><td>0010011</td><td>011</td><td>-</td><td>rd = (rs1 &lt; imm) ? 1 : 0 (unsigned)</td></tr>
+        <tr><td><code>XORI rd, rs1, imm</code></td><td>I</td><td>0010011</td><td>100</td><td>-</td><td>rd = rs1 ^ imm</td></tr>
+        <tr><td><code>ORI rd, rs1, imm</code></td><td>I</td><td>0010011</td><td>110</td><td>-</td><td>rd = rs1 | imm</td></tr>
+        <tr><td><code>ANDI rd, rs1, imm</code></td><td>I</td><td>0010011</td><td>111</td><td>-</td><td>rd = rs1 &amp; imm</td></tr>
+        <tr><td><code>SLLI rd, rs1, shamt</code></td><td>I</td><td>0010011</td><td>001</td><td>0000000</td><td>rd = rs1 &lt;&lt; shamt</td></tr>
+        <tr><td><code>SRLI rd, rs1, shamt</code></td><td>I</td><td>0010011</td><td>101</td><td>0000000</td><td>rd = rs1 &gt;&gt; shamt (logical)</td></tr>
+        <tr><td><code>SRAI rd, rs1, shamt</code></td><td>I</td><td>0010011</td><td>101</td><td>0100000</td><td>rd = rs1 &gt;&gt; shamt (arithmetic)</td></tr>
+        
+        <tr><td><code>LW rd, offset(rs1)</code></td><td>I</td><td>0000011</td><td>010</td><td>-</td><td>rd = M[rs1 + offset] (32 bits)</td></tr>
+        <tr><td><code>LH rd, offset(rs1)</code></td><td>I</td><td>0000011</td><td>001</td><td>-</td><td>rd = M[rs1 + offset] (16 bits, signed)</td></tr>
+        <tr><td><code>LHU rd, offset(rs1)</code></td><td>I</td><td>0000011</td><td>101</td><td>-</td><td>rd = M[rs1 + offset] (16 bits, unsigned)</td></tr>
+        <tr><td><code>LB rd, offset(rs1)</code></td><td>I</td><td>0000011</td><td>000</td><td>-</td><td>rd = M[rs1 + offset] (8 bits, signed)</td></tr>
+        <tr><td><code>LBU rd, offset(rs1)</code></td><td>I</td><td>0000011</td><td>100</td><td>-</td><td>rd = M[rs1 + offset] (8 bits, unsigned)</td></tr>
+        
+        <tr><td><code>SW rs2, offset(rs1)</code></td><td>S</td><td>0100011</td><td>010</td><td>-</td><td>M[rs1 + offset] = rs2 (32 bits)</td></tr>
+        <tr><td><code>SH rs2, offset(rs1)</code></td><td>S</td><td>0100011</td><td>001</td><td>-</td><td>M[rs1 + offset] = rs2[15:0] (16 bits)</td></tr>
+        <tr><td><code>SB rs2, offset(rs1)</code></td><td>S</td><td>0100011</td><td>000</td><td>-</td><td>M[rs1 + offset] = rs2[7:0] (8 bits)</td></tr>
+        
+        <tr><td><code>BEQ rs1, rs2, offset</code></td><td>B</td><td>1100011</td><td>000</td><td>-</td><td>if (rs1 == rs2) PC = PC + offset</td></tr>
+        <tr><td><code>BNE rs1, rs2, offset</code></td><td>B</td><td>1100011</td><td>001</td><td>-</td><td>if (rs1 != rs2) PC = PC + offset</td></tr>
+        <tr><td><code>BLT rs1, rs2, offset</code></td><td>B</td><td>1100011</td><td>100</td><td>-</td><td>if (rs1 &lt; rs2) PC = PC + offset (signed)</td></tr>
+        <tr><td><code>BGE rs1, rs2, offset</code></td><td>B</td><td>1100011</td><td>101</td><td>-</td><td>if (rs1 &gt;= rs2) PC = PC + offset (signed)</td></tr>
+        <tr><td><code>BLTU rs1, rs2, offset</code></td><td>B</td><td>1100011</td><td>110</td><td>-</td><td>if (rs1 &lt; rs2) PC = PC + offset (unsigned)</td></tr>
+        <tr><td><code>BGEU rs1, rs2, offset</code></td><td>B</td><td>1100011</td><td>111</td><td>-</td><td>if (rs1 &gt;= rs2) PC = PC + offset (unsigned)</td></tr>
+        
+        <tr><td><code>LUI rd, imm</code></td><td>U</td><td>0110111</td><td>-</td><td>-</td><td>rd = imm &lt;&lt; 12</td></tr>
+        <tr><td><code>AUIPC rd, imm</code></td><td>U</td><td>0010111</td><td>-</td><td>-</td><td>rd = PC + (imm &lt;&lt; 12)</td></tr>
+        
+        <tr><td><code>JAL rd, offset</code></td><td>J</td><td>1101111</td><td>-</td><td>-</td><td>rd = PC + 4; PC = PC + offset</td></tr>
+        <tr><td><code>JALR rd, offset(rs1)</code></td><td>I</td><td>1100111</td><td>000</td><td>-</td><td>rd = PC + 4; PC = (rs1 + offset) &amp; ~1</td></tr>
+    </tbody>
+</table>
+
 <!-- ============================================================ -->
 <!-- 4. STAGE 1 - FETCH                                            -->
 <!-- ============================================================ -->
@@ -382,6 +692,11 @@
     <code>program.hex</code> via <code>$readmemh</code>. Uses M9K BRAM inference on Intel/Altera FPGAs.
     The synchronous read introduces a 1-cycle latency, justifying a dedicated pipeline stage.
 </p>
+
+<div class="note-box">
+    <strong>Design Rationale — Inferring BRAM for ROM and RAM Blocks</strong><br>
+    Standard FPGA logic cells (LEs) are built to implement logic gates and individual registers, not bulk memory arrays. Registering 64 KB of Instruction ROM and 64 KB of Data RAM using Logic Elements would completely exhaust the target device resources and cause severe place-and-route congestion. Instead, this design structures ROM and RAM modules to infer physical block RAM (M9K blocks). This maps memory accesses directly onto high-speed dedicated static memory blocks on the silicon, leaving general logic elements free for the CPU execution pipeline control logic.
+</div>
 
 <h4>Behavior</h4>
 <ul>
@@ -560,6 +875,11 @@ mem_size (2b), mem_unsigned (1b), wb_sel (2b), branch (1b), jump (1b), branch_ty
     (PC + sign-extended immediate) combinationally from the ID_RR register outputs.
 </p>
 
+<div class="note-box">
+    <strong>Design Rationale — Why Evaluate Branches in Stage 4?</strong><br>
+    Evaluating branch predictions in Stage 4 (Register Read) instead of Stage 3 (Decode) is a key timing and penalty optimization. Reading the BHT is initiated in Stage 3, and the resulting prediction is evaluated in Stage 4 where register operands and PC-relative branch target addresses (calculated combinationally in <code>core.sv</code>) are first available. By redirecting the PC from Stage 4 (flushing only stages 1–3), we limit the taken-branch penalty to exactly 3 cycles while keeping the BHT read and target addition paths from bloat-timing the Stage 3 critical path.
+</div>
+
 <h3>7.1 Module: <code>regfile</code> (Register File)</h3>
 <p>File: <code>rtl/core/4_reg_read/regfile.sv</code></p>
 <p>
@@ -579,6 +899,20 @@ mem_size (2b), mem_unsigned (1b), wb_sel (2b), branch (1b), jump (1b), branch_ty
     the write data is forwarded directly to the registered read outputs on the next clock edge, avoiding read collisions
     within the physical BRAM cells.
 </p>
+
+<h3 id="regfile-org">7.1.1 Register File Organization &amp; Replicated BRAMs</h3>
+<p>
+    The register file must support two concurrent read ports (rs1, rs2) and one write port (rd) in a single cycle. However, physical block RAM structures on Intel FPGAs (M9K cells) are dual-ported (supporting only 1 Read/1 Write or 2 Read/2 Write under restricted configurations).
+</p>
+<p>
+    To implement 2 Read ports and 1 Write port without using inefficient register logic (LE-based flip-flops), the Register File is designed as <strong>Replicated BRAMs</strong>:
+</p>
+<ul>
+    <li><strong>Replication:</strong> The 32x32 register array is duplicated into two identical physical RAMs: <code>registers_a</code> and <code>registers_b</code>.</li>
+    <li><strong>Write Operations:</strong> When a writeback instruction commits in Stage 8, both <code>registers_a</code> and <code>registers_b</code> are written simultaneously at the same <code>write_address</code> with the same <code>write_data</code>. This keeps their contents completely identical.</li>
+    <li><strong>Read Operations:</strong> Read port 1 (rs1) reads from <code>registers_a</code>, and Read port 2 (rs2) reads from <code>registers_b</code>. Since they access independent RAM blocks, both reads execute simultaneously in a single cycle.</li>
+    <li><strong>Collision Handling:</strong> Read-during-write conflicts (accessing a register being written in the same clock cycle) are resolved by local forwarding logic inside the <code>regfile</code> module. If the read index matches the write index, the write data is returned directly instead of waiting for the internal BRAM array update.</li>
+</ul>
 
 <h4>Port Interface</h4>
 <table>
@@ -710,6 +1044,11 @@ mem_size (2b), mem_unsigned (1b), wb_sel (2b).</p>
     Branch target calculation has been moved to Stage 4; the pre-computed target arrives
     via the EX1_EX2 pipeline register and is passed through to Stage 7 without recomputation.
 </p>
+
+<div class="note-box">
+    <strong>Design Rationale — Splitting the Execute Logic into 3 Stages</strong><br>
+    In standard 5-stage pipelines, the Execute stage is the primary critical path because it performs operand forwarding multiplexing, ALU calculations, and branch target resolution in a single clock cycle. To maximize clock frequency ($F_{\text{max}}$) on the MAX 10 FPGA, this design divides these operations across three pipelined stages: operand selection (EX1), ALU computation (EX2), and branch resolution/memory routing (EX3). This split successfully increased the maximum clock frequency to 127.29 MHz.
+</div>
 
 <h3>9.1 Module: <code>alu</code> (Arithmetic Logic Unit)</h3>
 <p>File: <code>rtl/core/6_ex2/alu.sv</code></p>
@@ -963,6 +1302,23 @@ mem_unsigned (1b), wb_sel (2b).</p>
     <li>Stages 4-8 continue to advance normally during a stall.</li>
 </ul>
 
+<h3 id="hazard-flowchart">12.1 Hazard Detection Flowchart</h3>
+<p>
+    The flowchart below illustrates the decision path for stall generation and pipeline flushes based on instruction dependencies.
+</p>
+<div class="mermaid">
+graph TD
+    A[Instruction Decoded in Stage 3] --> B{Does it use rs1 or rs2?}
+    B -- No --> H[No Stall Required]
+    B -- Yes --> C{Is rd of RR Stage instruction != 0 & uses same register?}
+    C -- Yes --> G[Assert stall_frontend & Flush ID_RR]
+    C -- No --> D{Is rd of EX1 Stage instruction != 0 & uses same register?}
+    D -- Yes --> G
+    D -- No --> E{Is producer in EX2, EX3, or WB stage?}
+    E -- Yes --> F[Forward value combinational in EX1]
+    E -- No --> H
+</div>
+
 <!-- ============================================================ -->
 <!-- 13. DATA FORWARDING                                           -->
 <!-- ============================================================ -->
@@ -1103,6 +1459,30 @@ mem_unsigned (1b), wb_sel (2b).</p>
     <tr><td>Weakly Taken</td><td>2'b10</td><td>Taken</td><td>Strongly Taken</td><td>Weakly Not-Taken</td></tr>
     <tr><td>Strongly Taken</td><td>2'b11</td><td>Taken</td><td>Strongly Taken (saturate)</td><td>Weakly Taken</td></tr>
 </table>
+
+<h3 id="bht-state-diagram">15.3 Branch Predictor State Diagram</h3>
+<p>
+    The BHT uses standard 2-bit saturating counters. The state transitions are shown below:
+</p>
+<div class="mermaid">
+stateDiagram-v2
+    SNT: Strongly Not-Taken (00)
+    WNT: Weakly Not-Taken (01)
+    WT: Weakly Taken (10)
+    ST: Strongly Taken (11)
+
+    SNT --> WNT : Taken
+    SNT --> SNT : Not-Taken
+    
+    WNT --> WT : Taken
+    WNT --> SNT : Not-Taken
+    
+    WT --> ST : Taken
+    WT --> WNT : Not-Taken
+    
+    ST --> ST : Taken
+    ST --> WT : Not-Taken
+</div>
 
 <h4>Prediction Evaluation and Usage (Stage 4 - Register Read)</h4>
 <p>
@@ -1258,6 +1638,73 @@ mem_unsigned (1b), wb_sel (2b).</p>
     <tr><td><code>MEM_WB</code></td><td>Stage 7/8 boundary</td><td>No</td><td>No (<code>1'b0</code>)</td><td>All zeros</td></tr>
 </table>
 
+<h3>18.2 Pipeline Register Signals Breakdown</h3>
+<p>
+    The table below summarizes the exact signals registered at each pipeline stage boundary.
+</p>
+<table>
+    <thead>
+        <tr>
+            <th>Register Module</th>
+            <th>Stage Boundary</th>
+            <th>Registered Signals</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><code>IF_ID</code></td>
+            <td>Stage 2 to 3</td>
+            <td><code>pc_out</code> (32b), <code>instruction_out</code> (32b)</td>
+        </tr>
+        <tr>
+            <td><code>ID_RR</code></td>
+            <td>Stage 3 to 4</td>
+            <td>
+                <code>pc</code> (32b), <code>instruction</code> (32b), <code>rs1</code> (5b), <code>rs2</code> (5b), <code>rd</code> (5b), <code>immediate</code> (32b),
+                <code>uses_rs1</code> (1b), <code>uses_rs2</code> (1b), <code>alu_op</code> (4b), <code>alu_src_a</code> (1b), <code>alu_src_b</code> (1b),
+                <code>reg_write</code> (1b), <code>mem_read</code> (1b), <code>mem_write</code> (1b), <code>mem_size</code> (2b), <code>mem_unsigned</code> (1b),
+                <code>wb_sel</code> (2b), <code>branch</code> (1b), <code>jump</code> (1b), <code>branch_type</code> (3b)
+            </td>
+        </tr>
+        <tr>
+            <td><code>RR_EX1</code></td>
+            <td>Stage 4 to 5</td>
+            <td>
+                All signals from <code>ID_RR</code>, plus:
+                <code>forward_a_sel</code> (2b), <code>forward_b_sel</code> (2b), <code>branch_target</code> (32b)
+            </td>
+        </tr>
+        <tr>
+            <td><code>EX1_EX2</code></td>
+            <td>Stage 5 to 6</td>
+            <td>
+                <code>pc</code> (32b), <code>rd</code> (5b), <code>immediate</code> (32b), <code>alu_op</code> (4b),
+                <code>reg_write</code> (1b), <code>mem_read</code> (1b), <code>mem_write</code> (1b), <code>mem_size</code> (2b), <code>mem_unsigned</code> (1b),
+                <code>wb_sel</code> (2b), <code>branch</code> (1b), <code>jump</code> (1b), <code>branch_type</code> (3b),
+                <code>operand_a</code> (32b), <code>operand_b</code> (32b), <code>rs2_data</code> (32b), <code>branch_target</code> (32b)
+            </td>
+        </tr>
+        <tr>
+            <td><code>EX2_EX3</code></td>
+            <td>Stage 6 to 7</td>
+            <td>
+                <code>pc</code> (32b), <code>rd</code> (5b), <code>immediate</code> (32b),
+                <code>reg_write</code> (1b), <code>mem_read</code> (1b), <code>mem_write</code> (1b), <code>mem_size</code> (2b), <code>mem_unsigned</code> (1b),
+                <code>wb_sel</code> (2b), <code>branch</code> (1b), <code>jump</code> (1b), <code>branch_type</code> (3b),
+                <code>alu_result</code> (32b), <code>condition_met</code> (1b), <code>branch_target</code> (32b), <code>rs2_data</code> (32b)
+            </td>
+        </tr>
+        <tr>
+            <td><code>MEM_WB</code></td>
+            <td>Stage 7 to 8</td>
+            <td>
+                <code>pc</code> (32b), <code>rd</code> (5b), <code>reg_write</code> (1b), <code>wb_sel</code> (2b),
+                <code>alu_result</code> (32b, or <code>PC+4</code>), <code>mem_read_data</code> (32b)
+            </td>
+        </tr>
+    </tbody>
+</table>
+
 <!-- ============================================================ -->
 <!-- 19. CONTROL SIGNAL REFERENCE                                  -->
 <!-- ============================================================ -->
@@ -1337,6 +1784,37 @@ core (top-level)
 +-- writeback              [Stage 8: WB - Writeback Mux]
 |
 +-- hazard_detection_unit  [Hazard Control: Stall Generation]
+</div>
+
+<h3 id="module-dependency">20.1 Module Dependency Graph</h3>
+<p>
+    The flowchart below displays the instantiation tree and control links between modules inside the <code>core</code> top-level.
+</p>
+<div class="mermaid">
+graph TD
+    core --> pc_update
+    core --> instr_mem
+    core --> IF_ID
+    core --> decode
+    decode --> imm_gen
+    decode --> control
+    core --> ID_RR
+    core --> regfile
+    core --> bht
+    core --> forwarding_unit
+    core --> RR_EX1
+    core --> data_sel
+    core --> EX1_EX2
+    core --> alu
+    core --> branch_eval
+    core --> EX2_EX3
+    core --> pc_target_calc
+    core --> memory
+    memory --> data_mem
+    memory --> mmio
+    core --> MEM_WB
+    core --> writeback
+    core --> hazard_detection_unit
 </div>
 
 <!-- ============================================================ -->
@@ -1451,55 +1929,13 @@ core (top-level)
     sequential PC+4 increment path.
 </div>
 
-<h3>21.5 Per-Stage Propagation Delays</h3>
+<h3>21.5 Physical Synthesis and Timing Verification</h3>
 <p>
-    The following worst-case setup-path data delays were measured by post-place-and-route static
-    timing analysis (Quartus Prime 24.1std, Lite Edition) against the prior netlist (before this
-    architectural update). Stage 6 (EX2 / ALU) had the longest combinational delay at 7.222 ns.
-    Moving the branch-target adder to Stage 4 is expected to slightly reduce Stage 6 delay;
-    Stage 4 delay is expected to increase modestly. Re-synthesis is required to confirm
-    post-change timing. The table below reflects the prior measured values for reference.
+    Physical synthesis timing analysis (including maximum clock frequency $F_{\text{max}}$, setup/hold slack, and exact stage-by-stage physical propagation delays) is dependent on the target FPGA family, placement constraints, and place-and-route optimization seeds.
 </p>
-<table>
-    <tr><th>Stage</th><th>Stage Name</th><th>Data Delay</th><th>Note</th></tr>
-    <tr><td>Stage 1</td><td>Fetch Logic</td><td>5.512 ns</td><td>Includes branch feedback path from Stage 7</td></tr>
-    <tr><td>Stage 2</td><td>I-Mem Read</td><td>5.186 ns</td><td>BRAM synchronous read latency dominates</td></tr>
-    <tr><td>Stage 3</td><td>Decode &amp; Hazard</td><td>6.673 ns</td><td>Decode combinational logic plus hazard detection</td></tr>
-    <tr><td>Stage 4</td><td>Register Read</td><td>4.445 ns</td><td>Forwarding unit combinational logic</td></tr>
-    <tr><td>Stage 5</td><td>EX1 (Op Sel)</td><td>5.302 ns</td><td>Operand selection mux chain</td></tr>
-    <tr><td><strong>Stage 6</strong></td><td><strong>EX2 (ALU)</strong></td><td><strong>7.222 ns</strong></td><td><strong>Critical path: longest stage delay</strong></td></tr>
-    <tr><td>Stage 7</td><td>EX3 &amp; MEM Addr</td><td>4.649 ns</td><td>PC target calculation and memory address</td></tr>
-    <tr><td>Stage 8</td><td>WB Logic</td><td>6.136 ns</td><td>Write-back mux to register file write port</td></tr>
-</table>
-
-<h3>21.6 Critical Path Analysis</h3>
 <p>
-    The following are the 10 worst-slack setup paths measured from the placed-and-routed netlist.
-    All 10 paths terminate at the register file write port (<code>stage4_regfile</code>, the WB
-    write-back path). The tightest slack is 0.000 ns, indicating the design is at the timing
-    constraint boundary for this path. No paths have negative slack; the design meets timing.
+    These physical synthesis measurements and critical path evaluations are detailed in the <strong>Technical Report</strong> under <em>Section 1: Physical Synthesis &amp; Power Metrics</em> and <em>Section 2: Timing &amp; Critical Path Analysis</em>.
 </p>
-<table>
-    <tr><th>Slack (ns)</th><th>Data Delay (ns)</th><th>Destination</th></tr>
-    <tr><td>0.000</td><td>7.406</td><td><code>stage4_regfile|altsyncram:registers_rtl_0|...ram_block1a0~porta_datain_reg0</code></td></tr>
-    <tr><td>0.098</td><td>7.300</td><td><code>stage4_regfile|altsyncram:registers_rtl_1|...ram_block1a0~porta_datain_reg0</code></td></tr>
-    <tr><td>0.116</td><td>7.290</td><td><code>stage4_regfile|altsyncram:registers_rtl_0|...ram_block1a0~porta_datain_reg0</code></td></tr>
-    <tr><td>0.128</td><td>7.270</td><td><code>stage4_regfile|altsyncram:registers_rtl_1|...ram_block1a0~porta_datain_reg0</code></td></tr>
-    <tr><td>0.128</td><td>7.278</td><td><code>stage4_regfile|altsyncram:registers_rtl_0|...ram_block1a0~porta_datain_reg0</code></td></tr>
-    <tr><td>0.130</td><td>7.276</td><td><code>stage4_regfile|altsyncram:registers_rtl_0|...ram_block1a0~porta_datain_reg0</code></td></tr>
-    <tr><td>0.132</td><td>7.274</td><td><code>stage4_regfile|altsyncram:registers_rtl_0|...ram_block1a0~porta_datain_reg0</code></td></tr>
-    <tr><td>0.193</td><td>7.213</td><td><code>stage4_regfile|altsyncram:registers_rtl_0|...ram_block1a0~porta_datain_reg0</code></td></tr>
-    <tr><td>0.214</td><td>7.184</td><td><code>stage4_regfile|altsyncram:registers_rtl_1|...ram_block1a0~porta_datain_reg0</code></td></tr>
-    <tr><td>0.228</td><td>7.170</td><td><code>stage4_regfile|altsyncram:registers_rtl_1|...ram_block1a0~porta_datain_reg0</code></td></tr>
-</table>
-<div class="note-box">
-    <strong>Interpretation:</strong> All 10 critical paths are in the WB stage write-back path to the
-    register file BRAM (<code>altsyncram</code>). The 0.000 ns slack path indicates the constraint is
-    exactly met but not exceeded. Stage 6 (EX2 / ALU) has the longest per-stage combinational delay
-    at 7.222 ns; however, the tightest setup paths are in Stage 8 (WB write-back) where the BRAM
-    write-port data-in registers have a more demanding setup requirement. Any increase in WB
-    combinational delay risks a timing violation on the tightest path.
-</div>
 
 <!-- ============================================================ -->
 <!-- 22. CORNER CASES AND ASSUMPTIONS                              -->
@@ -1517,7 +1953,6 @@ core (top-level)
     <li>The A extension (atomics) is not implemented.</li>
     <li>Memory accesses are assumed to complete in 1 cycle (no cache misses, no wait states).</li>
     <li>MMIO reads and writes are registered (1-cycle latency).</li>
-    <li>The register file is initialized to all zeros.</li>
     <li>Program memory is loaded at synthesis time via <code>$readmemh("program.hex")</code>.</li>
 </ul>
 
@@ -1528,10 +1963,6 @@ core (top-level)
     <li><strong>Simultaneous stall and flush:</strong> The <code>pc_sel</code> (flush) has higher priority than
         <code>stall</code> in <code>pc_update</code>. If a branch resolves while the frontend is stalled,
         the branch redirect takes precedence and the stalled instruction is discarded.</li>
-    <li><strong>MEM_WB flush:</strong> The <code>MEM_WB.flush</code> input is hardwired to <code>1'b0</code>.
-        This means instructions that have reached Stage 7 are never flushed. This is correct because the
-        branch/jump resolution also occurs in Stage 7, so any instruction at that stage or beyond is
-        architecturally committed.</li>
     <li><strong>Memory read data alignment:</strong> <code>W_mem_read_data</code> is registered through the
         <code>MEM_WB</code> pipeline register (from <code>W_mem_read_data_raw</code>), aligning it perfectly with the
         other registered writeback signals (such as <code>W_alu_result</code>) for Stage 8 writeback selection.</li>
@@ -1578,6 +2009,26 @@ core (top-level)
     <tr><td><code>out_reg_write</code></td><td>output</td><td>1</td><td>Register write enable (debug)</td></tr>
     <tr><td><code>out_alu_result</code></td><td>output</td><td>32</td><td>EX2 ALU result (debug)</td></tr>
 </table>
+
+<!-- ============================================================ -->
+<!-- 23. GLOSSARY OF FPGA TERMINOLOGY                              -->
+<!-- ============================================================ -->
+<h2 id="glossary">23. Glossary of FPGA Terminology</h2>
+<p>
+    The following glossary defines core hardware and FPGA concepts referenced throughout this specification:
+</p>
+<ul>
+    <li><strong>BRAM (Block RAM):</strong> Dedicated, dual-port static memory arrays embedded directly inside the FPGA silicon (such as Intel's M9K blocks). Unlike logic-cell registers, BRAM provides highly efficient single-cycle read and write access, allowing implementation of large memory blocks (Instruction/Data Memory, Register File, and Branch History Table) without depleting the FPGA's general logic cells.</li>
+    <li><strong>Logic Element (LE):</strong> The standard unit of logic in Intel FPGAs. A logic element contains a Look-Up Table (LUT) to implement combinational logic gates, a programmable register (D flip-flop) to store data, and dedicated carry chains for fast additions.</li>
+    <li><strong>Fmax (Maximum Frequency):</strong> The maximum speed at which a digital design can run on the target FPGA without setup timing violations. In this CPU design, Fmax is optimized to 127.29 MHz by splitting logic into 8 balanced pipeline stages.</li>
+    <li><strong>STA (Static Timing Analysis):</strong> A method of analyzing and checking the timing of a digital circuit by computing propagation delays along all logic paths, verifying that setup and hold times are satisfied under worst-case temperature and voltage parameters.</li>
+    <li><strong>SDC (Synopsys Design Constraints):</strong> A configuration file defining timing requirements, clock constraints, input/output delays, and multi-cycle paths to guide the synthesizer and place-and-route tools during FPGA compilation.</li>
+    <li><strong>JTAG (Joint Test Action Group):</strong> A standard interface and protocol used to program, test, and debug hardware devices. On the DE10-Lite board, JTAG is used by the USB-Blaster cable to upload compiled bitstreams.</li>
+    <li><strong>MMIO (Memory-Mapped Input/Output):</strong> A hardware design style where external peripherals (LEDs, switches, hex displays) are assigned specific memory addresses, allowing soft program execution to perform reading or writing operations on hardware using standard load and store instructions.</li>
+    <li><strong>BHT (Branch History Table):</strong> A dynamic branch prediction buffer containing 2-bit saturating counters indexed by instruction PC bits. It dynamically updates prediction directions (Taken/Not-Taken) based on execution outcomes.</li>
+    <li><strong>Setup Slack:</strong> The timing margin between the clock period and the longest signal propagation time (data path delay) to a register input. A positive slack indicates that the design safely meets the timing requirements; negative slack means timing is violated.</li>
+    <li><strong>Place &amp; Route (Fitting):</strong> The compilation phase where Quartus maps logical gates to physical Logic Elements on the chip and sets physical wire routing paths between them.</li>
+</ul>
 
 <hr class="section-divider">
 <p style="color: var(--text-muted); text-align: center; font-size: 0.85rem;">
