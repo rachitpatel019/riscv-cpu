@@ -215,7 +215,7 @@ $$
 \text{IPC Improvement} = \frac{\text{IPC}_{\text{with}} - \text{IPC}_{\text{without}}}{\text{IPC}_{\text{without}}} = \frac{0.6660 - 0.3897}{0.3897} \times 100\% \approx 70.90\%
 $$
 
-*(where $\text{IPC}_{\text{without}} = \frac{16,166\text{ instructions}}{24,273\text{ cycles} + 17,210\text{ cycles}} \approx 0.3897$)*
+(where $\text{IPC}_{\text{without}} = \frac{16,166\text{ instructions}}{24,273\text{ cycles} + 17,210\text{ cycles}} \approx 0.3897$)
 
 *Refer to the Architecture Specification for the logic descriptions of these forwarding paths.*
 
