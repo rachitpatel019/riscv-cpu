@@ -6,10 +6,10 @@ This document summarizes the timing, resource, performance, hazard, and efficien
 
 ## Executive Summary
 
-The 8-Stage Pipeline RISC-V CPU is a high-performance, single-issue, in-order processor implementing the RV32I base integer instruction set. Designed specifically for FPGA deployment, the architecture divides the standard 5-stage RISC-V pipeline into 8 stages. This optimization reduces the combinational logic depth per stage, yielding a high maximum clock frequency ($F_{\text{max}}$) of **127.29 MHz** on the Intel MAX 10 FPGA.
+The 8-Stage Pipeline RISC-V CPU is a high-performance, single-issue, in-order processor implementing the RV32I base integer instruction set. Designed specifically for FPGA deployment, the architecture divides the standard 5-stage RISC-V pipeline into 8 stages. This optimization reduces the combinational logic depth per stage, yielding a high maximum clock frequency ($F_ {\text{max}}$) of **127.29 MHz** on the Intel MAX 10 FPGA.
 
 Key metrics of the hardware and workload evaluation include:
-*   **Clock Frequency ($F_{\text{max}}$):** 127.29 MHz
+*   **Clock Frequency ($F_ {\text{max}}$):** 127.29 MHz
 *   **Performance:** 84.78 MIPS (at 0.666 IPC / 1.5015 CPI)
 *   **Power Consumption:** 169.75 mW total power (90.38 mW static, 79.37 mW dynamic)
 *   **FPGA Logic Utilization:** 2,931 / 49,760 Logic Elements (6%)
@@ -22,7 +22,7 @@ Key metrics of the hardware and workload evaluation include:
 ## Design Goals
 
 The core design objectives for this processor are:
-1.  **Maximize Frequency:** Achieve a high operating frequency ($F_{\text{max}} > 100\text{ MHz}$) on low-cost FPGAs by splitting stages and calculating branch targets early.
+1.  **Maximize Frequency:** Achieve a high operating frequency ($F_ {\text{max}} > 100\text{ MHz}$) on low-cost FPGAs by splitting stages and calculating branch targets early.
 2.  **Minimize FPGA resource utilization:** Keep Logic Element (LE) count low to preserve resources for other system components.
 3.  **Infer BRAM everywhere:** Efficiently map both instruction memory, data memory, register file, and branch history table to block RAM cells (M9K blocks) rather than utilizing logic-based registers.
 4.  **Maintain RV32I compatibility:** Target full compatibility with standard compiler toolchains generating RV32I binaries.
@@ -70,7 +70,7 @@ These physical specifications represent the synthesized gate-level netlist of th
 
 | Metric | Value | Reference |
 | :--- | :--- | :--- |
-| **Clock Frequency ($F_{\text{max}}$)** | **127.29 MHz** ($T_{\text{clk}} = 7.856\text{ ns}$) | Clock constraint in [cpu.sdc](../fpga/cpu.sdc) |
+| **Clock Frequency ($F_ {\text{max}}$)** | **127.29 MHz** ($T_ {\text{clk}} = 7.856\text{ ns}$) | Clock constraint in [cpu.sdc](../fpga/cpu.sdc) |
 | **Logic Utilization** | **2,931 / 49,760 LEs** (6%) | [cpu.fit.summary](../fpga/output_files/cpu.fit.summary) |
 | **Register Usage** | **1,303 registers** | [cpu.fit.summary](../fpga/output_files/cpu.fit.summary) |
 | **BRAM Usage** | **1,052,672 bits** (63% capacity) | [cpu.fit.summary](../fpga/output_files/cpu.fit.summary) |
@@ -81,7 +81,7 @@ These physical specifications represent the synthesized gate-level netlist of th
 ### Design Version Comparison
 The table below compares the active 8-Stage Pipeline processor against previous iterations of the RISC-V CPU design:
 
-| Design Version | Clock Frequency ($F_{\text{max}}$) | Logic Elements (LEs) | Registers | IMEM Capacity | DMEM Capacity |
+| Design Version | Clock Frequency ($F_ {\text{max}}$) | Logic Elements (LEs) | Registers | IMEM Capacity | DMEM Capacity |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **Single Cycle** | ~48 MHz | 10,587 | 8,522 | 1 KiB (256 words) | 1 KiB (256 words) |
 | **5-Stage Pipeline (LUT-based memory)** | ~92 MHz | 11,262 | 8,817 | 1 KiB (256 words) | 1 KiB (256 words) |
@@ -95,7 +95,7 @@ The table below compares the active 8-Stage Pipeline processor against previous 
 ### Comparison with Existing RISC-V Soft Cores
 The table below compares the active 8-Stage Pipeline processor (this work) against other established open-source RISC-V soft cores targetable or evaluated on Intel MAX 10 FPGAs:
 
-| Processor Name | Max Clock Frequency ($F_{max}$) | Resource Utilization (MAX 10 Logic Elements) | Estimated Performance (MIPS / DMIPS) | Reliable Source of Information / Documentation Link |
+| Processor Name | Max Clock Frequency ($F_ {max}$) | Resource Utilization (MAX 10 Logic Elements) | Estimated Performance (MIPS / DMIPS) | Reliable Source of Information / Documentation Link |
 | :--- | :--- | :--- | :--- | :--- |
 | **8-Stage Pipeline CPU (Active)** | **127.29 MHz** | **2,931 LEs** | **84.78 MIPS** | [Section 1 (Physical Synthesis)](#1-physical-synthesis--power-metrics) & [Section 3 (Simulation)](#3-simulation--workload-performance) |
 | **PicoRV32** | **90 MHz – 110 MHz** | ~2,000 LEs | **40 – 51 MIPS** | [ARIES Embedded MAX10 User Manual](http://aries-embedded.de) & [YosysHQ PicoRV32 GitHub](https://github.com) |
@@ -103,7 +103,7 @@ The table below compares the active 8-Stage Pipeline processor (this work) again
 | **Ibex** *(Formerly Zero-riscy)* | **50 MHz – 70 MHz** | ~2,500 – 3,500 LEs | **54 – 72 MIPS** | [lowRISC Ibex Reference Manual Documentation](https://github.com) |
 | **CV32E40P** *(PULP Platform)* | **35 MHz – 50 MHz** | ~5,000+ LEs *(highly impacted by register file expansion)* | **64 – 75 MIPS** | [OpenHW Group CV32E40P User Manual](https://readthedocs.io) |
 
-> [NOTE]
+> [!NOTE]
 > The performance metrics (MIPS) for the reference soft cores are measured/estimated using the standard **Dhrystone benchmark**, whereas the performance of the active 8-Stage Pipeline CPU is evaluated using the **custom benchmark** workload described in the [Workload Description](#workload-description) section.
 
 ---
@@ -155,7 +155,7 @@ The performance below was evaluated on the [benchmark.c](../software/Benchmark/b
 | **Jumps** | 10 | 0.06% |
 | **Total** | **16,166** | **100.00%** |
 
-> [NOTE]
+> [!NOTE]
 > The dynamic jump instruction count is extremely low (**10 jumps / 0.06%**) due to the compiler flags used. The combination of aggressive optimization (`-O3`), which performs extensive function inlining, and Link-Time Optimization (`-flto`), which minimizes call overheads, eliminates the majority of unconditional jump (`jal`/`jalr`) instructions in the compiled binary.
 
 ### CPI Breakdown
@@ -169,7 +169,9 @@ The performance below was evaluated on the [benchmark.c](../software/Benchmark/b
 | **Stall-Flush Overlap** | -100 | -0.0062 | Cycles where a data stall and a redirect flush occurred in the same cycle |
 | **Total Measured** | **24,273** | **1.5015** | Overall CPI matching simulation metrics |
 
-$$\text{CPI} = 1.0000 \text (Ideal) + 0.1645 \text (Stalls) + 0.3413 \text (Branch Penalties) + 0.0019 \text (Jump Penalties) - 0.0062 \text (Stall-Flush Overlap)$$
+$$
+\text{CPI} = 1.0000 \text{(Ideal)} + 0.1645 \text{(Stalls)} + 0.3413 \text{(Branch Penalties)} + 0.0019 \text{(Jump Penalties)} - 0.0062 \text{(Stall-Flush Overlap)}
+$$
 
 <p align="center">
   <img src="cpi_breakdown.svg" alt="CPI Contribution Breakdown" width="600">
@@ -203,8 +205,12 @@ The data forwarding network is highly effective at bypassing data hazards, resol
 *   **Register File collision:** Read-during-write conflicts were bypassed in the register file (**641 instances**), saving **641 cycles**.
 
 By resolving these hazards and preventing **17,210 stall cycles**, the data forwarding network **increased the IPC by 70.90%** (improving the IPC from **0.3897** to **0.6660**):
-$$\text{IPC Improvement} = \frac{\text{IPC}_{\text{with}} - \text{IPC}_{\text{without}}}{\text{IPC}_{\text{without}}} = \frac{0.6660 - 0.3897}{0.3897} \times 100\% \approx 70.90\%$$
-*(where $\text{IPC}_{\text{without}} = \frac{16,166\text{ instructions}}{24,273\text{ cycles} + 17,210\text{ cycles}} \approx 0.3897$)*
+
+$$
+\text{IPC Improvement} = \frac{\text{IPC}_{\text{with}} - \text{IPC}_{\text{without}}}{\text{IPC}_{\text{without}}} = \frac{0.6660 - 0.3897}{0.3897} \times 100\% \approx 70.90\%
+$$
+
+*(where $\text{IPC}_ {\text{without}} = \frac{16,166\text{ instructions}}{24,273\text{ cycles} + 17,210\text{ cycles}} \approx 0.3897$)*
 
 *Refer to the Architecture Specification for the logic descriptions of these forwarding paths.*
 
