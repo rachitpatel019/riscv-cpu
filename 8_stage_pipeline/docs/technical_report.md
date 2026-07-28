@@ -92,6 +92,20 @@ The table below compares the active 8-Stage Pipeline processor against previous 
   <img src="fmax_scaling.svg" alt="Maximum Operating Frequency (Fmax) Scaling" width="650">
 </p>
 
+### Comparison with Existing RISC-V Soft Cores
+The table below compares the active 8-Stage Pipeline processor (this work) against other established open-source RISC-V soft cores targetable or evaluated on Intel MAX 10 FPGAs:
+
+| Processor Name | Max Clock Frequency ($F_{max}$) | Resource Utilization (MAX 10 Logic Elements) | Estimated Performance (MIPS / DMIPS) | Reliable Source of Information / Documentation Link |
+| :--- | :--- | :--- | :--- | :--- |
+| **8-Stage Pipeline CPU (Active)** | **127.29 MHz** | **2,931 LEs** | **84.78 MIPS** | [Section 1 (Physical Synthesis)](#1-physical-synthesis--power-metrics) & [Section 3 (Simulation)](#3-simulation--workload-performance) |
+| **PicoRV32** | **90 MHz – 110 MHz** | ~2,000 LEs | **40 – 51 MIPS** | [ARIES Embedded MAX10 User Manual](http://aries-embedded.de) & [YosysHQ PicoRV32 GitHub](https://github.com) |
+| **NEORV32** | **90 MHz – 115 MHz** | ~2,000 – 2,300 LEs | **73 – 90 MIPS** | [Official NEORV32 Documentation Datasheet](https://github.io) |
+| **Ibex** *(Formerly Zero-riscy)* | **50 MHz – 70 MHz** | ~2,500 – 3,500 LEs | **54 – 72 MIPS** | [lowRISC Ibex Reference Manual Documentation](https://github.com) |
+| **CV32E40P** *(PULP Platform)* | **35 MHz – 50 MHz** | ~5,000+ LEs *(highly impacted by register file expansion)* | **64 – 75 MIPS** | [OpenHW Group CV32E40P User Manual](https://readthedocs.io) |
+
+> [NOTE]
+> The performance metrics (MIPS) for the reference soft cores are measured/estimated using the standard **Dhrystone benchmark**, whereas the performance of the active 8-Stage Pipeline CPU is evaluated using the **custom benchmark** workload described in the [Workload Description](#workload-description) section.
+
 ---
 
 ## 2. Timing & Critical Path Analysis
@@ -141,6 +155,9 @@ The performance below was evaluated on the [benchmark.c](../software/Benchmark/b
 | **Jumps** | 10 | 0.06% |
 | **Total** | **16,166** | **100.00%** |
 
+> [NOTE]
+> The dynamic jump instruction count is extremely low (**10 jumps / 0.06%**) due to the compiler flags used. The combination of aggressive optimization (`-O3`), which performs extensive function inlining, and Link-Time Optimization (`-flto`), which minimizes call overheads, eliminates the majority of unconditional jump (`jal`/`jalr`) instructions in the compiled binary.
+
 ### CPI Breakdown
 
 | Component | Cycles | CPI Contribution | Note / Description |
@@ -169,6 +186,7 @@ All metrics below are measured by [tb_benchmark.sv](../benchmark/tb_benchmark.sv
 | :--- | :--- | :--- |
 | **Branch Predictor Accuracy** | **84.65%** | 1,687 correct / 1,993 resolved branches |
 | **Average Branch Penalty** | **2.768 cycles** | $5,517\text{ penalty cycles} / 1,993\text{ branches}$ |
+| **Average Branch Penalty (without predictor)** | **4.007 cycles** | $1,331\text{ taken branches} \times 6\text{ cycles} / 1,993\text{ branches}$ (always-predict-not-taken) |
 | **Total Flush Cycles** | **5,547 cycles** | Branch: 5,517, Jump: 30 |
 | **Total Stall Cycles** | **2,660 cycles** (10.96%) | Only Load-Use hazards trigger stalls |
 | **Load-Use Stalls** | **2,660 cycles** | From back-to-back loads and 1-instruction load gaps |
@@ -183,6 +201,10 @@ The data forwarding network is highly effective at bypassing data hazards, resol
 *   **ALU dependencies:** Both back-to-back ALU instructions (**3,327 instances**) and ALU instructions with a 1-instruction gap (**975 instances**) were fully bypassed with **0 stall cycles**, saving **7,629 cycles** in total.
 *   **Load-use dependencies:** Load instructions followed by dependent ALU instructions had their penalties reduced by forwarding, saving **8,940 cycles** across **4,470 instances**.
 *   **Register File collision:** Read-during-write conflicts were bypassed in the register file (**641 instances**), saving **641 cycles**.
+
+By resolving these hazards and preventing **17,210 stall cycles**, the data forwarding network **increased the IPC by 70.90%** (improving the IPC from **0.3897** to **0.6660**):
+$$\text{IPC Improvement} = \frac{\text{IPC}_{\text{with}} - \text{IPC}_{\text{without}}}{\text{IPC}_{\text{without}}} = \frac{0.6660 - 0.3897}{0.3897} \times 100\% \approx 70.90\%$$
+*(where $\text{IPC}_{\text{without}} = \frac{16,166\text{ instructions}}{24,273\text{ cycles} + 17,210\text{ cycles}} \approx 0.3897$)*
 
 *Refer to the Architecture Specification for the logic descriptions of these forwarding paths.*
 

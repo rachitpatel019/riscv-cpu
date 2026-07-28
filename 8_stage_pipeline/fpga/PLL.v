@@ -25,9 +25,9 @@ module PLL (
 
 	altpll #(
 		.bandwidth_type("AUTO"),
-		.clk0_divide_by(2),
+		.clk0_divide_by(196),
 		.clk0_duty_cycle(50),
-		.clk0_multiply_by(5),
+		.clk0_multiply_by(499),
 		.clk0_phase_shift("0"),
 		.compensate_clock("CLK0"),
 		.inclk0_input_frequency(20000), // 20000 ps = 50 MHz input
