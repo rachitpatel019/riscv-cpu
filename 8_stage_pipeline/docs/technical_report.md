@@ -103,7 +103,7 @@ The table below compares the active 8-Stage Pipeline processor (this work) again
 | **Ibex** *(Formerly Zero-riscy)* | **50 MHz – 70 MHz** | ~2,500 – 3,500 LEs | **54 – 72 MIPS** | [lowRISC Ibex Reference Manual Documentation](https://github.com) |
 | **CV32E40P** *(PULP Platform)* | **35 MHz – 50 MHz** | ~5,000+ LEs *(highly impacted by register file expansion)* | **64 – 75 MIPS** | [OpenHW Group CV32E40P User Manual](https://readthedocs.io) |
 
-> [NOTE]
+> [!NOTE]
 > The performance metrics (MIPS) for the reference soft cores are measured/estimated using the standard **Dhrystone benchmark**, whereas the performance of the active 8-Stage Pipeline CPU is evaluated using the **custom benchmark** workload described in the [Workload Description](#workload-description) section.
 
 ---
@@ -155,7 +155,7 @@ The performance below was evaluated on the [benchmark.c](../software/Benchmark/b
 | **Jumps** | 10 | 0.06% |
 | **Total** | **16,166** | **100.00%** |
 
-> [NOTE]
+> [!NOTE]
 > The dynamic jump instruction count is extremely low (**10 jumps / 0.06%**) due to the compiler flags used. The combination of aggressive optimization (`-O3`), which performs extensive function inlining, and Link-Time Optimization (`-flto`), which minimizes call overheads, eliminates the majority of unconditional jump (`jal`/`jalr`) instructions in the compiled binary.
 
 ### CPI Breakdown
@@ -169,7 +169,9 @@ The performance below was evaluated on the [benchmark.c](../software/Benchmark/b
 | **Stall-Flush Overlap** | -100 | -0.0062 | Cycles where a data stall and a redirect flush occurred in the same cycle |
 | **Total Measured** | **24,273** | **1.5015** | Overall CPI matching simulation metrics |
 
-$$\text{CPI} = 1.0000 \text (Ideal) + 0.1645 \text (Stalls) + 0.3413 \text (Branch Penalties) + 0.0019 \text (Jump Penalties) - 0.0062 \text (Stall-Flush Overlap)$$
+$$
+\text{CPI} = 1.0000 \text{(Ideal)} + 0.1645 \text{(Stalls)} + 0.3413 \text{(Branch Penalties)} + 0.0019 \text{(Jump Penalties)} - 0.0062 \text{(Stall-Flush Overlap)}
+$$
 
 <p align="center">
   <img src="cpi_breakdown.svg" alt="CPI Contribution Breakdown" width="600">
@@ -203,7 +205,11 @@ The data forwarding network is highly effective at bypassing data hazards, resol
 *   **Register File collision:** Read-during-write conflicts were bypassed in the register file (**641 instances**), saving **641 cycles**.
 
 By resolving these hazards and preventing **17,210 stall cycles**, the data forwarding network **increased the IPC by 70.90%** (improving the IPC from **0.3897** to **0.6660**):
-$$\text{IPC Improvement} = \frac{\text{IPC}_{\text{with}} - \text{IPC}_{\text{without}}}{\text{IPC}_{\text{without}}} = \frac{0.6660 - 0.3897}{0.3897} \times 100\% \approx 70.90\%$$
+
+$$
+\text{IPC Improvement} = \frac{\text{IPC}_{\text{with}} - \text{IPC}_{\text{without}}}{\text{IPC}_{\text{without}}} = \frac{0.6660 - 0.3897}{0.3897} \times 100\% \approx 70.90\%
+$$
+
 *(where $\text{IPC}_{\text{without}} = \frac{16,166\text{ instructions}}{24,273\text{ cycles} + 17,210\text{ cycles}} \approx 0.3897$)*
 
 *Refer to the Architecture Specification for the logic descriptions of these forwarding paths.*
