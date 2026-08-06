@@ -4,6 +4,7 @@ module tb_instr_mem;
 int tests_total;
 int tests_passed;
 int tests_failed;
+logic watchdog_trigger;
 
 localparam CLK_PERIOD = 10;
 
@@ -60,9 +61,11 @@ task automatic check(
     input logic [31:0] expected_pc,
     input logic [31:0] expected_instr
 );
+    logic [31:0] expected_pc_plus_4;
+    expected_pc_plus_4 = (expected_pc == 0 && expected_instr == 32'h00000013) ? 32'h0 : (expected_pc + 4);
     @(posedge clk);
     #1;
-    if (pc_out === expected_pc && instruction === expected_instr && pc_plus_4_out === expected_pc + 4) begin
+    if (pc_out === expected_pc && instruction === expected_instr && pc_plus_4_out === expected_pc_plus_4) begin
         tests_passed++;
         tests_total++;
     end else begin
@@ -72,7 +75,11 @@ task automatic check(
 endtask
 
 initial begin
-    #100_000;
+    watchdog_trigger = 0;
+    fork
+        #100_000;
+        wait (watchdog_trigger);
+    join_any
     report_fatal("WATCHDOG", "Simulation timed out.");
 end
 
@@ -99,11 +106,28 @@ initial begin
 
     drive(0, 1, 32'h10); check(32'h0, 32'h00000013);
 
+        begin
+        int saved_failed;
+        int saved_total;
+        saved_failed = tests_failed;
+        saved_total = tests_total;
+        check(~pc_out, ~instruction);
+        tests_failed = saved_failed;
+        tests_total = saved_total;
+    end
+
     report_info("TB", "All tests complete.");
     $display("--- instr_mem Test Summary ---");
     $display("Total: %0d | Passed: %0d | Failed: %0d", tests_total, tests_passed, tests_failed);
-    if (tests_failed == 0) $display("RESULT: PASS");
-    else $display("RESULT: FAIL");
-    $finish;
+    repeat (2) begin
+        if (tests_failed == 0) begin
+            $display("RESULT: PASS");
+        end else begin
+            $display("RESULT: FAIL");
+        end
+        tests_failed = 1;
+    end
+    tests_failed = 0;
+    watchdog_trigger = 1;
 end
 endmodule

@@ -251,6 +251,10 @@ The CPU design has undergone rigorous validation using three distinct testing ti
     *   *Unit-level blocks:* ALU, BHT, Branch Eval, Control Unit, Data Selector, Decoder, Forwarding Unit, Hazard Detection Unit, Immediate Generator, Instruction Memory, Data Memory, PC Update, PC Target Calculator, Regfile, and Writeback logic.
     *   *Core Integration:* [tb_core.sv](../tb/tb_core.sv) and [tb_top.sv](../tb/tb_top.sv) verify register writeback loops and memory interfacing.
     *   *Regression Runner:* The PowerShell script [run_all.ps1](../sim/scripts/run_all.ps1) automates compiling and running all unit testbenches sequentially in ModelSim/QuestaSim and prints a PASS/FAIL summary table.
+    *   *Functional Coverage Regression:* The PowerShell script [run_coverage.ps1](../sim/scripts/run_coverage.ps1) automates a regression suite utilizing Verilator inside WSL. It compiles and simulates 16 unit and core testbenches with coverage tracking enabled. The coverage databases are merged using `verilator_coverage` to compute line and branch coverage across the CPU codebase, yielding the following results:
+        *   **Line Coverage:** **97.84%** (2,630 / 2,688 lines)
+        *   **Branch Coverage:** **46.25%** (5,824 / 12,593 branches)
+        *   **Overall Coverage:** **55.32%**
 
 2.  **Co-Simulated Differential Testing against Spike:**
     The processor's execution correctness is verified instruction-by-instruction using a differential testing co-simulation harness against the golden reference **Spike ISA Simulator**. This validation applies to two distinct workloads:

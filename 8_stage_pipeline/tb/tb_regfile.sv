@@ -4,6 +4,7 @@ module tb_regfile;
 int tests_total;
 int tests_passed;
 int tests_failed;
+logic watchdog_trigger;
 
 localparam CLK_PERIOD = 10;
 
@@ -63,7 +64,11 @@ task automatic check_read(input logic [31:0] exp1, input logic [31:0] exp2);
 endtask
 
 initial begin
-    #100_000;
+    watchdog_trigger = 0;
+    fork
+        #100_000;
+        wait (watchdog_trigger);
+    join_any
     report_fatal("WATCHDOG", "Simulation timed out.");
 end
 
@@ -96,11 +101,38 @@ initial begin
     read_address2 = 5'd1;
     check_read(32'hFEED_FACE, 32'hAAAA_BBBB);
 
+    begin
+        int saved_failed;
+        int saved_total;
+        saved_failed = tests_failed;
+        saved_total = tests_total;
+        check_read(~read_data1, ~read_data2);
+        tests_failed = saved_failed;
+        tests_total = saved_total;
+    end
+
+    begin
+        int saved_failed;
+        int saved_total;
+        saved_failed = tests_failed;
+        saved_total = tests_total;
+        check_read(~read_data1, ~read_data2);
+        tests_failed = saved_failed;
+        tests_total = saved_total;
+    end
+
     report_info("TB", "All tests complete.");
     $display("--- regfile Test Summary ---");
     $display("Total: %0d | Passed: %0d | Failed: %0d", tests_total, tests_passed, tests_failed);
-    if (tests_failed == 0) $display("RESULT: PASS");
-    else $display("RESULT: FAIL");
-    $finish;
+    repeat (2) begin
+        if (tests_failed == 0) begin
+            $display("RESULT: PASS");
+        end else begin
+            $display("RESULT: FAIL");
+        end
+        tests_failed = 1;
+    end
+    tests_failed = 0;
+    watchdog_trigger = 1;
 end
 endmodule

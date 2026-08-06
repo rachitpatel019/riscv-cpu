@@ -46,6 +46,9 @@ The table below summarizes the purpose of each script in the project:
 | **Benchmark Runner** | | |
 | [run_benchmark.ps1](../benchmark/run_benchmark.ps1) | `8_stage_pipeline/benchmark/` | Runs the benchmark SystemVerilog testbench inside ModelSim in batch mode. |
 | [run_benchmark.do](../benchmark/run_benchmark.do) | `8_stage_pipeline/benchmark/` | ModelSim setup script to compile and execute the benchmark simulation. |
+| **Functional Coverage Regression** | | |
+| [run_coverage.ps1](../sim/scripts/run_coverage.ps1) | `8_stage_pipeline/sim/scripts/` | PowerShell script running Verilator functional coverage regressions in WSL and cleaning up. |
+| [run_coverage.py](../sim/scripts/run_coverage.py) | `8_stage_pipeline/sim/scripts/` | Python script that compiles/runs all testbenches under Verilator in WSL, merging and analyzing coverage. |
 
 ---
 
@@ -266,3 +269,41 @@ These scripts implement co-simulation validation by matching instruction executi
 * **Path:** [8_stage_pipeline/benchmark/run_benchmark.do](../benchmark/run_benchmark.do)
 * **Execution:** Executed automatically by `run_benchmark.ps1`.
 * **Purpose:** ModelSim script that compiles packages, CPU pipeline stage files, custom memory blocks including MMIO controller, and the specialized benchmark testbench module `tb_benchmark.sv` before executing simulation to completion.
+
+---
+
+## 7. Functional Coverage Regression Scripts
+
+These scripts automate running functional coverage simulations for all block-level and core-level testbenches using Verilator inside WSL.
+
+### `run_coverage.ps1`
+* **Path:** [8_stage_pipeline/sim/scripts/run_coverage.ps1](../sim/scripts/run_coverage.ps1)
+* **Execution:**
+  ```powershell
+  # Can be executed from the repository root or the script's directory
+  ./8_stage_pipeline/sim/scripts/run_coverage.ps1
+  ```
+* **Purpose:** A PowerShell wrapper that checks for WSL availability, launches the Python coverage regression runner inside WSL, and cleans up temporary coverage compilation files and legacy artifacts.
+* **Under the Hood:**
+  1. Verifies that `wsl` is installed and accessible in the path.
+  2. Launches Python 3 to run `run_coverage.py` in WSL.
+  3. Cleans up temporary coverage workspace directories (`8_stage_pipeline/sim/logs/coverage_run`) and legacy coverage files in the root folder.
+  4. Returns exit code `0` on successful completion of the regression suite, or `1` if any test fails.
+
+### `run_coverage.py`
+* **Path:** [8_stage_pipeline/sim/scripts/run_coverage.py](../sim/scripts/run_coverage.py)
+* **Execution:** Executed automatically by `run_coverage.ps1`, or can be executed directly inside WSL:
+  ```bash
+  python3 run_coverage.py
+  ```
+* **Purpose:** Re-compiles all unit and core testbenches using Verilator with coverage enabled, runs the simulation, merges the resulting coverage data, and prints a final regression coverage summary report.
+* **Under the Hood:**
+  1. Checks for `verilator` and `verilator_coverage` inside WSL.
+  2. Setup paths and prepares a clean temporary coverage directory at `8_stage_pipeline/sim/logs/coverage_run/`.
+  3. Iterates through the testbenches (including unit testbenches and the core integration testbench). For each testbench:
+     * Compiles the SystemVerilog design and testbench sources using Verilator with `--coverage` and `-Wno-fatal` flags.
+     * Executes the compiled simulation executable inside WSL, specifying the target coverage output file.
+  4. Uses `verilator_coverage` to merge all individual `.dat` coverage files into a single `merged.dat` file.
+  5. Translates `merged.dat` to an LCOV info file (`coverage.info` stored under `8_stage_pipeline/sim/logs/`).
+  6. Parses the LCOV info file to calculate and report line coverage, branch coverage, and overall functional coverage statistics.
+  7. Cleans up the temporary compilation directories to save disk space.
