@@ -80,10 +80,16 @@ endtask
 initial begin
     watchdog_trigger = 0;
     fork
-        #100_000;
-        wait (watchdog_trigger);
+        begin
+            #100_000;
+            report_fatal("WATCHDOG", "Simulation timed out.");
+        end
+        begin
+            wait (watchdog_trigger);
+        end
     join_any
-    report_fatal("WATCHDOG", "Simulation timed out.");
+    disable fork;
+    $finish;
 end
 
 initial begin
@@ -199,6 +205,174 @@ initial begin
 end
 
 always @(negedge clk) begin
+    if (!reset) begin
+        if (cycle_count == 0) begin
+            a_reset_pc: assert (dut.F_pc == 32'b0)
+                else begin
+                    report_error("RESET_CHECK", $sformatf("PC is not 0 after reset: %h", dut.F_pc));
+                    errors_found++;
+                end
+        end
+
+        // Program-independent processor state assertions
+        a_F_pc_aligned: assert (dut.F_pc[1:0] == 2'b00)
+            else begin
+                report_error("PC_CHECK", $sformatf("Fetch PC is not 4-byte aligned: %h", dut.F_pc));
+                errors_found++;
+            end
+
+        a_D_pc_aligned: assert (dut.D_pc[1:0] == 2'b00)
+            else begin
+                report_error("PC_CHECK", $sformatf("Decode PC is not 4-byte aligned: %h", dut.D_pc));
+                errors_found++;
+            end
+
+        a_E1_pc_aligned: assert (dut.E1_pc[1:0] == 2'b00)
+            else begin
+                report_error("PC_CHECK", $sformatf("EX1 PC is not 4-byte aligned: %h", dut.E1_pc));
+                errors_found++;
+            end
+
+        a_E2_pc_aligned: assert (dut.E2_pc[1:0] == 2'b00)
+            else begin
+                report_error("PC_CHECK", $sformatf("EX2 PC is not 4-byte aligned: %h", dut.E2_pc));
+                errors_found++;
+            end
+
+        a_E3_pc_aligned: assert (dut.E3_pc[1:0] == 2'b00)
+            else begin
+                report_error("PC_CHECK", $sformatf("EX3 PC is not 4-byte aligned: %h", dut.E3_pc));
+                errors_found++;
+            end
+
+        a_W_pc_aligned: assert (dut.W_pc[1:0] == 2'b00)
+            else begin
+                report_error("PC_CHECK", $sformatf("Writeback PC is not 4-byte aligned: %h", dut.W_pc));
+                errors_found++;
+            end
+
+        a_reg_x0_zero_a: assert (dut.stage4_regfile.registers_a[0] == 32'b0)
+            else begin
+                report_error("REG_CHECK", "Register File A x0 is not zero!");
+                errors_found++;
+            end
+
+        a_reg_x0_zero_b: assert (dut.stage4_regfile.registers_b[0] == 32'b0)
+            else begin
+                report_error("REG_CHECK", "Register File B x0 is not zero!");
+                errors_found++;
+            end
+
+        a_F_pc_range: assert (dut.F_pc < 16384 * 4)
+            else begin
+                report_error("PC_CHECK", $sformatf("Fetch PC is out of range: %h", dut.F_pc));
+                errors_found++;
+            end
+
+        a_dmem_read_addr: assert (!dut.stage8_memory_system.dmem_read || (dut.stage8_memory_system.read_address < 65536))
+            else begin
+                report_error("MEM_CHECK", $sformatf("Data memory read address out of bounds: %h", dut.stage8_memory_system.read_address));
+                errors_found++;
+            end
+
+        a_dmem_write_addr: assert (!dut.stage8_memory_system.dmem_write || (dut.stage8_memory_system.write_address < 65536))
+            else begin
+                report_error("MEM_CHECK", $sformatf("Data memory write address out of bounds: %h", dut.stage8_memory_system.write_address));
+                errors_found++;
+            end
+
+        // Hazard Stall check: stall_frontend must be active if a load-use hazard occurs
+        a_stall_rr_load_use: assert (
+            !(dut.hazard_unit.RR_reg_write && dut.hazard_unit.RR_mem_read && (dut.hazard_unit.RR_rd != 5'b0) && 
+              ((dut.hazard_unit.RR_rd == dut.D_rs1 && dut.D_uses_rs1) || (dut.hazard_unit.RR_rd == dut.D_rs2 && dut.D_uses_rs2))) 
+            || dut.stall_frontend
+        ) else begin
+            report_error("HAZARD_CHECK", "Frontend failed to stall on Reg-Read load-use hazard!");
+            errors_found++;
+        end
+
+        a_stall_ex1_load_use: assert (
+            !(dut.hazard_unit.E1_reg_write && dut.hazard_unit.E1_mem_read && (dut.hazard_unit.E1_rd != 5'b0) && 
+              ((dut.hazard_unit.E1_rd == dut.D_rs1 && dut.D_uses_rs1) || (dut.hazard_unit.E1_rd == dut.D_rs2 && dut.D_uses_rs2))) 
+            || dut.stall_frontend
+        ) else begin
+            report_error("HAZARD_CHECK", "Frontend failed to stall on EX1 load-use hazard!");
+            errors_found++;
+        end
+
+        // Forwarding unit checks: verify correct select lines for Operand A
+        a_forward_a_ex1: assert (
+            !(dut.fwd_unit.IDRR_uses_rs1 && (dut.fwd_unit.IDRR_rs1 != 5'b0) && 
+              dut.fwd_unit.E1_reg_write && !dut.fwd_unit.E1_mem_read && (dut.fwd_unit.E1_rd == dut.fwd_unit.IDRR_rs1))
+            || (dut.IDRR_forward_a_sel == 2'b11)
+        ) else begin
+            report_error("FORWARD_CHECK", "Forwarding unit failed to select EX1 data for Operand A!");
+            errors_found++;
+        end
+
+        a_forward_a_ex2: assert (
+            !(dut.fwd_unit.IDRR_uses_rs1 && (dut.fwd_unit.IDRR_rs1 != 5'b0) && 
+              !(dut.fwd_unit.E1_reg_write && !dut.fwd_unit.E1_mem_read && (dut.fwd_unit.E1_rd == dut.fwd_unit.IDRR_rs1)) &&
+              dut.fwd_unit.E2_reg_write && !dut.fwd_unit.E2_mem_read && (dut.fwd_unit.E2_rd == dut.fwd_unit.IDRR_rs1))
+            || (dut.IDRR_forward_a_sel == 2'b01)
+        ) else begin
+            report_error("FORWARD_CHECK", "Forwarding unit failed to select EX2 data for Operand A!");
+            errors_found++;
+        end
+
+        a_forward_a_ex3: assert (
+            !(dut.fwd_unit.IDRR_uses_rs1 && (dut.fwd_unit.IDRR_rs1 != 5'b0) && 
+              !(dut.fwd_unit.E1_reg_write && !dut.fwd_unit.E1_mem_read && (dut.fwd_unit.E1_rd == dut.fwd_unit.IDRR_rs1)) &&
+              !(dut.fwd_unit.E2_reg_write && !dut.fwd_unit.E2_mem_read && (dut.fwd_unit.E2_rd == dut.fwd_unit.IDRR_rs1)) &&
+              dut.fwd_unit.E3_reg_write && (dut.fwd_unit.E3_rd == dut.fwd_unit.IDRR_rs1))
+            || (dut.IDRR_forward_a_sel == 2'b10)
+        ) else begin
+            report_error("FORWARD_CHECK", "Forwarding unit failed to select EX3 data for Operand A!");
+            errors_found++;
+        end
+
+        // Forwarding unit checks: verify correct select lines for Operand B
+        a_forward_b_ex1: assert (
+            !(dut.fwd_unit.IDRR_uses_rs2 && (dut.fwd_unit.IDRR_rs2 != 5'b0) && 
+              dut.fwd_unit.E1_reg_write && !dut.fwd_unit.E1_mem_read && (dut.fwd_unit.E1_rd == dut.fwd_unit.IDRR_rs2))
+            || (dut.IDRR_forward_b_sel == 2'b11)
+        ) else begin
+            report_error("FORWARD_CHECK", "Forwarding unit failed to select EX1 data for Operand B!");
+            errors_found++;
+        end
+
+        a_forward_b_ex2: assert (
+            !(dut.fwd_unit.IDRR_uses_rs2 && (dut.fwd_unit.IDRR_rs2 != 5'b0) && 
+              !(dut.fwd_unit.E1_reg_write && !dut.fwd_unit.E1_mem_read && (dut.fwd_unit.E1_rd == dut.fwd_unit.IDRR_rs2)) &&
+              dut.fwd_unit.E2_reg_write && !dut.fwd_unit.E2_mem_read && (dut.fwd_unit.E2_rd == dut.fwd_unit.IDRR_rs2))
+            || (dut.IDRR_forward_b_sel == 2'b01)
+        ) else begin
+            report_error("FORWARD_CHECK", "Forwarding unit failed to select EX2 data for Operand B!");
+            errors_found++;
+        end
+
+        a_forward_b_ex3: assert (
+            !(dut.fwd_unit.IDRR_uses_rs2 && (dut.fwd_unit.IDRR_rs2 != 5'b0) && 
+              !(dut.fwd_unit.E1_reg_write && !dut.fwd_unit.E1_mem_read && (dut.fwd_unit.E1_rd == dut.fwd_unit.IDRR_rs2)) &&
+              !(dut.fwd_unit.E2_reg_write && !dut.fwd_unit.E2_mem_read && (dut.fwd_unit.E2_rd == dut.fwd_unit.IDRR_rs2)) &&
+              dut.fwd_unit.E3_reg_write && (dut.fwd_unit.E3_rd == dut.fwd_unit.IDRR_rs2))
+            || (dut.IDRR_forward_b_sel == 2'b10)
+        ) else begin
+            report_error("FORWARD_CHECK", "Forwarding unit failed to select EX3 data for Operand B!");
+            errors_found++;
+        end
+
+        // Decoded signals checks for standard R-Type instructions
+        a_r_type_decode: assert (
+            $isunknown(dut.D_instruction[6:0]) ||
+            (dut.D_instruction[6:0] != 7'b0110011) ||
+            (dut.D_uses_rs1 && dut.D_uses_rs2 && !dut.D_alu_src_a && !dut.D_alu_src_b && dut.D_reg_write)
+        ) else begin
+            report_error("DECODE_CHECK", $sformatf("R-Type instruction decoded with incorrect control signals: opcode=%b", dut.D_instruction[6:0]));
+            errors_found++;
+        end
+    end
+
     if (!reset) begin
         cycle_count++;
         cycles_run++;
