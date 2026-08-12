@@ -70,7 +70,7 @@ task automatic check(
     input logic [31:0] i_pc_out,
     input logic [31:0] i_imm
 );
-    if (rs1 === i_rs1 && rs2 === i_rs2 && rd === i_rd && 
+    a_decode: assert (rs1 === i_rs1 && rs2 === i_rs2 && rd === i_rd && 
         pc_out === i_pc_out && immediate === i_imm) begin
         tests_passed++;
         tests_total++;
@@ -107,7 +107,7 @@ task automatic check_all(
     i_mem_unsigned = instruction[14];
     i_branch_type = instruction[14:12];
 
-    if (rs1 === i_rs1 && rs2 === i_rs2 && rd === i_rd && 
+    a_decode_all: assert (rs1 === i_rs1 && rs2 === i_rs2 && rd === i_rd && 
         pc_out === i_pc_out && immediate === i_imm &&
         uses_rs1 === i_uses_rs1 && uses_rs2 === i_uses_rs2 &&
         alu_op === i_alu_op && alu_src_a === i_alu_src_a && alu_src_b === i_alu_src_b &&
@@ -127,10 +127,16 @@ endtask
 initial begin
     watchdog_trigger = 0;
     fork
-        #100_000;
-        wait (watchdog_trigger);
+        begin
+            #100_000;
+            report_fatal("WATCHDOG", "Simulation timed out.");
+        end
+        begin
+            wait (watchdog_trigger);
+        end
     join_any
-    report_fatal("WATCHDOG", "Simulation timed out.");
+    disable fork;
+    $finish;
 end
 
 // Main stimulus block applying test patterns to the decoder.

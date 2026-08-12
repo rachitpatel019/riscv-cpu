@@ -65,7 +65,7 @@ task automatic drive(
 endtask
 
 task automatic check(input logic [1:0] exp_a_sel, input logic [1:0] exp_b_sel);
-    if (forward_a_sel === exp_a_sel && forward_b_sel === exp_b_sel) begin
+    a_forwarding: assert (forward_a_sel === exp_a_sel && forward_b_sel === exp_b_sel) begin
         tests_passed++;
         tests_total++;
     end else begin
@@ -77,10 +77,16 @@ endtask
 initial begin
     watchdog_trigger = 0;
     fork
-        #100_000;
-        wait (watchdog_trigger);
+        begin
+            #100_000;
+            report_fatal("WATCHDOG", "Simulation timed out.");
+        end
+        begin
+            wait (watchdog_trigger);
+        end
     join_any
-    report_fatal("WATCHDOG", "Simulation timed out.");
+    disable fork;
+    $finish;
 end
 
 initial begin

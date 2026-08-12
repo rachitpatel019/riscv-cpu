@@ -77,7 +77,7 @@ task automatic check(
     input logic [31:0] exp_b,
     input logic [31:0] exp_rs2_out
 );
-    if (operand_a === exp_a && operand_b === exp_b && rs2_data_out === exp_rs2_out) begin
+    a_data_sel: assert (operand_a === exp_a && operand_b === exp_b && rs2_data_out === exp_rs2_out) begin
         tests_passed++;
         tests_total++;
     end else begin
@@ -90,10 +90,16 @@ endtask
 initial begin
     watchdog_trigger = 0;
     fork
-        #100_000;
-        wait (watchdog_trigger);
+        begin
+            #100_000;
+            report_fatal("WATCHDOG", "Simulation timed out.");
+        end
+        begin
+            wait (watchdog_trigger);
+        end
     join_any
-    report_fatal("WATCHDOG", "Simulation timed out.");
+    disable fork;
+    $finish;
 end
 
 // Main stimulus block applying test patterns to the data selector.

@@ -66,7 +66,7 @@ endtask
 task automatic check(input logic [31:0] expected_pc);
     @(posedge clk);
     #1;
-    if (pc === expected_pc && pc_plus_4 === expected_pc + 32'd4) begin
+    a_pc_update: assert (pc === expected_pc && pc_plus_4 === expected_pc + 32'd4) begin
         tests_passed++;
         tests_total++;
     end else begin
@@ -78,10 +78,16 @@ endtask
 initial begin
     watchdog_trigger = 0;
     fork
-        #100_000;
-        wait (watchdog_trigger);
+        begin
+            #100_000;
+            report_fatal("WATCHDOG", "Simulation timed out.");
+        end
+        begin
+            wait (watchdog_trigger);
+        end
     join_any
-    report_fatal("WATCHDOG", "Simulation timed out.");
+    disable fork;
+    $finish;
 end
 
 initial begin

@@ -399,4 +399,15 @@ always @(posedge clk) begin
     end
 end
 
+// Assertions for benchmark signals
+always @(posedge clk) begin
+    a_bench_clk_valid: assert (!$isunknown(clk));
+    if (!reset && benchmark_active) begin
+        a_bench_pc_aligned: assert (dut.W_pc[1:0] == 2'b00)
+            else begin
+                $display("[ERROR] Retired PC is not 4-byte aligned: %h", dut.W_pc);
+            end
+    end
+end
+
 endmodule

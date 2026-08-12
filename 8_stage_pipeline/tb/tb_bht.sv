@@ -68,7 +68,7 @@ task automatic drive_write(
 endtask
 
 task automatic check_read(input logic [1:0] expected_counter);
-    if (read_counter_out === expected_counter) begin
+    a_bht_read: assert (read_counter_out === expected_counter) begin
         tests_passed++;
         tests_total++;
     end else begin
@@ -80,10 +80,16 @@ endtask
 initial begin
     watchdog_trigger = 0;
     fork
-        #100_000;
-        wait (watchdog_trigger);
+        begin
+            #100_000;
+            report_fatal("WATCHDOG", "Simulation timed out.");
+        end
+        begin
+            wait (watchdog_trigger);
+        end
     join_any
-    report_fatal("WATCHDOG", "Simulation timed out.");
+    disable fork;
+    $finish;
 end
 
 initial begin

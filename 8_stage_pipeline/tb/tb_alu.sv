@@ -40,7 +40,7 @@ task automatic drive(input logic [31:0] i_a, input logic [31:0] i_b, input logic
 endtask
 
 task automatic check(input logic [31:0] exp_res);
-    if (result === exp_res) begin
+    a_alu_result: assert (result === exp_res) begin
         tests_passed++;
         tests_total++;
     end else begin
@@ -52,10 +52,16 @@ endtask
 initial begin
     watchdog_trigger = 0;
     fork
-        #100_000;
-        wait (watchdog_trigger);
+        begin
+            #100_000;
+            report_fatal("WATCHDOG", "Simulation timed out.");
+        end
+        begin
+            wait (watchdog_trigger);
+        end
     join_any
-    report_fatal("WATCHDOG", "Simulation timed out.");
+    disable fork;
+    $finish;
 end
 
 initial begin

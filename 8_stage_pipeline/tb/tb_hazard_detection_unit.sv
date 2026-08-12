@@ -74,7 +74,7 @@ endtask
 
 // Verifies if the output stall match the expected stall value.
 task automatic check(input logic exp_stall);
-    if (stall === exp_stall) begin
+    a_hazard_detection: assert (stall === exp_stall) begin
         tests_passed++;
         tests_total++;
     end else begin
@@ -86,10 +86,16 @@ endtask
 initial begin
     watchdog_trigger = 0;
     fork
-        #100_000;
-        wait (watchdog_trigger);
+        begin
+            #100_000;
+            report_fatal("WATCHDOG", "Simulation timed out.");
+        end
+        begin
+            wait (watchdog_trigger);
+        end
     join_any
-    report_fatal("WATCHDOG", "Simulation timed out.");
+    disable fork;
+    $finish;
 end
 
 // Main test execution sequence.

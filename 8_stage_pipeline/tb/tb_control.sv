@@ -54,7 +54,7 @@ task automatic check(
     input logic [1:0] i_wb_sel, input logic i_branch, input logic i_jump,
     input logic [2:0] i_branch_type
 );
-    if (uses_rs1 === i_uses_rs1 && uses_rs2 === i_uses_rs2 && alu_op === i_alu_op && 
+    a_control: assert (uses_rs1 === i_uses_rs1 && uses_rs2 === i_uses_rs2 && alu_op === i_alu_op && 
         alu_src_a === i_alu_src_a && alu_src_b === i_alu_src_b &&
         reg_write === i_reg_write && mem_read === i_mem_read && mem_write === i_mem_write &&
         mem_size === i_mem_size && mem_unsigned === i_mem_unsigned &&
@@ -71,10 +71,16 @@ endtask
 initial begin
     watchdog_trigger = 0;
     fork
-        #100_000;
-        wait (watchdog_trigger);
+        begin
+            #100_000;
+            report_fatal("WATCHDOG", "Simulation timed out.");
+        end
+        begin
+            wait (watchdog_trigger);
+        end
     join_any
-    report_fatal("WATCHDOG", "Simulation timed out.");
+    disable fork;
+    $finish;
 end
 
 initial begin

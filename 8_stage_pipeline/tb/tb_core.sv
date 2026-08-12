@@ -205,6 +205,12 @@ initial begin
 end
 
 always @(negedge clk) begin
+    a_core_clk_valid: assert (!$isunknown(clk))
+        else begin
+            report_error("CLK_CHECK", "Clock is unknown!");
+            errors_found++;
+        end
+
     if (!reset) begin
         if (cycle_count == 0) begin
             a_reset_pc: assert (dut.F_pc == 32'b0)

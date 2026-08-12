@@ -65,7 +65,7 @@ task automatic check(
     expected_pc_plus_4 = (expected_pc == 0 && expected_instr == 32'h00000013) ? 32'h0 : (expected_pc + 4);
     @(posedge clk);
     #1;
-    if (pc_out === expected_pc && instruction === expected_instr && pc_plus_4_out === expected_pc_plus_4) begin
+    a_instr_mem: assert (pc_out === expected_pc && instruction === expected_instr && pc_plus_4_out === expected_pc_plus_4) begin
         tests_passed++;
         tests_total++;
     end else begin
@@ -77,10 +77,16 @@ endtask
 initial begin
     watchdog_trigger = 0;
     fork
-        #100_000;
-        wait (watchdog_trigger);
+        begin
+            #100_000;
+            report_fatal("WATCHDOG", "Simulation timed out.");
+        end
+        begin
+            wait (watchdog_trigger);
+        end
     join_any
-    report_fatal("WATCHDOG", "Simulation timed out.");
+    disable fork;
+    $finish;
 end
 
 initial begin

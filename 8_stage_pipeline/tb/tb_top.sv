@@ -45,4 +45,10 @@ initial begin
     $finish;
 end
 
+// Assertions for top signals
+always @(posedge MAX10_CLK1_50) begin
+    a_top_clk_valid: assert (!$isunknown(MAX10_CLK1_50));
+    a_top_key_valid: assert (!$isunknown(KEY));
+end
+
 endmodule

@@ -71,7 +71,7 @@ task automatic drive(
 endtask
 
 task automatic check(input logic exp_sel, input logic [31:0] exp_target);
-    if (pc_sel === exp_sel && pc_target === exp_target) begin
+    a_pc_target_calc: assert (pc_sel === exp_sel && pc_target === exp_target) begin
         tests_passed++;
         tests_total++;
     end else begin
@@ -83,10 +83,16 @@ endtask
 initial begin
     watchdog_trigger = 0;
     fork
-        #100_000;
-        wait (watchdog_trigger);
+        begin
+            #100_000;
+            report_fatal("WATCHDOG", "Simulation timed out.");
+        end
+        begin
+            wait (watchdog_trigger);
+        end
     join_any
-    report_fatal("WATCHDOG", "Simulation timed out.");
+    disable fork;
+    $finish;
 end
 
 initial begin

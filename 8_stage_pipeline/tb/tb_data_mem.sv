@@ -75,7 +75,7 @@ endtask
 task automatic check(input logic [31:0] exp_data);
     @(posedge clk);
     #1;
-    if (read_data === exp_data) begin
+    a_data_mem_read: assert (read_data === exp_data) begin
         tests_passed++;
         tests_total++;
     end else begin
@@ -88,10 +88,16 @@ endtask
 initial begin
     watchdog_trigger = 0;
     fork
-        #100_000;
-        wait (watchdog_trigger);
+        begin
+            #100_000;
+            report_fatal("WATCHDOG", "Simulation timed out.");
+        end
+        begin
+            wait (watchdog_trigger);
+        end
     join_any
-    report_fatal("WATCHDOG", "Simulation timed out.");
+    disable fork;
+    $finish;
 end
 
 // Main stimulus block applying test cases.

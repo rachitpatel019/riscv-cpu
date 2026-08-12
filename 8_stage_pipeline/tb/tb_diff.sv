@@ -110,4 +110,15 @@ always @(posedge clk) begin
     end
 end
 
+// Assertions for diff signals
+always @(posedge clk) begin
+    a_diff_clk_valid: assert (!$isunknown(clk));
+    if (!reset) begin
+        a_diff_pc_aligned: assert (dut.W_pc[1:0] == 2'b00 || !dut.W_reg_write)
+            else begin
+                $display("[ERROR] Writeback PC is not 4-byte aligned: %h", dut.W_pc);
+            end
+    end
+end
+
 endmodule
