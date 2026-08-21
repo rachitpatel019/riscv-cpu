@@ -15,8 +15,10 @@ The automation and verification scripts require the following toolchain and util
 | **Python 3** | Python 3.8+ | Manages the differential ISA and benchmark test harnesses, logs verification results, and generates/pads HEX files. |
 | **Intel Quartus Prime** | Lite Edition 20.1+ | Synthesizes and fits the SystemVerilog design, performs TimeQuest timing analysis, and executes power analyzer. |
 | **ModelSim / QuestaSim** | Starter/Lite Edition 20.1+ | Compiles RTL netlists, executes batch simulations, and dumps value change files (`power.vcd`). |
+| **Verilator & Verilator Coverage** | Verilator 5.0+ (in WSL) | Compiles SystemVerilog RTL and testbenches into native binaries with coverage instrumentation, merges `.dat` files, and generates LCOV info reports. |
 | **RISC-V Spike ISS** | Matches RV32I base | Serves as the golden reference Instruction Set Simulator for step-by-step register write-back trace matching. |
 | **RISC-V GCC Toolchain** | `riscv64-unknown-elf-gcc` (tested on 14.2.0) | Cross-compiles C programs inside WSL to produce raw binary outputs loaded into ROM/RAM. |
+| **WSL (Windows Subsystem for Linux)** | WSL 2 (Ubuntu recommended) | Hosts the Linux execution environment for GCC compilation, Spike co-simulation, and Verilator functional coverage regressions. |
 
 ---
 
