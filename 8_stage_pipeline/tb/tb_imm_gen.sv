@@ -83,38 +83,14 @@ initial begin
     drive(32'hffdfff6f); check(-32'd4);         // OP_J (negative)
     drive(32'h002081b3); check(32'b0);          // default fallback (OP_R)
 
-    begin
-        int saved_failed;
-        int saved_total;
-        saved_failed = tests_failed;
-        saved_total = tests_total;
-        check(~immediate);
-        tests_failed = saved_failed;
-        tests_total = saved_total;
-    end
-
-    begin
-        int saved_failed;
-        int saved_total;
-        saved_failed = tests_failed;
-        saved_total = tests_total;
-        check(~immediate);
-        tests_failed = saved_failed;
-        tests_total = saved_total;
-    end
-
     report_info("TB", "All tests complete.");
     $display("--- imm_gen Test Summary ---");
     $display("Total: %0d | Passed: %0d | Failed: %0d", tests_total, tests_passed, tests_failed);
-    repeat (2) begin
-        if (tests_failed == 0) begin
-            $display("RESULT: PASS");
-        end else begin
-            $display("RESULT: FAIL");
-        end
-        tests_failed = 1;
+    if (tests_failed == 0) begin
+        $display("RESULT: PASS");
+    end else begin
+        $display("RESULT: FAIL");
     end
-    tests_failed = 0;
     watchdog_trigger = 1;
 end
 endmodule

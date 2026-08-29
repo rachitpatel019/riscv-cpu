@@ -162,45 +162,18 @@ initial begin
         disable fork;
     end
 
-    begin
-        int saved_failed;
-        int saved_total;
-        saved_failed = tests_failed;
-        saved_total = tests_total;
-        report_error("COV", "dummy");
-        tests_failed = saved_failed;
-        tests_total = saved_total;
-    end
-
-    repeat (2) begin
-        if (errors_found == 0) begin
-            tests_passed = 1;
-            tests_total = 1;
-            tests_failed = 0;
-        end else begin
-            tests_passed = 0;
-            tests_failed = errors_found;
-            tests_total = errors_found;
-        end
-        errors_found = 1;
-    end
-    errors_found = 0;
-    tests_passed = 1;
-    tests_total = 1;
-    tests_failed = 0;
+    tests_passed = (errors_found == 0) ? 1 : 0;
+    tests_failed = errors_found;
+    tests_total = tests_passed + tests_failed;
 
     report_info("TB", "All tests complete.");
     $display("--- core Test Summary ---");
     $display("Total: %0d | Passed: %0d | Failed: %0d", tests_total, tests_passed, tests_failed);
-    repeat (2) begin
-        if (tests_failed == 0) begin
-            $display("RESULT: PASS");
-        end else begin
-            $display("RESULT: FAIL");
-        end
-        tests_failed = 1;
+    if (tests_failed == 0) begin
+        $display("RESULT: PASS");
+    end else begin
+        $display("RESULT: FAIL");
     end
-    tests_failed = 0;
     watchdog_trigger = 1;
 end
 

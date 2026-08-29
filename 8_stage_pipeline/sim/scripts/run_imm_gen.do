@@ -1,4 +1,4 @@
-transcript ""
+transcript off
 onerror {quit -code 1 -f}
 onbreak {quit -f}
 

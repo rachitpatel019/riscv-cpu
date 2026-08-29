@@ -174,38 +174,14 @@ initial begin
         end
     end
 
-    begin
-        int saved_failed;
-        int saved_total;
-        saved_failed = tests_failed;
-        saved_total = tests_total;
-        check(~operand_a, ~operand_b, ~rs2_data_out);
-        tests_failed = saved_failed;
-        tests_total = saved_total;
-    end
-
-    begin
-        int saved_failed;
-        int saved_total;
-        saved_failed = tests_failed;
-        saved_total = tests_total;
-        check(~operand_a, ~operand_b, ~rs2_data_out);
-        tests_failed = saved_failed;
-        tests_total = saved_total;
-    end
-
     report_info("TB", "All tests complete.");
     $display("--- data_sel Test Summary ---");
     $display("Total: %0d | Passed: %0d | Failed: %0d", tests_total, tests_passed, tests_failed);
-    repeat (2) begin
-        if (tests_failed == 0) begin
-            $display("RESULT: PASS");
-        end else begin
-            $display("RESULT: FAIL");
-        end
-        tests_failed = 1;
+    if (tests_failed == 0) begin
+        $display("RESULT: PASS");
+    end else begin
+        $display("RESULT: FAIL");
     end
-    tests_failed = 0;
     watchdog_trigger = 1;
 end
 

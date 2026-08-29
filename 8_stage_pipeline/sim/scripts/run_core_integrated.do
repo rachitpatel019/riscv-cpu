@@ -2,7 +2,7 @@
 # ModelSim run script for the 8-stage balanced pipeline integrated testbench
 
 # Guardrail: Exit on error to prevent hanging in interactive mode
-transcript ""
+transcript off
 onerror {quit -code 1 -f}
 onbreak {quit -f}
 

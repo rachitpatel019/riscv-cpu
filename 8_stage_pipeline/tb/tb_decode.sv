@@ -235,30 +235,15 @@ initial begin
     drive(32'h704, 32'h01048467); // jalr x8, x9, 16
     check_all(5'd9, 5'd16, 5'd8, 32'h704, 32'd16, 1'b1, 1'b0, ALU_ADD, 1'b0, 1'b1, 1'b1, 1'b0, 1'b0, 2'b00, 1'b0, 2'b10, 1'b0, 1'b1, 3'b000);
 
-        begin
-        int saved_failed;
-        int saved_total;
-        saved_failed = tests_failed;
-        saved_total = tests_total;
-        check(~rs1, ~rs2, ~rd, ~pc_out, ~immediate);
-        check_all(~rs1, ~rs2, ~rd, ~pc_out, ~immediate, ~uses_rs1, ~uses_rs2, ~alu_op, ~alu_src_a, ~alu_src_b, ~reg_write, ~mem_read, ~mem_write, ~mem_size, ~mem_unsigned, ~wb_sel, ~branch, ~jump, ~branch_type);
-        tests_failed = saved_failed;
-        tests_total = saved_total;
-    end
-
 
     report_info("TB", "All tests complete.");
     $display("--- decode Test Summary ---");
     $display("Total: %0d | Passed: %0d | Failed: %0d", tests_total, tests_passed, tests_failed);
-    repeat (2) begin
-        if (tests_failed == 0) begin
-            $display("RESULT: PASS");
-        end else begin
-            $display("RESULT: FAIL");
-        end
-        tests_failed = 1;
+    if (tests_failed == 0) begin
+        $display("RESULT: PASS");
+    end else begin
+        $display("RESULT: FAIL");
     end
-    tests_failed = 0;
     watchdog_trigger = 1;
 end
 

@@ -53,13 +53,16 @@ foreach ($script in $scripts) {
 
     Write-Host "`n>>> Executing $script..." -ForegroundColor Cyan
 
-    # Run from the scripts directory so the intermediate logs land there.
+    $scriptLogName = $script -replace "\.do$", ".log"
+    $logPath = Join-Path $logsDir $scriptLogName
+
+    # Run from the scripts directory.
     Push-Location $PSScriptRoot
 
     # Run vsim in batch mode, printing output directly to the terminal.
-    # No -l flag so no log file is generated.
+    # Write log to the logs directory.
     $process = Start-Process vsim `
-        -ArgumentList "-batch", "-l", "vsim.log", "-do", "$scriptPath" `
+        -ArgumentList "-batch", "-l", "$logPath", "-do", "$scriptPath" `
         -PassThru -NoNewWindow -Wait `
         -ErrorAction SilentlyContinue
 
@@ -75,22 +78,38 @@ foreach ($script in $scripts) {
 
     Pop-Location
 
-    # Clean up intermediate simulation logs in the scripts directory
-    $logsLog = Join-Path $PSScriptRoot "vsim.log"
-    if (Test-Path $logsLog) { Remove-Item -Path $logsLog -Force -ErrorAction SilentlyContinue }
-
     # Remove any ModelSim-generated transcript stubs from the scripts directory
     $transcriptPath = Join-Path $PSScriptRoot "transcript"
     if (Test-Path $transcriptPath) {
         Remove-Item -Path $transcriptPath -Force -ErrorAction SilentlyContinue
     }
 
+    # Check the log file for errors
+    $hasErrors = $false
+    $errorReason = ""
     if ($exitCode -ne 0 -or $timeoutOccurred) {
-        Write-Host "RESULT: $script FAILED" -ForegroundColor Red
-        $failed += $script
-        if ($timeoutOccurred) {
-            Write-Host "Reason: Process did not exit cleanly." -ForegroundColor Yellow
+        $hasErrors = $true
+        $errorReason = "Process exited with code $exitCode or timed out."
+    } elseif (-not (Test-Path $logPath)) {
+        $hasErrors = $true
+        $errorReason = "Log file not found."
+    } else {
+        $logContent = Get-Content -Path $logPath
+        foreach ($line in $logContent) {
+            if ($line -match "UVM_ERROR" -or $line -match "UVM_FATAL" -or ($line -match "\*\* Error" -and $line -notmatch "Unknown option" -and $line -notmatch "Error in macro") -or $line -match "\*\* Fatal") {
+                $hasErrors = $true
+                $errorReason = "Simulation error detected: $($line.Trim())"
+                break
+            }
         }
+    }
+
+    if ($hasErrors) {
+        Write-Host "RESULT: $script FAILED" -ForegroundColor Red
+        if ($errorReason) {
+            Write-Host "Reason: $errorReason" -ForegroundColor Yellow
+        }
+        $failed += $script
     } else {
         Write-Host "RESULT: $script PASSED" -ForegroundColor Green
         $passed += $script

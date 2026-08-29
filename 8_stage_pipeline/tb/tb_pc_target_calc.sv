@@ -132,38 +132,14 @@ initial begin
     drive(32'h100, 32'h5, 32'h5, 1, 1, 3'b000, 32'h8, 32'h207, 0); check(1, 32'h204); // priority jump
     drive(32'h100, 32'h5, 32'h5, 1, 0, 3'b000, 32'hFFFFFFF9, 0, 0); check(1, 32'hF8); // branch target alignment
 
-    begin
-        int saved_failed;
-        int saved_total;
-        saved_failed = tests_failed;
-        saved_total = tests_total;
-        check(~pc_sel, ~pc_target);
-        tests_failed = saved_failed;
-        tests_total = saved_total;
-    end
-
-    begin
-        int saved_failed;
-        int saved_total;
-        saved_failed = tests_failed;
-        saved_total = tests_total;
-        check(~pc_sel, ~pc_target);
-        tests_failed = saved_failed;
-        tests_total = saved_total;
-    end
-
     report_info("TB", "All tests complete.");
     $display("--- pc_target_calc Test Summary ---");
     $display("Total: %0d | Passed: %0d | Failed: %0d", tests_total, tests_passed, tests_failed);
-    repeat (2) begin
-        if (tests_failed == 0) begin
-            $display("RESULT: PASS");
-        end else begin
-            $display("RESULT: FAIL");
-        end
-        tests_failed = 1;
+    if (tests_failed == 0) begin
+        $display("RESULT: PASS");
+    end else begin
+        $display("RESULT: FAIL");
     end
-    tests_failed = 0;
     watchdog_trigger = 1;
 end
 endmodule
