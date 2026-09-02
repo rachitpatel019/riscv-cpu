@@ -22,8 +22,10 @@ module data_mem (
 
 localparam MEM_DEPTH = 16384;
 
+// Storage memory array inferred as Altera/Intel M9K Block RAM.
 (* ramstyle = "M9K" *) logic [31:0] memory [0:MEM_DEPTH-1] = '{default: 32'b0};
 
+// Internal read data and pipeline registers.
 logic [31:0] current_word;
 logic [31:0] shifted_word;
 logic [1:0] addr_low;
@@ -31,6 +33,16 @@ logic [1:0] addr_low;
 logic read_active;
 logic [1:0] size_reg;
 logic unsigned_reg;
+
+// Pipelined write state registers for Read-During-Write hazard detection.
+logic [31:0] write_addr_reg;
+logic [31:0] write_data_reg;
+logic [1:0] write_size_reg;
+logic [1:0] write_addr_low_reg;
+logic write_en_reg;
+logic [31:0] read_addr_reg;
+
+logic [31:0] forwarded_word;
 
 // Synchronous write port logic handling byte, halfword, and word masking.
 always_ff @(posedge clk) begin
@@ -54,7 +66,7 @@ always_ff @(posedge clk) begin
     end
 end
 
-// Synchronous read registers storing read address offsets and memory control states.
+// Synchronous read port storing read data and memory control state.
 always_ff @(posedge clk) begin
     current_word <= memory[read_address[31:2]];
     addr_low <= read_address[1:0];
@@ -63,24 +75,19 @@ always_ff @(posedge clk) begin
     unsigned_reg <= mem_unsigned;
 end
 
-// Write-during-read bypass/forwarding logic to handle RDW collisions on same clock edge.
-logic [31:0] write_addr_reg;
-logic [31:0] write_data_reg;
-logic [1:0] write_size_reg;
-logic [1:0] write_addr_low_reg;
-logic write_en_reg;
-logic [31:0] read_addr_reg;
-
+// Write tracking registers to sample write control signals on clock edge.
 always_ff @(posedge clk) begin
-    write_addr_reg     <= write_address;
-    write_data_reg     <= write_data;
-    write_size_reg     <= write_mem_size;
-    write_addr_low_reg <= write_address[1:0];
-    write_en_reg       <= mem_write;
-    read_addr_reg      <= read_address;
+    if (mem_read) begin
+        write_addr_reg     <= write_address;
+        write_data_reg     <= write_data;
+        write_size_reg     <= write_mem_size;
+        write_addr_low_reg <= write_address[1:0];
+        write_en_reg       <= mem_write;
+        read_addr_reg      <= read_address;
+    end
 end
 
-logic [31:0] forwarded_word;
+// Write-during-read bypass and forwarding logic to resolve RDW collisions on same word.
 always_comb begin
     forwarded_word = current_word;
     if (write_en_reg && (write_addr_reg[31:2] == read_addr_reg[31:2])) begin
@@ -103,10 +110,10 @@ always_comb begin
     end
 end
 
-// Asynchronously aligns the read word based on address offset using the forwarded word.
+// Asynchronous byte/halfword alignment shifter based on byte offset.
 assign shifted_word = forwarded_word >> {addr_low, 3'b000};
 
-// Decides size and sign extension of the read word based on control registers.
+// Formatting and sign/zero extension logic for final read output data.
 always_comb begin
     if (read_active) begin
         case (size_reg)

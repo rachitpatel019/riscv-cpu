@@ -187,7 +187,7 @@ always @(posedge clk) begin
         stage7_branch_mispredict = dut.E3_branch && (dut.E3_condition_met != dut.E3_predict_taken);
         stage7_jump = dut.E3_jump;
         stage4_branch_taken = dut.IDRR_branch && dut.IDRR_predict_taken;
-        stage4_jump = dut.IDRR_is_jal;
+        stage4_jump = dut.hazard_unit.IDRR_is_jal;
 
         // Shift Stage 7 to WB
         pipe_WB <= pipe_EX3;

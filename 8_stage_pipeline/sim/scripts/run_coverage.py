@@ -83,6 +83,13 @@ def main():
             "rtl/core/4_reg_read/bht.sv",
             "tb/tb_bht.sv"
         ],
+        "tb_branch_predictor": [
+            "packages/alu_pkg.sv",
+            "packages/decoder_pkg.sv",
+            "rtl/core/4_reg_read/bht.sv",
+            "rtl/core/4_reg_read/branch_predictor.sv",
+            "tb/tb_branch_predictor.sv"
+        ],
         "tb_data_sel": [
             "packages/alu_pkg.sv",
             "packages/decoder_pkg.sv",
@@ -105,6 +112,12 @@ def main():
             "rtl/core/7_ex3_mem/pc_target_calc.sv",
             "tb/tb_pc_target_calc.sv"
         ],
+        "tb_fwd_sel": [
+            "packages/alu_pkg.sv",
+            "packages/decoder_pkg.sv",
+            "rtl/core/7_ex3_mem/fwd_sel.sv",
+            "tb/tb_fwd_sel.sv"
+        ],
         "tb_data_mem": [
             "packages/alu_pkg.sv",
             "packages/decoder_pkg.sv",
@@ -117,11 +130,11 @@ def main():
             "rtl/core/8_wb/writeback.sv",
             "tb/tb_writeback.sv"
         ],
-        "tb_hazard_detection_unit": [
+        "tb_pipeline_control_unit": [
             "packages/alu_pkg.sv",
             "packages/decoder_pkg.sv",
-            "rtl/core/hazard_control/hazard_detection_unit.sv",
-            "tb/tb_hazard_detection_unit.sv"
+            "rtl/core/hazard_control/pipeline_control_unit.sv",
+            "tb/tb_pipeline_control_unit.sv"
         ],
         "tb_forwarding_unit": [
             "packages/alu_pkg.sv",
@@ -141,6 +154,7 @@ def main():
             "rtl/core/3_decode/ID_RR.sv",
             "rtl/core/4_reg_read/regfile.sv",
             "rtl/core/4_reg_read/bht.sv",
+            "rtl/core/4_reg_read/branch_predictor.sv",
             "rtl/core/4_reg_read/RR_EX1.sv",
             "rtl/core/5_ex1/data_sel.sv",
             "rtl/core/5_ex1/EX1_EX2.sv",
@@ -148,13 +162,14 @@ def main():
             "rtl/core/6_ex2/branch_eval.sv",
             "rtl/core/6_ex2/EX2_EX3.sv",
             "rtl/core/7_ex3_mem/pc_target_calc.sv",
+            "rtl/core/7_ex3_mem/fwd_sel.sv",
             "rtl/core/7_ex3_mem/MEM_WB.sv",
             "rtl/core/7_ex3_mem/data_mem.sv",
             "rtl/core/7_ex3_mem/mmio.sv",
             "rtl/core/7_ex3_mem/memory.sv",
             "rtl/core/8_wb/writeback.sv",
             "rtl/core/hazard_control/forwarding_unit.sv",
-            "rtl/core/hazard_control/hazard_detection_unit.sv",
+            "rtl/core/hazard_control/pipeline_control_unit.sv",
             "rtl/core/core.sv",
             "tb/tb_core.sv"
         ]

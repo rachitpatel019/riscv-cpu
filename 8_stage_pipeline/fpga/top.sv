@@ -11,8 +11,6 @@ module top (
     output logic [6:0]  HEX5
 );
 
-    logic clk_osc;
-    logic clk_manual;
     logic clk;
     logic reset;
 
@@ -28,10 +26,11 @@ module top (
     logic [9:0]  cpu_leds;
     logic [23:0] cpu_hex;
 
-    // Instantiate PLL to generate 125 MHz clock from 50 MHz input
-    PLL pll_inst (
+    // Instantiate pll_125 to generate 125 MHz clock from 50 MHz input
+    pll_125 pll_inst (
         .inclk0(MAX10_CLK1_50),
-        .c0(clk_125),
+        .c0(),
+        .c1(clk_125),
         .locked(pll_locked)
     );
 
@@ -44,7 +43,7 @@ module top (
             reset_shift <= {1'b0, reset_shift[3:1]};
         end
     end
-    
+
     assign clk = clk_125;
     assign reset = reset_shift[0];
 

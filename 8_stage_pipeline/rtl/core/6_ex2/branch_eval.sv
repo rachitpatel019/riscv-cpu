@@ -11,7 +11,7 @@ module branch_eval (
     output logic condition_met
 );
 
-// Computes whether the branch condition is satisfied and evaluates branch target PC.
+// Computes whether the branch condition is satisfied.
 always_comb begin
     case (branch_type)
         3'b000: condition_met = (operand_a == operand_b);

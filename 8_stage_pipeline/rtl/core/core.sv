@@ -3,6 +3,10 @@ Eight-stage pipelined RISC-V (RV32I) CPU core.
 Includes data forwarding, hazard detection, and memory-mapped I/O.
 */
 
+`include "hazard_control/pipeline_control_unit.sv"
+`include "4_reg_read/branch_predictor.sv"
+`include "7_ex3_mem/fwd_sel.sv"
+
 module core (
     input logic clk,
     input logic reset,
@@ -73,7 +77,6 @@ logic [1:0] IDRR_forward_a_sel;
 logic [1:0] IDRR_forward_b_sel;
 logic [31:0] IDRR_branch_target;
 logic IDRR_predict_taken;
-logic [1:0] BRAM_counter_out;
 logic [1:0] IDRR_counter_val;
 logic [1:0] E1_counter_val;
 logic [1:0] E2_counter_val;
@@ -81,8 +84,6 @@ logic [1:0] E3_counter_val;
 logic [1:0] E3_next_counter;
 logic [1:0] E1_forward_a_sel;
 logic [1:0] E1_forward_b_sel;
-logic [31:0] RF_read_data1;
-logic [31:0] RF_read_data2;
 
 logic [31:0] E1_immediate;
 logic [4:0] E1_rs1;
@@ -112,7 +113,6 @@ logic [31:0] E1_operand_b;
 logic [31:0] E1_rs2_data_fwd;
 
 logic [31:0] E3_fwd_val;
-logic [31:0] W_fwd_val;
 
 logic [31:0] E2_pc;
 logic [3:0] E2_alu_op;
@@ -159,14 +159,13 @@ logic E3_predict_taken;
 logic E3_pc_sel;
 logic [31:0] E3_pc_target;
 
+logic [31:0] W_pc;
+logic [31:0] W_write_data;
 logic W_reg_write;
 logic [4:0] W_rd;
 logic [31:0] W_alu_result;
-logic [31:0] W_pc;
 logic [31:0] W_mem_read_data;
 logic [1:0] W_wb_sel;
-logic [31:0] W_write_data;
-logic [31:0] W_wb_intermediate;
 
 logic [31:0] F_pc_plus_4;
 logic [31:0] IM_pc_plus_4;
@@ -179,14 +178,14 @@ logic [31:0] W_pc_plus_4;
 logic W_mem_read;
 logic [31:0] W_mem_read_data_raw;
 
-// Flush control logic based on program counter selection.
-assign flush = E3_pc_sel;
-logic IDRR_is_jal;
-assign IDRR_is_jal = IDRR_jump && !IDRR_uses_rs1;
 logic stage4_pc_sel;
-assign stage4_pc_sel = IDRR_predict_taken || IDRR_is_jal;
 logic stage4_flush;
-assign stage4_flush = stage4_pc_sel;
+
+// Output debug signal connections
+assign out_pc = W_pc;
+assign out_writeback_data = W_write_data;
+assign out_reg_write = W_reg_write;
+assign out_alu_result = E2_alu_result;
 
 // Stage 1: Instruction Fetch. Computes the next PC value.
 pc_update stage1_fetch (
@@ -258,7 +257,7 @@ ID_RR stage3_id_rr_reg (
     .clk(clk),
     .reset(reset),
     .stall(stall_frontend),
-    .flush(flush || stall_frontend || stage4_flush), 
+    .flush(flush || stall_frontend || stage4_flush),
     .immediate_in(D_immediate),
     .rs1_in(D_rs1),
     .rs2_in(D_rs2),
@@ -313,52 +312,24 @@ regfile stage4_regfile (
     .write_enable(W_reg_write)
 );
 
-// Forwarding Unit. Evaluates downstream stage registers to resolve register hazards.
-forwarding_unit fwd_unit (
-    .IDRR_rs1(IDRR_rs1),
-    .IDRR_rs2(IDRR_rs2),
-    .IDRR_uses_rs1(IDRR_uses_rs1),
-    .IDRR_uses_rs2(IDRR_uses_rs2),
-    .E1_reg_write(E1_reg_write),
-    .E1_mem_read(E1_mem_read),
-    .E1_rd(E1_rd),
-    .E2_reg_write(E2_reg_write),
-    .E2_mem_read(E2_mem_read),
-    .E2_rd(E2_rd),
-    .E3_reg_write(E3_reg_write),
-    .E3_rd(E3_rd),
-    .forward_a_sel(IDRR_forward_a_sel),
-    .forward_b_sel(IDRR_forward_b_sel)
-);
-
-// Stage 4: Branch target calculation
-assign IDRR_branch_target = IDRR_pc + IDRR_immediate;
-
-// Stage 4: Branch History Table. Predicts branch outcomes.
-bht stage4_bht (
+// Stage 4: Branch Predictor wrapping BHT and branch target calculations.
+branch_predictor branch_pred (
     .clk(clk),
     .reset(reset),
-    .read_index(D_pc[11:2]),
-    .read_enable(!stall_frontend),
-    .read_counter_out(BRAM_counter_out),
-    .write_index(E3_pc[11:2]),
-    .write_enable(E3_branch),
-    .write_counter_in(E3_next_counter)
+    .D_pc(D_pc),
+    .stall_frontend(stall_frontend),
+    .IDRR_pc(IDRR_pc),
+    .IDRR_immediate(IDRR_immediate),
+    .IDRR_branch(IDRR_branch),
+    .E3_pc(E3_pc),
+    .E3_branch(E3_branch),
+    .E3_counter_val(E3_counter_val),
+    .E3_condition_met(E3_condition_met),
+    .IDRR_branch_target(IDRR_branch_target),
+    .IDRR_predict_taken(IDRR_predict_taken),
+    .IDRR_counter_val(IDRR_counter_val),
+    .E3_next_counter(E3_next_counter)
 );
-
-// Stage 7 Next Counter computation
-always_comb begin
-    if (E3_condition_met)
-        E3_next_counter = (E3_counter_val == 2'b11) ? 2'b11 : E3_counter_val + 2'b01;
-    else
-        E3_next_counter = (E3_counter_val == 2'b00) ? 2'b00 : E3_counter_val - 2'b01;
-end
-
-// Branch History Table counter selection
-assign IDRR_counter_val = BRAM_counter_out;
-
-// Predict taken if MSB of the counter is 1
-assign IDRR_predict_taken = IDRR_branch && (IDRR_counter_val[1] == 1'b1);
 
 // Stage 4: EX1 phase pipeline register. Synchronizes operand selection controls.
 RR_EX1 stage4_rr_ex1_reg (
@@ -417,10 +388,6 @@ RR_EX1 stage4_rr_ex1_reg (
     .counter_val_out(E1_counter_val)
 );
 
-// Forwarding data path assignments for downstream execution stages.
-assign E3_fwd_val = (E3_wb_sel == 2'b10) ? E3_pc_plus_4 : E3_alu_result;
-assign W_fwd_val = W_write_data;
-
 // Stage 5: Data selector. Multiplexes register operands and forwarded values.
 data_sel stage5_data_sel (
     .pc(E1_pc),
@@ -433,7 +400,7 @@ data_sel stage5_data_sel (
     .forward_b_sel(E1_forward_b_sel),
     .fwd_ex1_data(E2_alu_result),
     .fwd_ex2_data(E3_fwd_val),
-    .fwd_ex3_data(W_fwd_val),
+    .fwd_ex3_data(W_write_data),
     .operand_a(E1_operand_a),
     .operand_b(E1_operand_b),
     .rs2_data_out(E1_rs2_data_fwd)
@@ -572,32 +539,15 @@ pc_target_calc stage7_calc (
     .pc_target(E3_pc_target)
 );
 
-// Pre-writeback selection multiplexer.
-assign W_wb_intermediate = (E3_wb_sel == 2'b10) ? E3_pc_plus_4 : E3_alu_result;
-
-// Stage 7: Writeback phase pipeline register. Registers memory or ALU writeback values.
-MEM_WB stage7_mem_wb_reg (
-    .clk(clk),
-    .reset(reset),
-    .rd_in(E3_rd),
-    .reg_write_in(E3_reg_write),
-    .alu_result_in(W_wb_intermediate),
-    .mem_read_data_in(W_mem_read_data_raw),
-    .mem_read_in(E3_mem_read),
-    .wb_sel_in(E3_wb_sel),
-    .pc_in(E3_pc),
-    .pc_plus_4_in(E3_pc_plus_4),
-    .rd_out(W_rd),
-    .reg_write_out(W_reg_write),
-    .alu_result_out(W_alu_result),
-    .mem_read_data_out(W_mem_read_data),
-    .mem_read_out(W_mem_read),
-    .wb_sel_out(W_wb_sel),
-    .pc_out(W_pc),
-    .pc_plus_4_out(W_pc_plus_4)
+// Stage 7: Pre-writeback selection multiplexer. Selects between link address and ALU result.
+fwd_sel stage7_fwd (
+    .wb_sel(E3_wb_sel),
+    .pc_plus_4(E3_pc_plus_4),
+    .alu_result(E3_alu_result),
+    .fwd_val(E3_fwd_val)
 );
 
-// Stage 8: Data Memory interconnect. Interfaces to data BRAM and MMIO registers with split read/write ports.
+// Stage 7: Data Memory interconnect. Interfaces to data BRAM and MMIO registers with split read/write ports.
 memory stage8_memory_system (
     .clk(clk),
     .reset(reset),
@@ -616,6 +566,28 @@ memory stage8_memory_system (
     .mmio_hex(mmio_hex)
 );
 
+// Stage 7: Writeback phase pipeline register. Registers memory or ALU writeback values.
+MEM_WB stage7_mem_wb_reg (
+    .clk(clk),
+    .reset(reset),
+    .rd_in(E3_rd),
+    .reg_write_in(E3_reg_write),
+    .alu_result_in(E3_fwd_val),
+    .mem_read_data_in(W_mem_read_data_raw),
+    .mem_read_in(E3_mem_read),
+    .wb_sel_in(E3_wb_sel),
+    .pc_in(E3_pc),
+    .pc_plus_4_in(E3_pc_plus_4),
+    .rd_out(W_rd),
+    .reg_write_out(W_reg_write),
+    .alu_result_out(W_alu_result),
+    .mem_read_data_out(W_mem_read_data),
+    .mem_read_out(W_mem_read),
+    .wb_sel_out(W_wb_sel),
+    .pc_out(W_pc),
+    .pc_plus_4_out(W_pc_plus_4)
+);
+
 // Stage 8: Writeback multiplexer. Decides data source for register file write.
 writeback stage8_wb (
     .pc(W_pc),
@@ -625,8 +597,26 @@ writeback stage8_wb (
     .write_data(W_write_data)
 );
 
-// Hazard detection unit. Stalls frontend execution on load-use hazards.
-hazard_detection_unit hazard_unit (
+// Hazard Control: Forwarding Unit. Evaluates downstream stage registers to resolve register hazards.
+forwarding_unit fwd_unit (
+    .IDRR_rs1(IDRR_rs1),
+    .IDRR_rs2(IDRR_rs2),
+    .IDRR_uses_rs1(IDRR_uses_rs1),
+    .IDRR_uses_rs2(IDRR_uses_rs2),
+    .E1_reg_write(E1_reg_write),
+    .E1_mem_read(E1_mem_read),
+    .E1_rd(E1_rd),
+    .E2_reg_write(E2_reg_write),
+    .E2_mem_read(E2_mem_read),
+    .E2_rd(E2_rd),
+    .E3_reg_write(E3_reg_write),
+    .E3_rd(E3_rd),
+    .forward_a_sel(IDRR_forward_a_sel),
+    .forward_b_sel(IDRR_forward_b_sel)
+);
+
+// Hazard Control: Pipeline Control Unit. Evaluates hazard stalls, global flushes, and early branch redirects.
+pipeline_control_unit hazard_unit (
     .D_rs1(D_rs1),
     .D_rs2(D_rs2),
     .D_uses_rs1(D_uses_rs1),
@@ -637,13 +627,14 @@ hazard_detection_unit hazard_unit (
     .E1_reg_write(E1_reg_write),
     .E1_mem_read(E1_mem_read),
     .E1_rd(E1_rd),
-    .stall(stall_frontend)
+    .E3_pc_sel(E3_pc_sel),
+    .IDRR_jump(IDRR_jump),
+    .IDRR_uses_rs1(IDRR_uses_rs1),
+    .IDRR_predict_taken(IDRR_predict_taken),
+    .stall(stall_frontend),
+    .flush(flush),
+    .stage4_pc_sel(stage4_pc_sel),
+    .stage4_flush(stage4_flush)
 );
-
-// Output interface assignments. Exposes internal CPU states for monitoring.
-assign out_pc = W_pc;
-assign out_writeback_data = W_write_data;
-assign out_reg_write = W_reg_write;
-assign out_alu_result = E2_alu_result;
 
 endmodule

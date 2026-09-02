@@ -32,7 +32,7 @@ The table below summarizes the purpose of each script in the project:
 | [custom_build.py](../software/custom_build.py) | `8_stage_pipeline/software/` | Compiles and links custom C programs using GCC in WSL, generating `program.hex`. |
 | **RTL Unit Simulation** | | |
 | [run_all.ps1](../sim/scripts/run_all.ps1) | `8_stage_pipeline/sim/scripts/` | Sequential simulation runner that runs a regression suite of all block-level `.do` scripts. |
-| `.do` Scripts (16 files) | `8_stage_pipeline/sim/scripts/` | ModelSim batch compilation and simulation execution files for specific modules and CPU core. |
+| `.do` Scripts (18 files) | `8_stage_pipeline/sim/scripts/` | ModelSim batch compilation and simulation execution files for specific modules and CPU core. |
 | **FPGA Synthesis & Compilation** | | |
 | [compile.tcl](../fpga/compile.tcl) | `8_stage_pipeline/fpga/` | Automated synthesis, fitting, and assembly flow for Quartus Prime. |
 | [timing_analysis.tcl](../fpga/timing_analysis.tcl) | `8_stage_pipeline/fpga/` | Calculates propagation delay of each of the 8 pipeline stages and reports worst paths using TimeQuest STA. |
@@ -94,7 +94,7 @@ The table below summarizes the purpose of each script in the project:
 * **Purpose:** Acts as a test harness runner for block-level testbenches. It runs all simulation scripts sequentially, checks execution outputs, and prints a tabular regression success summary.
 * **Under the Hood:**
   1. Checks for the `vsim` executable in the system path.
-  2. Iterates over 16 `.do` block scripts sequentially.
+  2. Iterates over 18 `.do` block scripts sequentially (`run_alu.do`, `run_bht.do`, `run_branch_eval.do`, `run_branch_predictor.do`, `run_control.do`, `run_core_integrated.do`, `run_data_mem.do`, `run_data_sel.do`, `run_decode.do`, `run_forwarding_unit.do`, `run_fwd_sel.do`, `run_imm_gen.do`, `run_instr_mem.do`, `run_pc_target_calc.do`, `run_pc_update.do`, `run_pipeline_control_unit.do`, `run_regfile.do`, `run_writeback.do`).
   3. Runs each in batch mode using `Start-Process vsim -ArgumentList "-batch", "-l", "vsim.log", "-do", "$script"`.
   4. Parses results and reports overall PASS/FAIL stats. Returns exit code `0` on total success and `1` on any failure. Cleans up temporary ModelSim libraries and transcripts upon completion.
 

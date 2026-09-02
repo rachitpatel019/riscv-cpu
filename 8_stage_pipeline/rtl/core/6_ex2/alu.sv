@@ -1,6 +1,6 @@
 /*
 Arithmetic Logic Unit (ALU) for RISC-V.
-Performs parallel evaluations of arithmetic, logic, shifts, and comparisons.
+Performs evaluations of arithmetic, logic, shifts, and comparisons.
 */
 
 module alu (

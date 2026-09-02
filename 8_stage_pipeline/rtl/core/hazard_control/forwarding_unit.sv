@@ -24,11 +24,12 @@ module forwarding_unit (
     output logic [1:0] forward_b_sel
 );
 
-// Evaluates dependencies to generate register forwarding selectors for operands A and B.
+// Evaluates dependencies across EX1, EX2, and EX3 stages to generate forwarding selectors.
 always_comb begin
     forward_a_sel = 2'b00;
     forward_b_sel = 2'b00;
 
+    // Forwarding hazard evaluation for operand A (rs1).
     if (IDRR_uses_rs1 && (IDRR_rs1 != 5'b0)) begin
         if (E1_reg_write && !E1_mem_read && (E1_rd == IDRR_rs1)) begin
             forward_a_sel = 2'b11;
@@ -41,6 +42,7 @@ always_comb begin
         end
     end
 
+    // Forwarding hazard evaluation for operand B (rs2).
     if (IDRR_uses_rs2 && (IDRR_rs2 != 5'b0)) begin
         if (E1_reg_write && !E1_mem_read && (E1_rd == IDRR_rs2)) begin
             forward_b_sel = 2'b11;

@@ -1,5 +1,5 @@
 Power Analyzer report for cpu
-Mon Jul 20 22:28:20 2026
+Wed Sep  2 12:53:01 2026
 Quartus Prime Version 24.1std.0 Build 1077 03/04/2025 SC Lite Edition
 
 
@@ -53,28 +53,28 @@ on the Quartus Prime software download page.
 ; Number detected on machine ; 16          ;
 ; Maximum allowed            ; 16          ;
 ;                            ;             ;
-; Average used               ; 1.33        ;
+; Average used               ; 1.63        ;
 ; Maximum used               ; 16          ;
 ;                            ;             ;
 ; Usage by Processor         ; % Time Used ;
 ;     Processor 1            ; 100.0%      ;
-;     Processors 2-16        ;   2.2%      ;
+;     Processors 2-16        ;   4.2%      ;
 +----------------------------+-------------+
 
 
 +------------------------------------------------------------------------------------------+
 ; Power Analyzer Summary                                                                   ;
 +----------------------------------------+-------------------------------------------------+
-; Power Analyzer Status                  ; Successful - Mon Jul 20 22:28:20 2026           ;
+; Power Analyzer Status                  ; Successful - Wed Sep  2 12:53:00 2026           ;
 ; Quartus Prime Version                  ; 24.1std.0 Build 1077 03/04/2025 SC Lite Edition ;
 ; Revision Name                          ; cpu                                             ;
 ; Top-level Entity Name                  ; top                                             ;
 ; Family                                 ; MAX 10                                          ;
 ; Device                                 ; 10M50DAF484C7G                                  ;
 ; Power Models                           ; Final                                           ;
-; Total Thermal Power Dissipation        ; 193.46 mW                                       ;
-; Core Dynamic Thermal Power Dissipation ; 94.13 mW                                        ;
-; Core Static Thermal Power Dissipation  ; 90.38 mW                                        ;
+; Total Thermal Power Dissipation        ; 350.90 mW                                       ;
+; Core Dynamic Thermal Power Dissipation ; 244.62 mW                                       ;
+; Core Static Thermal Power Dissipation  ; 97.33 mW                                        ;
 ; I/O Thermal Power Dissipation          ; 8.95 mW                                         ;
 ; Power Estimation Confidence            ; High: user provided sufficient toggle rate data ;
 +----------------------------------------+-------------------------------------------------+
@@ -112,7 +112,7 @@ on the Quartus Prime software download page.
 +---------+-----------+-----------+--------+----------------+--------------+-----------+----------+
 ; File ID ; File Name ; File Type ; Entity ; VCD Start Time ; VCD End Time ; Unknown % ; Toggle % ;
 +---------+-----------+-----------+--------+----------------+--------------+-----------+----------+
-; f1      ; power.vcd ; VCD       ; |top   ; N/A            ; N/A          ; 0.0%      ; 40.8%    ;
+; f1      ; power.vcd ; VCD       ; |top   ; N/A            ; N/A          ; 0.0%      ; 40.1%    ;
 +---------+-----------+-----------+--------+----------------+--------------+-----------+----------+
 
 
@@ -132,7 +132,7 @@ on the Quartus Prime software download page.
 ;     2.5 V I/O Standard                      ; 2.5 V                     ;
 ;     2.5 V Schmitt Trigger I/O Standard      ; 2.5 V                     ;
 ;                                             ;                           ;
-; Auto computed junction temperature          ; 26.6 degrees Celsius      ;
+; Auto computed junction temperature          ; 27.9 degrees Celsius      ;
 ;     Ambient temperature                     ; 25.0 degrees Celsius      ;
 ;     Junction-to-Case thermal resistance     ; 4.70 degrees Celsius/Watt ;
 ;     Case-to-Heat Sink thermal resistance    ; 0.10 degrees Celsius/Watt ;
@@ -155,11 +155,12 @@ on the Quartus Prime software download page.
 +---------------------+-----------------------------------+-----------------------------+--------------------------------+-------------------------------+-----------------------------------------------------------+
 ; Block Type          ; Total Thermal Power by Block Type ; Block Thermal Dynamic Power ; Block Thermal Static Power (1) ; Routing Thermal Dynamic Power ; Block Average Toggle Rate (millions of transitions / sec) ;
 +---------------------+-----------------------------------+-----------------------------+--------------------------------+-------------------------------+-----------------------------------------------------------+
-; M9K                 ; 61.07 mW                          ; 60.67 mW                    ; --                             ; 0.41 mW                       ;    3.015                                                  ;
-; Combinational cell  ; 6.27 mW                           ; 2.64 mW                     ; --                             ; 3.63 mW                       ;    5.183                                                  ;
-; Clock control block ; 14.75 mW                          ; 0.00 mW                     ; --                             ; 14.75 mW                      ;  100.000                                                  ;
-; Register cell       ; 12.04 mW                          ; 5.86 mW                     ; --                             ; 6.18 mW                       ;    4.447                                                  ;
-; I/O                 ; 0.51 mW                           ; 0.17 mW                     ; 0.34 mW                        ; 0.00 mW                       ;    1.370                                                  ;
+; PLL                 ; 10.01 mW                          ; 10.01 mW                    ; --                             ; 0.00 mW                       ;  116.593                                                  ;
+; M9K                 ; 153.71 mW                         ; 152.22 mW                   ; --                             ; 1.49 mW                       ;    7.713                                                  ;
+; Combinational cell  ; 15.55 mW                          ; 6.27 mW                     ; --                             ; 9.28 mW                       ;   12.835                                                  ;
+; Clock control block ; 36.98 mW                          ; 0.00 mW                     ; --                             ; 36.98 mW                      ;  249.926                                                  ;
+; Register cell       ; 28.37 mW                          ; 13.24 mW                    ; --                             ; 15.14 mW                      ;   10.766                                                  ;
+; I/O                 ; 0.51 mW                           ; 0.17 mW                     ; 0.34 mW                        ; 0.00 mW                       ;    1.368                                                  ;
 +---------------------+-----------------------------------+-----------------------------+--------------------------------+-------------------------------+-----------------------------------------------------------+
 (1) The "Block Thermal Static Power" for all block types except Pins and the Voltage Regulator, if one exists, is part of the "Core Static Thermal Power Dissipation" value found on the PowerPlay Power Analyzer-->Summary report panel. The "Core Static Thermal Power Dissipation" also contains the thermal static power dissipated by the routing.
 
@@ -169,62 +170,69 @@ on the Quartus Prime software download page.
 +-----------------------------------------------------+--------------------------------------+---------------------------------+-----------------------------------+-----------------------------------+----------------------------------------------------------------------------------------------------------------------------------------+
 ; Compilation Hierarchy Node                          ; Total Thermal Power by Hierarchy (1) ; Block Thermal Dynamic Power (1) ; Block Thermal Static Power (1)(2) ; Routing Thermal Dynamic Power (1) ; Full Hierarchy Name                                                                                                                    ;
 +-----------------------------------------------------+--------------------------------------+---------------------------------+-----------------------------------+-----------------------------------+----------------------------------------------------------------------------------------------------------------------------------------+
-; |top                                                ; 94.64 mW (15.27 mW)                  ; 69.33 mW (0.18 mW)              ; 0.34 mW (0.34 mW)                 ; 24.97 mW (14.75 mW)               ; |top                                                                                                                                   ;
+; |top                                                ; 245.13 mW (0.55 mW)                  ; 181.90 mW (0.20 mW)             ; 0.34 mW (0.34 mW)                 ; 62.88 mW (0.00 mW)                ; |top                                                                                                                                   ;
 ;     |hard_block:auto_generated_inst                 ; 0.00 mW (0.00 mW)                    ; 0.00 mW (0.00 mW)               ; --                                ; 0.00 mW (0.00 mW)                 ; |top|hard_block:auto_generated_inst                                                                                                    ;
-;     |core:cpu_core                                  ; 79.37 mW (0.28 mW)                   ; 69.15 mW (0.11 mW)              ; --                                ; 10.22 mW (0.17 mW)                ; |top|core:cpu_core                                                                                                                     ;
-;         |forwarding_unit:fwd_unit                   ; 0.16 mW (0.16 mW)                    ; 0.09 mW (0.09 mW)               ; --                                ; 0.07 mW (0.07 mW)                 ; |top|core:cpu_core|forwarding_unit:fwd_unit                                                                                            ;
-;         |hazard_detection_unit:hazard_unit          ; 0.08 mW (0.08 mW)                    ; 0.05 mW (0.05 mW)               ; --                                ; 0.03 mW (0.03 mW)                 ; |top|core:cpu_core|hazard_detection_unit:hazard_unit                                                                                   ;
-;         |pc_update:stage1_fetch                     ; 2.08 mW (2.08 mW)                    ; 0.20 mW (0.20 mW)               ; --                                ; 1.88 mW (1.88 mW)                 ; |top|core:cpu_core|pc_update:stage1_fetch                                                                                              ;
-;         |instr_mem:stage2_imem                      ; 28.59 mW (0.34 mW)                   ; 28.09 mW (0.23 mW)              ; --                                ; 0.50 mW (0.11 mW)                 ; |top|core:cpu_core|instr_mem:stage2_imem                                                                                               ;
-;             |altsyncram:instruction_memory_rtl_0    ; 28.25 mW (0.00 mW)                   ; 27.85 mW (0.00 mW)              ; --                                ; 0.39 mW (0.00 mW)                 ; |top|core:cpu_core|instr_mem:stage2_imem|altsyncram:instruction_memory_rtl_0                                                           ;
-;                 |altsyncram_eu81:auto_generated     ; 28.25 mW (28.25 mW)                  ; 27.85 mW (27.85 mW)             ; --                                ; 0.39 mW (0.39 mW)                 ; |top|core:cpu_core|instr_mem:stage2_imem|altsyncram:instruction_memory_rtl_0|altsyncram_eu81:auto_generated                            ;
-;         |decode:stage3_decode                       ; 0.34 mW (0.00 mW)                    ; 0.21 mW (0.00 mW)               ; --                                ; 0.13 mW (0.00 mW)                 ; |top|core:cpu_core|decode:stage3_decode                                                                                                ;
-;             |control:ctrl                           ; 0.10 mW (0.10 mW)                    ; 0.06 mW (0.06 mW)               ; --                                ; 0.04 mW (0.04 mW)                 ; |top|core:cpu_core|decode:stage3_decode|control:ctrl                                                                                   ;
-;             |imm_gen:ig                             ; 0.25 mW (0.25 mW)                    ; 0.15 mW (0.15 mW)               ; --                                ; 0.10 mW (0.10 mW)                 ; |top|core:cpu_core|decode:stage3_decode|imm_gen:ig                                                                                     ;
-;         |ID_RR:stage3_id_rr_reg                     ; 1.18 mW (1.18 mW)                    ; 0.69 mW (0.69 mW)               ; --                                ; 0.49 mW (0.49 mW)                 ; |top|core:cpu_core|ID_RR:stage3_id_rr_reg                                                                                              ;
-;         |IF_ID:stage3_if_id_reg                     ; 1.20 mW (1.20 mW)                    ; 0.59 mW (0.59 mW)               ; --                                ; 0.61 mW (0.61 mW)                 ; |top|core:cpu_core|IF_ID:stage3_if_id_reg                                                                                              ;
-;         |bht:stage4_bht                             ; 0.67 mW (0.13 mW)                    ; 0.64 mW (0.11 mW)               ; --                                ; 0.02 mW (0.02 mW)                 ; |top|core:cpu_core|bht:stage4_bht                                                                                                      ;
-;             |altsyncram:bht_table_rtl_0             ; 0.54 mW (0.00 mW)                    ; 0.53 mW (0.00 mW)               ; --                                ; 0.00 mW (0.00 mW)                 ; |top|core:cpu_core|bht:stage4_bht|altsyncram:bht_table_rtl_0                                                                           ;
-;                 |altsyncram_qrl1:auto_generated     ; 0.54 mW (0.54 mW)                    ; 0.53 mW (0.53 mW)               ; --                                ; 0.00 mW (0.00 mW)                 ; |top|core:cpu_core|bht:stage4_bht|altsyncram:bht_table_rtl_0|altsyncram_qrl1:auto_generated                                            ;
-;         |regfile:stage4_regfile                     ; 2.88 mW (1.45 mW)                    ; 2.45 mW (1.03 mW)               ; --                                ; 0.43 mW (0.42 mW)                 ; |top|core:cpu_core|regfile:stage4_regfile                                                                                              ;
-;             |altsyncram:registers_a_rtl_0           ; 0.72 mW (0.00 mW)                    ; 0.71 mW (0.00 mW)               ; --                                ; 0.01 mW (0.00 mW)                 ; |top|core:cpu_core|regfile:stage4_regfile|altsyncram:registers_a_rtl_0                                                                 ;
-;                 |altsyncram_tam1:auto_generated     ; 0.72 mW (0.72 mW)                    ; 0.71 mW (0.71 mW)               ; --                                ; 0.01 mW (0.01 mW)                 ; |top|core:cpu_core|regfile:stage4_regfile|altsyncram:registers_a_rtl_0|altsyncram_tam1:auto_generated                                  ;
-;             |altsyncram:registers_b_rtl_0           ; 0.72 mW (0.00 mW)                    ; 0.71 mW (0.00 mW)               ; --                                ; 0.00 mW (0.00 mW)                 ; |top|core:cpu_core|regfile:stage4_regfile|altsyncram:registers_b_rtl_0                                                                 ;
-;                 |altsyncram_uam1:auto_generated     ; 0.72 mW (0.72 mW)                    ; 0.71 mW (0.71 mW)               ; --                                ; 0.00 mW (0.00 mW)                 ; |top|core:cpu_core|regfile:stage4_regfile|altsyncram:registers_b_rtl_0|altsyncram_uam1:auto_generated                                  ;
-;         |RR_EX1:stage4_rr_ex1_reg                   ; 1.20 mW (1.20 mW)                    ; 0.68 mW (0.68 mW)               ; --                                ; 0.53 mW (0.53 mW)                 ; |top|core:cpu_core|RR_EX1:stage4_rr_ex1_reg                                                                                            ;
-;         |data_sel:stage5_data_sel                   ; 0.14 mW (0.14 mW)                    ; 0.11 mW (0.11 mW)               ; --                                ; 0.03 mW (0.03 mW)                 ; |top|core:cpu_core|data_sel:stage5_data_sel                                                                                            ;
-;         |EX1_EX2:stage5_ex1_ex2_reg                 ; 2.36 mW (2.36 mW)                    ; 1.24 mW (1.24 mW)               ; --                                ; 1.11 mW (1.11 mW)                 ; |top|core:cpu_core|EX1_EX2:stage5_ex1_ex2_reg                                                                                          ;
-;         |alu:stage6_alu                             ; 2.71 mW (2.71 mW)                    ; 0.77 mW (0.77 mW)               ; --                                ; 1.93 mW (1.93 mW)                 ; |top|core:cpu_core|alu:stage6_alu                                                                                                      ;
-;         |branch_eval:stage6_branch_eval             ; 0.15 mW (0.15 mW)                    ; 0.06 mW (0.06 mW)               ; --                                ; 0.08 mW (0.08 mW)                 ; |top|core:cpu_core|branch_eval:stage6_branch_eval                                                                                      ;
-;         |EX2_EX3:stage6_ex2_ex3_reg                 ; 2.45 mW (2.45 mW)                    ; 1.02 mW (1.02 mW)               ; --                                ; 1.43 mW (1.43 mW)                 ; |top|core:cpu_core|EX2_EX3:stage6_ex2_ex3_reg                                                                                          ;
-;         |pc_target_calc:stage7_calc                 ; 0.01 mW (0.01 mW)                    ; 0.00 mW (0.00 mW)               ; --                                ; 0.00 mW (0.00 mW)                 ; |top|core:cpu_core|pc_target_calc:stage7_calc                                                                                          ;
-;         |MEM_WB:stage7_mem_wb_reg                   ; 0.61 mW (0.61 mW)                    ; 0.53 mW (0.53 mW)               ; --                                ; 0.08 mW (0.08 mW)                 ; |top|core:cpu_core|MEM_WB:stage7_mem_wb_reg                                                                                            ;
-;         |memory:stage8_memory_system                ; 32.25 mW (0.00 mW)                   ; 31.60 mW (0.00 mW)              ; --                                ; 0.65 mW (0.00 mW)                 ; |top|core:cpu_core|memory:stage8_memory_system                                                                                         ;
-;             |data_mem:dmem                          ; 32.17 mW (1.16 mW)                   ; 31.52 mW (0.64 mW)              ; --                                ; 0.64 mW (0.52 mW)                 ; |top|core:cpu_core|memory:stage8_memory_system|data_mem:dmem                                                                           ;
-;                 |altsyncram:memory_rtl_0            ; 31.01 mW (0.00 mW)                   ; 30.89 mW (0.00 mW)              ; --                                ; 0.12 mW (0.00 mW)                 ; |top|core:cpu_core|memory:stage8_memory_system|data_mem:dmem|altsyncram:memory_rtl_0                                                   ;
-;                     |altsyncram_oqm1:auto_generated ; 31.01 mW (30.89 mW)                  ; 30.89 mW (30.89 mW)             ; --                                ; 0.12 mW (0.00 mW)                 ; |top|core:cpu_core|memory:stage8_memory_system|data_mem:dmem|altsyncram:memory_rtl_0|altsyncram_oqm1:auto_generated                    ;
-;                         |decode_97a:decode2         ; 0.12 mW (0.12 mW)                    ; 0.00 mW (0.00 mW)               ; --                                ; 0.12 mW (0.12 mW)                 ; |top|core:cpu_core|memory:stage8_memory_system|data_mem:dmem|altsyncram:memory_rtl_0|altsyncram_oqm1:auto_generated|decode_97a:decode2 ;
-;             |mmio:mmio_inst                         ; 0.08 mW (0.08 mW)                    ; 0.08 mW (0.08 mW)               ; --                                ; 0.00 mW (0.00 mW)                 ; |top|core:cpu_core|memory:stage8_memory_system|mmio:mmio_inst                                                                          ;
-;         |writeback:stage8_wb                        ; 0.04 mW (0.04 mW)                    ; 0.01 mW (0.01 mW)               ; --                                ; 0.04 mW (0.04 mW)                 ; |top|core:cpu_core|writeback:stage8_wb                                                                                                 ;
+;     |core:cpu_core                                  ; 197.59 mW (0.00 mW)                  ; 171.69 mW (0.00 mW)             ; --                                ; 25.90 mW (0.00 mW)                ; |top|core:cpu_core                                                                                                                     ;
+;         |branch_predictor:branch_pred               ; 1.98 mW (0.30 mW)                    ; 1.80 mW (0.19 mW)               ; --                                ; 0.18 mW (0.11 mW)                 ; |top|core:cpu_core|branch_predictor:branch_pred                                                                                        ;
+;             |bht:stage4_bht                         ; 1.68 mW (0.34 mW)                    ; 1.61 mW (0.28 mW)               ; --                                ; 0.07 mW (0.06 mW)                 ; |top|core:cpu_core|branch_predictor:branch_pred|bht:stage4_bht                                                                         ;
+;                 |altsyncram:bht_table_rtl_0         ; 1.34 mW (0.00 mW)                    ; 1.33 mW (0.00 mW)               ; --                                ; 0.01 mW (0.00 mW)                 ; |top|core:cpu_core|branch_predictor:branch_pred|bht:stage4_bht|altsyncram:bht_table_rtl_0                                              ;
+;                     |altsyncram_qrl1:auto_generated ; 1.34 mW (1.34 mW)                    ; 1.33 mW (1.33 mW)               ; --                                ; 0.01 mW (0.01 mW)                 ; |top|core:cpu_core|branch_predictor:branch_pred|bht:stage4_bht|altsyncram:bht_table_rtl_0|altsyncram_qrl1:auto_generated               ;
+;         |forwarding_unit:fwd_unit                   ; 0.49 mW (0.49 mW)                    ; 0.23 mW (0.23 mW)               ; --                                ; 0.25 mW (0.25 mW)                 ; |top|core:cpu_core|forwarding_unit:fwd_unit                                                                                            ;
+;         |pipeline_control_unit:hazard_unit          ; 0.38 mW (0.38 mW)                    ; 0.13 mW (0.13 mW)               ; --                                ; 0.25 mW (0.25 mW)                 ; |top|core:cpu_core|pipeline_control_unit:hazard_unit                                                                                   ;
+;         |pc_update:stage1_fetch                     ; 4.73 mW (4.73 mW)                    ; 0.52 mW (0.52 mW)               ; --                                ; 4.21 mW (4.21 mW)                 ; |top|core:cpu_core|pc_update:stage1_fetch                                                                                              ;
+;         |instr_mem:stage2_imem                      ; 72.03 mW (0.74 mW)                   ; 70.43 mW (0.58 mW)              ; --                                ; 1.60 mW (0.16 mW)                 ; |top|core:cpu_core|instr_mem:stage2_imem                                                                                               ;
+;             |altsyncram:instruction_memory_rtl_0    ; 71.29 mW (0.00 mW)                   ; 69.85 mW (0.00 mW)              ; --                                ; 1.44 mW (0.00 mW)                 ; |top|core:cpu_core|instr_mem:stage2_imem|altsyncram:instruction_memory_rtl_0                                                           ;
+;                 |altsyncram_eu81:auto_generated     ; 71.29 mW (71.29 mW)                  ; 69.85 mW (69.85 mW)             ; --                                ; 1.44 mW (1.44 mW)                 ; |top|core:cpu_core|instr_mem:stage2_imem|altsyncram:instruction_memory_rtl_0|altsyncram_eu81:auto_generated                            ;
+;         |decode:stage3_decode                       ; 0.84 mW (0.00 mW)                    ; 0.54 mW (0.00 mW)               ; --                                ; 0.29 mW (0.00 mW)                 ; |top|core:cpu_core|decode:stage3_decode                                                                                                ;
+;             |control:ctrl                           ; 0.20 mW (0.20 mW)                    ; 0.14 mW (0.14 mW)               ; --                                ; 0.05 mW (0.05 mW)                 ; |top|core:cpu_core|decode:stage3_decode|control:ctrl                                                                                   ;
+;             |imm_gen:ig                             ; 0.64 mW (0.64 mW)                    ; 0.40 mW (0.40 mW)               ; --                                ; 0.24 mW (0.24 mW)                 ; |top|core:cpu_core|decode:stage3_decode|imm_gen:ig                                                                                     ;
+;         |ID_RR:stage3_id_rr_reg                     ; 3.34 mW (3.34 mW)                    ; 1.74 mW (1.74 mW)               ; --                                ; 1.60 mW (1.60 mW)                 ; |top|core:cpu_core|ID_RR:stage3_id_rr_reg                                                                                              ;
+;         |IF_ID:stage3_if_id_reg                     ; 2.80 mW (2.80 mW)                    ; 1.44 mW (1.44 mW)               ; --                                ; 1.36 mW (1.36 mW)                 ; |top|core:cpu_core|IF_ID:stage3_if_id_reg                                                                                              ;
+;         |regfile:stage4_regfile                     ; 6.64 mW (3.07 mW)                    ; 5.69 mW (2.16 mW)               ; --                                ; 0.95 mW (0.91 mW)                 ; |top|core:cpu_core|regfile:stage4_regfile                                                                                              ;
+;             |altsyncram:registers_a_rtl_0           ; 1.80 mW (0.00 mW)                    ; 1.76 mW (0.00 mW)               ; --                                ; 0.04 mW (0.00 mW)                 ; |top|core:cpu_core|regfile:stage4_regfile|altsyncram:registers_a_rtl_0                                                                 ;
+;                 |altsyncram_tam1:auto_generated     ; 1.80 mW (1.80 mW)                    ; 1.76 mW (1.76 mW)               ; --                                ; 0.04 mW (0.04 mW)                 ; |top|core:cpu_core|regfile:stage4_regfile|altsyncram:registers_a_rtl_0|altsyncram_tam1:auto_generated                                  ;
+;             |altsyncram:registers_b_rtl_0           ; 1.77 mW (0.00 mW)                    ; 1.77 mW (0.00 mW)               ; --                                ; 0.00 mW (0.00 mW)                 ; |top|core:cpu_core|regfile:stage4_regfile|altsyncram:registers_b_rtl_0                                                                 ;
+;                 |altsyncram_uam1:auto_generated     ; 1.77 mW (1.77 mW)                    ; 1.77 mW (1.77 mW)               ; --                                ; 0.00 mW (0.00 mW)                 ; |top|core:cpu_core|regfile:stage4_regfile|altsyncram:registers_b_rtl_0|altsyncram_uam1:auto_generated                                  ;
+;         |RR_EX1:stage4_rr_ex1_reg                   ; 2.46 mW (2.46 mW)                    ; 1.58 mW (1.58 mW)               ; --                                ; 0.88 mW (0.88 mW)                 ; |top|core:cpu_core|RR_EX1:stage4_rr_ex1_reg                                                                                            ;
+;         |data_sel:stage5_data_sel                   ; 0.34 mW (0.34 mW)                    ; 0.26 mW (0.26 mW)               ; --                                ; 0.07 mW (0.07 mW)                 ; |top|core:cpu_core|data_sel:stage5_data_sel                                                                                            ;
+;         |EX1_EX2:stage5_ex1_ex2_reg                 ; 5.82 mW (5.82 mW)                    ; 2.92 mW (2.92 mW)               ; --                                ; 2.90 mW (2.90 mW)                 ; |top|core:cpu_core|EX1_EX2:stage5_ex1_ex2_reg                                                                                          ;
+;         |alu:stage6_alu                             ; 7.30 mW (7.30 mW)                    ; 1.94 mW (1.94 mW)               ; --                                ; 5.36 mW (5.36 mW)                 ; |top|core:cpu_core|alu:stage6_alu                                                                                                      ;
+;         |branch_eval:stage6_branch_eval             ; 0.37 mW (0.37 mW)                    ; 0.16 mW (0.16 mW)               ; --                                ; 0.21 mW (0.21 mW)                 ; |top|core:cpu_core|branch_eval:stage6_branch_eval                                                                                      ;
+;         |EX2_EX3:stage6_ex2_ex3_reg                 ; 6.66 mW (6.66 mW)                    ; 2.45 mW (2.45 mW)               ; --                                ; 4.21 mW (4.21 mW)                 ; |top|core:cpu_core|EX2_EX3:stage6_ex2_ex3_reg                                                                                          ;
+;         |pc_target_calc:stage7_calc                 ; 0.01 mW (0.01 mW)                    ; 0.01 mW (0.01 mW)               ; --                                ; 0.00 mW (0.00 mW)                 ; |top|core:cpu_core|pc_target_calc:stage7_calc                                                                                          ;
+;         |fwd_sel:stage7_fwd                         ; 0.22 mW (0.22 mW)                    ; 0.07 mW (0.07 mW)               ; --                                ; 0.14 mW (0.14 mW)                 ; |top|core:cpu_core|fwd_sel:stage7_fwd                                                                                                  ;
+;         |MEM_WB:stage7_mem_wb_reg                   ; 1.45 mW (1.45 mW)                    ; 1.21 mW (1.21 mW)               ; --                                ; 0.24 mW (0.24 mW)                 ; |top|core:cpu_core|MEM_WB:stage7_mem_wb_reg                                                                                            ;
+;         |memory:stage8_memory_system                ; 79.62 mW (0.04 mW)                   ; 78.53 mW (0.04 mW)              ; --                                ; 1.09 mW (0.00 mW)                 ; |top|core:cpu_core|memory:stage8_memory_system                                                                                         ;
+;             |data_mem:dmem                          ; 79.31 mW (1.33 mW)                   ; 78.23 mW (0.68 mW)              ; --                                ; 1.09 mW (0.65 mW)                 ; |top|core:cpu_core|memory:stage8_memory_system|data_mem:dmem                                                                           ;
+;                 |altsyncram:memory_rtl_0            ; 77.98 mW (0.00 mW)                   ; 77.55 mW (0.00 mW)              ; --                                ; 0.43 mW (0.00 mW)                 ; |top|core:cpu_core|memory:stage8_memory_system|data_mem:dmem|altsyncram:memory_rtl_0                                                   ;
+;                     |altsyncram_oqm1:auto_generated ; 77.98 mW (77.55 mW)                  ; 77.55 mW (77.54 mW)             ; --                                ; 0.43 mW (0.00 mW)                 ; |top|core:cpu_core|memory:stage8_memory_system|data_mem:dmem|altsyncram:memory_rtl_0|altsyncram_oqm1:auto_generated                    ;
+;                         |decode_97a:decode2         ; 0.44 mW (0.44 mW)                    ; 0.00 mW (0.00 mW)               ; --                                ; 0.43 mW (0.43 mW)                 ; |top|core:cpu_core|memory:stage8_memory_system|data_mem:dmem|altsyncram:memory_rtl_0|altsyncram_oqm1:auto_generated|decode_97a:decode2 ;
+;             |mmio:mmio_inst                         ; 0.26 mW (0.26 mW)                    ; 0.26 mW (0.26 mW)               ; --                                ; 0.01 mW (0.01 mW)                 ; |top|core:cpu_core|memory:stage8_memory_system|mmio:mmio_inst                                                                          ;
+;         |writeback:stage8_wb                        ; 0.12 mW (0.12 mW)                    ; 0.01 mW (0.01 mW)               ; --                                ; 0.10 mW (0.10 mW)                 ; |top|core:cpu_core|writeback:stage8_wb                                                                                                 ;
 ;     |seven_seg_decoder:h0                           ; 0.00 mW (0.00 mW)                    ; 0.00 mW (0.00 mW)               ; --                                ; 0.00 mW (0.00 mW)                 ; |top|seven_seg_decoder:h0                                                                                                              ;
 ;     |seven_seg_decoder:h1                           ; 0.00 mW (0.00 mW)                    ; 0.00 mW (0.00 mW)               ; --                                ; 0.00 mW (0.00 mW)                 ; |top|seven_seg_decoder:h1                                                                                                              ;
 ;     |seven_seg_decoder:h2                           ; 0.00 mW (0.00 mW)                    ; 0.00 mW (0.00 mW)               ; --                                ; 0.00 mW (0.00 mW)                 ; |top|seven_seg_decoder:h2                                                                                                              ;
 ;     |seven_seg_decoder:h3                           ; 0.00 mW (0.00 mW)                    ; 0.00 mW (0.00 mW)               ; --                                ; 0.00 mW (0.00 mW)                 ; |top|seven_seg_decoder:h3                                                                                                              ;
 ;     |seven_seg_decoder:h4                           ; 0.00 mW (0.00 mW)                    ; 0.00 mW (0.00 mW)               ; --                                ; 0.00 mW (0.00 mW)                 ; |top|seven_seg_decoder:h4                                                                                                              ;
 ;     |seven_seg_decoder:h5                           ; 0.00 mW (0.00 mW)                    ; 0.00 mW (0.00 mW)               ; --                                ; 0.00 mW (0.00 mW)                 ; |top|seven_seg_decoder:h5                                                                                                              ;
+;     |pll_125:pll_inst                               ; 46.99 mW (0.00 mW)                   ; 10.01 mW (0.00 mW)              ; --                                ; 36.98 mW (0.00 mW)                ; |top|pll_125:pll_inst                                                                                                                  ;
+;         |altpll:altpll_component                    ; 46.99 mW (0.00 mW)                   ; 10.01 mW (0.00 mW)              ; --                                ; 36.98 mW (0.00 mW)                ; |top|pll_125:pll_inst|altpll:altpll_component                                                                                          ;
+;             |pll_125_altpll:auto_generated          ; 46.99 mW (46.99 mW)                  ; 10.01 mW (10.01 mW)             ; --                                ; 36.98 mW (36.98 mW)               ; |top|pll_125:pll_inst|altpll:altpll_component|pll_125_altpll:auto_generated                                                            ;
 +-----------------------------------------------------+--------------------------------------+---------------------------------+-----------------------------------+-----------------------------------+----------------------------------------------------------------------------------------------------------------------------------------+
 (1) Value in parentheses is the power consumed at that level of hierarchy. Value not in parentheses is the power consumed at that level of hierarchy plus the power consumed by all levels of hierarchy below it.
 
 (2) The "Block Thermal Static Power" for all levels of hierarchy except the top-level hierarchy is part of the "Core Static Thermal Power Dissipation" value found on the PowerPlay Power Analyzer-->Summary report panel. The "Core Static Thermal Power Dissipation" also contains the thermal static power dissipated by the routing.
 
 
-+------------------------------------------------------------------+
-; Core Dynamic Thermal Power Dissipation by Clock Domain           ;
-+---------------+-----------------------+--------------------------+
-; Clock Domain  ; Clock Frequency (MHz) ; Total Core Dynamic Power ;
-+---------------+-----------------------+--------------------------+
-; MAX10_CLK1_50 ; 50.00                 ; 94.13                    ;
-+---------------+-----------------------+--------------------------+
++--------------------------------------------------------------------------------------------------------------------------------------------+
+; Core Dynamic Thermal Power Dissipation by Clock Domain                                                                                     ;
++-----------------------------------------------------------------------------------------+-----------------------+--------------------------+
+; Clock Domain                                                                            ; Clock Frequency (MHz) ; Total Core Dynamic Power ;
++-----------------------------------------------------------------------------------------+-----------------------+--------------------------+
+; pll_125:pll_inst|altpll:altpll_component|pll_125_altpll:auto_generated|wire_pll1_clk[1] ; 124.96                ; 234.61                   ;
+; MAX10_CLK1_50                                                                           ; 49.92                 ; 0.00                     ;
+; No clock domain                                                                         ; 0.00                  ; 10.01                    ;
++-----------------------------------------------------------------------------------------+-----------------------+--------------------------+
 
 
 +------------------------------------------------------------------------------------------------------------------------------------+
@@ -232,11 +240,11 @@ on the Quartus Prime software download page.
 +----------------+-------------------------+---------------------------+--------------------------+----------------------------------+
 ; Voltage Supply ; Total Current Drawn (1) ; Dynamic Current Drawn (1) ; Static Current Drawn (1) ; Minimum Power Supply Current (2) ;
 +----------------+-------------------------+---------------------------+--------------------------+----------------------------------+
-; VCC            ; 90.54 mA                ; 78.46 mA                  ; 12.08 mA                 ; 90.54 mA                         ;
+; VCC            ; 208.16 mA               ; 195.52 mA                 ; 12.64 mA                 ; 208.16 mA                        ;
 ; VCCIO          ; 3.63 mA                 ; 0.05 mA                   ; 3.59 mA                  ; 3.63 mA                          ;
-; VCCA           ; 25.81 mA                ; 0.00 mA                   ; 25.81 mA                 ; 25.81 mA                         ;
-; VCCD_PLL       ; 9.26 mA                 ; 0.00 mA                   ; 9.26 mA                  ; 9.26 mA                          ;
-; VCCINT         ; 0.21 mA                 ; 0.00 mA                   ; 0.21 mA                  ; 0.21 mA                          ;
+; VCCA           ; 29.88 mA                ; 1.83 mA                   ; 28.05 mA                 ; 29.88 mA                         ;
+; VCCD_PLL       ; 14.34 mA                ; 4.54 mA                   ; 9.81 mA                  ; 14.34 mA                         ;
+; VCCINT         ; 0.22 mA                 ; 0.00 mA                   ; 0.22 mA                  ; 0.22 mA                          ;
 ; VCCA_ADC       ; 0.00 mA                 ; 0.00 mA                   ; 0.00 mA                  ; 0.00 mA                          ;
 +----------------+-------------------------+---------------------------+--------------------------+----------------------------------+
 (1) Currents reported in columns "Total Current Drawn", "Dynamic Current Drawn", and "Static Current Drawn" are sufficient for user operation of the device.  
@@ -278,9 +286,9 @@ on the Quartus Prime software download page.
 +----------------------------------------------------------------------------------------+--------------+------------+---------------+---------------+
 ; Simulation (from file)                                                                 ;              ;            ;               ;               ;
 ;     -- Simulation time nodes in unknown state                                          ; 0.0%         ;            ;               ;               ;
-;     -- Number of signals with Toggle Rate from Simulation                              ; 4624 (98.7%) ; 66 (90.4%) ; 1303 (100.0%) ; 3255 (98.4%)  ;
-;     -- Number of signals with Zero toggle rate, from Simulation                        ; 2738 (58.5%) ; 65 (89.0%) ; 758 (58.2%)   ; 1915 (57.9%)  ;
-;     -- Number of signals with Static Probability from Simulation                       ; 4624 (98.7%) ; 66 (90.4%) ; 1303 (100.0%) ; 3255 (98.4%)  ;
+;     -- Number of signals with Toggle Rate from Simulation                              ; 4592 (98.7%) ; 66 (90.4%) ; 1303 (100.0%) ; 3223 (98.4%)  ;
+;     -- Number of signals with Zero toggle rate, from Simulation                        ; 2750 (59.1%) ; 65 (89.0%) ; 786 (60.3%)   ; 1899 (58.0%)  ;
+;     -- Number of signals with Static Probability from Simulation                       ; 4592 (98.7%) ; 66 (90.4%) ; 1303 (100.0%) ; 3223 (98.4%)  ;
 ;                                                                                        ;              ;            ;               ;               ;
 ; Node, entity or clock assignment                                                       ;              ;            ;               ;               ;
 ;     -- Number of signals with Toggle Rate from Node, entity or clock assignment        ; 0 (0.0%)     ; 0 (0.0%)   ; 0 (0.0%)      ; 0 (0.0%)      ;
@@ -293,10 +301,10 @@ on the Quartus Prime software download page.
 ;                                                                                        ;              ;            ;               ;               ;
 ; Default assignment                                                                     ;              ;            ;               ;               ;
 ;     -- Number of signals with Toggle Rate from Default assignment                      ; 0 (0.0%)     ; 0 (0.0%)   ; 0 (0.0%)      ; 0 (0.0%)      ;
-;     -- Number of signals with Static Probability from Default assignment               ; 7 (0.1%)     ; 7 (9.6%)   ; 0 (0.0%)      ; 0 (0.0%)      ;
+;     -- Number of signals with Static Probability from Default assignment               ; 7 (0.2%)     ; 7 (9.6%)   ; 0 (0.0%)      ; 0 (0.0%)      ;
 ;                                                                                        ;              ;            ;               ;               ;
 ; Assumed 0                                                                              ;              ;            ;               ;               ;
-;     -- Number of signals with Toggle Rate assumed 0                                    ; 7 (0.1%)     ; 7 (9.6%)   ; 0 (0.0%)      ; 0 (0.0%)      ;
+;     -- Number of signals with Toggle Rate assumed 0                                    ; 7 (0.2%)     ; 7 (9.6%)   ; 0 (0.0%)      ; 0 (0.0%)      ;
 +----------------------------------------------------------------------------------------+--------------+------------+---------------+---------------+
 
 
@@ -328,13 +336,15 @@ Info: Running Quartus Prime Power Analyzer
     Info: Altera and sold by Altera or its authorized distributors.  Please
     Info: refer to the Altera Software License Subscription Agreements 
     Info: on the Quartus Prime software download page.
-    Info: Processing started: Mon Jul 20 22:28:05 2026
+    Info: Processing started: Wed Sep  2 12:52:53 2026
 Info: Command: quartus_pow cpu
 Info (21077): Low junction temperature is 0 degrees C
 Info (21077): High junction temperature is 85 degrees C
 Info (222002): Starting scan of VCD file power.vcd (0 ns to End of File) for signal static probabilities and transition densities
 Info (222003): Finished scan of VCD file power.vcd (0 ns to End of File) for signal static probabilities and transition densities
 Info (332104): Reading SDC File: 'cpu.sdc'
+Info (332110): Deriving PLL clocks
+    Info (332110): create_generated_clock -source {pll_inst|altpll_component|auto_generated|pll1|inclk[0]} -divide_by 2 -multiply_by 5 -duty_cycle 50.00 -name {pll_inst|altpll_component|auto_generated|pll1|clk[1]} {pll_inst|altpll_component|auto_generated|pll1|clk[1]}
 Info (332151): Clock uncertainty is not calculated until you update the timing netlist.
 Info (332123): Deriving Clock Uncertainty. Please refer to report_sdc in the Timing Analyzer to see clock uncertainties.
 Info (223000): Starting Vectorless Power Activity Estimation
@@ -343,12 +353,12 @@ Info (215037): Detailed signal activity file source information is not written t
 Info (218000): Using Advanced I/O Power to simulate I/O buffers with the specified board trace model
 Info (334003): Started post-fitting delay annotation
 Info (334004): Delay annotation completed successfully
-Info (215049): Average toggle rate for this design is 4.845 millions of transitions / sec
-Info (215031): Total thermal power estimate for the design is 193.46 mW
+Info (215049): Average toggle rate for this design is 11.967 millions of transitions / sec
+Info (215031): Total thermal power estimate for the design is 350.90 mW
 Info: Quartus Prime Power Analyzer was successful. 0 errors, 0 warnings
-    Info: Peak virtual memory: 5102 megabytes
-    Info: Processing ended: Mon Jul 20 22:28:21 2026
-    Info: Elapsed time: 00:00:16
+    Info: Peak virtual memory: 5101 megabytes
+    Info: Processing ended: Wed Sep  2 12:53:01 2026
+    Info: Elapsed time: 00:00:08
     Info: Total CPU time (on all processors): 00:00:12
 
 

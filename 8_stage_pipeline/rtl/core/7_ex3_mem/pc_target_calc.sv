@@ -1,6 +1,5 @@
 /*
 Calculates the target program counter for branch and jump instructions.
-Aligns target address to 4-byte boundaries for JALR.
 */
 
 module pc_target_calc (
@@ -21,7 +20,7 @@ module pc_target_calc (
     output logic [31:0] pc_target
 );
 
-// Combinational logic deciding target PC. Aligns JALR and branch targets to 4-byte boundaries.
+// Combinational logic deciding target PC.
 always_comb begin
     logic actual_taken;
     logic mispredict;
@@ -29,13 +28,16 @@ always_comb begin
     actual_taken = branch && condition_met_in;
     mispredict = branch && (actual_taken != predicted_taken_in);
 
+    // Determines whether PC should be incremented by 4 or updated to target
     pc_sel = jump || mispredict;
 
     if (jump) begin
+        // Aligns JALR and branch targets to 4-byte boundaries.
         pc_target = alu_result & 32'hFFFFFFFC;
     end
     else if (mispredict) begin
         if (actual_taken) begin
+            // Aligns JALR and branch targets to 4-byte boundaries.
             pc_target = branch_target_in & 32'hFFFFFFFC;
         end else begin
             pc_target = pc_plus_4;

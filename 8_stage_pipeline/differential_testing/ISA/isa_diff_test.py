@@ -201,6 +201,7 @@ def run_test(test_file):
         "../../rtl/core/3_decode/ID_RR.sv",
         "../../rtl/core/4_reg_read/regfile.sv",
         "../../rtl/core/4_reg_read/bht.sv",
+        "../../rtl/core/4_reg_read/branch_predictor.sv",
         "../../rtl/core/4_reg_read/RR_EX1.sv",
         "../../rtl/core/5_ex1/data_sel.sv",
         "../../rtl/core/5_ex1/EX1_EX2.sv",
@@ -208,13 +209,14 @@ def run_test(test_file):
         "../../rtl/core/6_ex2/branch_eval.sv",
         "../../rtl/core/6_ex2/EX2_EX3.sv",
         "../../rtl/core/7_ex3_mem/pc_target_calc.sv",
+        "../../rtl/core/7_ex3_mem/fwd_sel.sv",
         "../../rtl/core/7_ex3_mem/MEM_WB.sv",
         "data_mem.sv",
         "../../rtl/core/7_ex3_mem/mmio.sv",
         "memory.sv",
         "../../rtl/core/8_wb/writeback.sv",
         "../../rtl/core/hazard_control/forwarding_unit.sv",
-        "../../rtl/core/hazard_control/hazard_detection_unit.sv",
+        "../../rtl/core/hazard_control/pipeline_control_unit.sv",
         "../../rtl/core/core.sv",
         "tb_diff.sv"
     ]

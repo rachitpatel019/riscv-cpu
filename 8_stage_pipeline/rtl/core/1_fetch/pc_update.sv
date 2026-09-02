@@ -17,7 +17,13 @@ module pc_update (
     output logic [31:0] pc_plus_4
 );
 
-// Updates the program counter register on each clock cycle based on stall, jump, and reset signals.
+/*
+Updates the program counter register on each clock cycle based on stall, jump, and reset signals.
+0 on reset
+PC+4 on sequential instruction fetching.
+jump/branch targets from the pc-target_calc module (stage 7) are given higher priority than
+targets from bht (stage 4) as they originate from older instructions.
+*/
 always_ff @(posedge clk) begin
     if (reset) begin
         pc <= 32'b0;

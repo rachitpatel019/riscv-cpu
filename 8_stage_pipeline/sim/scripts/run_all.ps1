@@ -26,13 +26,15 @@ $scripts = @(
     "run_decode.do",
     "run_regfile.do",
     "run_bht.do",
+    "run_branch_predictor.do",
     "run_data_sel.do",
     "run_alu.do",
     "run_branch_eval.do",
     "run_pc_target_calc.do",
+    "run_fwd_sel.do",
     "run_data_mem.do",
     "run_writeback.do",
-    "run_hazard_detection_unit.do",
+    "run_pipeline_control_unit.do",
     "run_forwarding_unit.do",
     "run_core_integrated.do"
 )

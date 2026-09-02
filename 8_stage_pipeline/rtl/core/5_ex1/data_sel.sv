@@ -1,6 +1,7 @@
 /*
-Operand selection unit for EX1 stage.
-Multiplexes register data, immediates, and forwarded results.
+Operand data selection and forwarding unit for the EX1 execution stage.
+Resolves RAW data hazards by multiplexing register data with forwarded values from EX1, EX2, and EX3 stages.
+Selects final ALU input operands by picking PC or RS1 for operand A, and immediate or RS2 for operand B.
 */
 
 module data_sel (
@@ -26,7 +27,7 @@ module data_sel (
 logic [31:0] rs1_final;
 logic [31:0] rs2_final;
 
-// Forwarding multiplexer for register operand A (rs1).
+// Selects RS1 data by multiplexing register file output with forwarded data from downstream stages to resolve data hazards.
 always_comb begin
     case (forward_a_sel)
         2'b11: rs1_final = fwd_ex1_data;
@@ -36,10 +37,10 @@ always_comb begin
     endcase
 end
 
-// Operand A selection between PC (for jumps/AUIPC) and register data rs1.
+// Muxes between Program Counter (for branch/jump targets and AUIPC) and the resolved RS1 data to form ALU operand A.
 assign operand_a = alu_src_a ? pc : rs1_final;
 
-// Forwarding multiplexer for register operand B (rs2).
+// Selects RS2 data by multiplexing register file output with forwarded data from downstream stages to resolve data hazards.
 always_comb begin
     case (forward_b_sel)
         2'b11: rs2_final = fwd_ex1_data;
@@ -49,7 +50,7 @@ always_comb begin
     endcase
 end
 
-// Operand B selection between immediate and register data rs2, and outputs forwarded rs2 data.
+// Muxes between immediate value and resolved RS2 data for ALU operand B, and passes resolved RS2 data for store operations.
 assign operand_b = alu_src_b ? imm : rs2_final;
 assign rs2_data_out = rs2_final;
 

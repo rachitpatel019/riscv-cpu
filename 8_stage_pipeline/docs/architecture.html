@@ -126,6 +126,13 @@
         padding: 1rem 1.5rem;
         margin: 1rem 0;
     }
+    .meta-box a {
+        color: var(--accent);
+        text-decoration: none;
+    }
+    .meta-box a:hover {
+        text-decoration: underline;
+    }
     .warning-box {
         background: #451a03;
         border: 1px solid #f59e0b;
@@ -217,6 +224,7 @@
 <h1>8-Stage Pipelined RISC-V (RV32I) CPU - Architecture Specification</h1>
 
 <div class="meta-box">
+    <strong>Rendered Web Version:</strong> <a href="https://htmlpreview.github.io/?https://github.com/rachitpatel019/riscv-cpu/blob/master/8_stage_pipeline/docs/architecture.html" target="_blank" rel="noopener noreferrer">https://htmlpreview.github.io/?https://github.com/rachitpatel019/riscv-cpu/blob/master/8_stage_pipeline/docs/architecture.html</a><br>
     <strong>ISA:</strong> RISC-V RV32I (Base Integer Instruction Set)<br>
     <strong>Data Width:</strong> 32-bit<br>
     <strong>Pipeline Depth:</strong> 8 stages<br>
@@ -941,13 +949,37 @@ mem_size (2b), mem_unsigned (1b), wb_sel (2b), branch (1b), jump (1b), branch_ty
     See <a href="#forwarding">Section 13: Data Forwarding</a> for full details.
 </p>
 
-<h3>7.3 Branch Target Calculation</h3>
+<h3>7.3 Module: <code>branch_predictor</code> (Branch Predictor &amp; Target Calculation)</h3>
+<p>File: <code>rtl/core/4_reg_read/branch_predictor.sv</code></p>
 <p>
-    The branch target address is calculated combinational in <code>core.sv</code> from the ID_RR register outputs:
-    <code>assign IDRR_branch_target = IDRR_pc + IDRR_immediate;</code>.
-    The result is registered through RR_EX1 and EX1_EX2 and consumed by <code>pc_target_calc</code>
-    in Stage 7. This early calculation removes the branch-target adder from Stage 6's critical path.
+    Encapsulates dynamic branch prediction and early branch target address calculation in Stage 4 (Register Read).
+    The module instantiates the 1024-entry <code>bht</code> block RAM internally and provides:
 </p>
+<ul>
+    <li><strong>Early Branch Target Calculation:</strong> Combinationally adds PC and immediate (<code>IDRR_branch_target = IDRR_pc + IDRR_immediate</code>), removing the branch adder from Stage 6's critical path.</li>
+    <li><strong>Direction Prediction:</strong> Evaluates the registered 2-bit counter value from the BHT and asserts <code>IDRR_predict_taken</code> when the MSB is high (<code>IDRR_branch &amp;&amp; IDRR_counter_val[1]</code>).</li>
+    <li><strong>Next Counter Computation:</strong> Combinationally computes the updated 2-bit saturating counter value (<code>E3_next_counter</code>) based on Stage 7 execution outcome (<code>E3_condition_met</code>) to update the BHT upon branch resolution.</li>
+</ul>
+
+<h4>Port Interface</h4>
+<table>
+    <tr><th>Port</th><th>Direction</th><th>Width</th><th>Source / Destination</th><th>Description</th></tr>
+    <tr><td><code>clk</code></td><td>input</td><td>1</td><td>System clock</td><td>Clock source for BHT RAM</td></tr>
+    <tr><td><code>reset</code></td><td>input</td><td>1</td><td>System reset</td><td>Initializes BHT counters to weakly not-taken (2'b01)</td></tr>
+    <tr><td><code>D_pc</code></td><td>input</td><td>32</td><td>Stage 3 (Decode)</td><td>PC used to index BHT read port (bits [11:2])</td></tr>
+    <tr><td><code>stall_frontend</code></td><td>input</td><td>1</td><td>Pipeline Control Unit</td><td>Disables BHT read when frontend pipeline is stalled</td></tr>
+    <tr><td><code>IDRR_pc</code></td><td>input</td><td>32</td><td>ID_RR register</td><td>Stage 4 PC for target calculation</td></tr>
+    <tr><td><code>IDRR_immediate</code></td><td>input</td><td>32</td><td>ID_RR register</td><td>Stage 4 branch offset immediate</td></tr>
+    <tr><td><code>IDRR_branch</code></td><td>input</td><td>1</td><td>ID_RR register</td><td>Branch instruction indicator in Stage 4</td></tr>
+    <tr><td><code>E3_pc</code></td><td>input</td><td>32</td><td>EX2_EX3 register</td><td>Stage 7 PC used to index BHT write port (bits [11:2])</td></tr>
+    <tr><td><code>E3_branch</code></td><td>input</td><td>1</td><td>EX2_EX3 register</td><td>Write enable for BHT update in Stage 7</td></tr>
+    <tr><td><code>E3_counter_val</code></td><td>input</td><td>2</td><td>EX2_EX3 register</td><td>Original counter value registered from Stage 4</td></tr>
+    <tr><td><code>E3_condition_met</code></td><td>input</td><td>1</td><td>Stage 6 (branch_eval)</td><td>Actual branch evaluation outcome from Stage 6/7</td></tr>
+    <tr><td><code>IDRR_branch_target</code></td><td>output</td><td>32</td><td>RR_EX1 / pc_update</td><td>Calculated target address for branch</td></tr>
+    <tr><td><code>IDRR_predict_taken</code></td><td>output</td><td>1</td><td>pipeline_control_unit</td><td>Prediction outcome for early PC redirection</td></tr>
+    <tr><td><code>IDRR_counter_val</code></td><td>output</td><td>2</td><td>RR_EX1</td><td>Counter value read from BHT for pipelining to Stage 7</td></tr>
+    <tr><td><code>E3_next_counter</code></td><td>output</td><td>2</td><td>Internal BHT write port</td><td>Updated counter value written into BHT</td></tr>
+</table>
 
 <div class="note-box">
     <strong>Scope:</strong> This calculation computes the B-type and J-type (JAL) PC-relative target only.
@@ -1046,8 +1078,8 @@ mem_size (2b), mem_unsigned (1b), wb_sel (2b).</p>
 </p>
 
 <div class="note-box">
-    <strong>Design Rationale — Splitting the Execute Logic into 3 Stages</strong><br>
-    In standard 5-stage pipelines, the Execute stage is the primary critical path because it performs operand forwarding multiplexing, ALU calculations, and branch target resolution in a single clock cycle. To maximize clock frequency ($F_{\text{max}}$) on the MAX 10 FPGA, this design divides these operations across three pipelined stages: operand selection (EX1), ALU computation (EX2), and branch resolution/memory routing (EX3). This split successfully increased the maximum clock frequency to 127.29 MHz.
+    <strong>Design Rationale - Splitting the Execute Logic into 3 Stages</strong><br>
+    In standard 5-stage pipelines, the Execute stage is the primary critical path because it performs operand forwarding multiplexing, ALU calculations, and branch target resolution in a single clock cycle. To maximize clock frequency on the MAX 10 FPGA, this design divides these operations across three pipelined stages: operand selection (EX1), ALU computation (EX2), and branch resolution/memory routing (EX3). This split successfully increased the operating clock frequency to 125.00 MHz.
 </div>
 
 <h3>9.1 Module: <code>alu</code> (Arithmetic Logic Unit)</h3>
@@ -1186,15 +1218,25 @@ mem_unsigned (1b), wb_sel (2b).</p>
     on the address. See <a href="#memory-system">Section 15: Memory System</a> for full details.
 </p>
 
-<h3>10.3 Writeback Intermediate Value</h3>
+<h3>10.3 Module: <code>fwd_sel</code> (Forwarding Selector &amp; Pre-Writeback Mux)</h3>
+<p>File: <code>rtl/core/7_ex3_mem/fwd_sel.sv</code></p>
 <p>
-    Computed in <code>core.sv</code> as combinational logic:
+    Pre-writeback operand multiplexer in Stage 7 (EX3/MEM). Selects between link PC (<code>pc_plus_4</code> for JAL/JALR when <code>wb_sel == 2'b10</code>)
+    and execution ALU result (<code>alu_result</code>) to generate the pre-writeback value <code>fwd_val</code> (<code>E3_fwd_val</code>).
 </p>
-<p><code>W_wb_intermediate = (E3_wb_sel == 2'b10) ? E3_pc + 32'd4 : E3_alu_result</code></p>
 <p>
-    This pre-computes the non-memory writeback value (ALU result or PC+4 for link register writes).
-    The value is registered through MEM_WB as <code>alu_result_in</code>.
+    This value is forwarded directly to Stage 5 (EX1) via the data forwarding network (for EX2-to-EX1 forwarding)
+    and is registered into the <code>MEM_WB</code> pipeline register as <code>alu_result_in</code>.
 </p>
+
+<h4>Port Interface</h4>
+<table>
+    <tr><th>Port</th><th>Direction</th><th>Width</th><th>Source / Destination</th><th>Description</th></tr>
+    <tr><td><code>wb_sel</code></td><td>input</td><td>2</td><td>EX2_EX3 register</td><td>Writeback source selector</td></tr>
+    <tr><td><code>pc_plus_4</code></td><td>input</td><td>32</td><td>EX2_EX3 register</td><td>Return/link address (PC + 4)</td></tr>
+    <tr><td><code>alu_result</code></td><td>input</td><td>32</td><td>EX2_EX3 register</td><td>ALU computation result</td></tr>
+    <tr><td><code>fwd_val</code></td><td>output</td><td>32</td><td>Stage 5 / MEM_WB</td><td>Forwarded value (<code>E3_fwd_val</code>) to data_sel and MEM_WB</td></tr>
+</table>
 
 <h3>10.4 Module: <code>MEM_WB</code> (Pipeline Register)</h3>
 <p>File: <code>rtl/core/7_ex3_mem/MEM_WB.sv</code></p>
@@ -1264,42 +1306,61 @@ mem_unsigned (1b), wb_sel (2b).</p>
 <!-- ============================================================ -->
 <h2 id="hazards">12. Hazard Detection and Stalling</h2>
 
-<h3>Module: <code>hazard_detection_unit</code></h3>
-<p>File: <code>rtl/core/hazard_control/hazard_detection_unit.sv</code></p>
+<h3>Module: <code>pipeline_control_unit</code></h3>
+<p>File: <code>rtl/core/hazard_control/pipeline_control_unit.sv</code></p>
 <p>
-    Detects data hazards that cannot be resolved by forwarding alone, and asserts a stall signal
-    to freeze the pipeline frontend (Stages 1-3).
+    Combines load-use hazard stall detection, global pipeline flushes from Stage 7 branch/jump resolution,
+    and Stage 4 early jump/taken branch redirects.
 </p>
 
 <h4>Port Interface</h4>
 <table>
-    <tr><th>Port</th><th>Direction</th><th>Width</th><th>Source</th><th>Description</th></tr>
+    <tr><th>Port</th><th>Direction</th><th>Width</th><th>Source / Destination</th><th>Description</th></tr>
     <tr><td><code>D_rs1</code></td><td>input</td><td>5</td><td>Stage 3 decode</td><td>Source register 1 of current instruction in decode</td></tr>
     <tr><td><code>D_rs2</code></td><td>input</td><td>5</td><td>Stage 3 decode</td><td>Source register 2 of current instruction in decode</td></tr>
     <tr><td><code>D_uses_rs1</code></td><td>input</td><td>1</td><td>Stage 3 decode</td><td>Current instruction reads rs1</td></tr>
     <tr><td><code>D_uses_rs2</code></td><td>input</td><td>1</td><td>Stage 3 decode</td><td>Current instruction reads rs2</td></tr>
     <tr><td><code>RR_reg_write</code></td><td>input</td><td>1</td><td>ID_RR output</td><td>Instruction in RR stage writes a register</td></tr>
+    <tr><td><code>RR_mem_read</code></td><td>input</td><td>1</td><td>ID_RR output</td><td>Instruction in RR stage reads data memory (load)</td></tr>
     <tr><td><code>RR_rd</code></td><td>input</td><td>5</td><td>ID_RR output</td><td>Destination register of RR instruction</td></tr>
     <tr><td><code>E1_reg_write</code></td><td>input</td><td>1</td><td>RR_EX1 output</td><td>Instruction in EX1 stage writes a register</td></tr>
+    <tr><td><code>E1_mem_read</code></td><td>input</td><td>1</td><td>RR_EX1 output</td><td>Instruction in EX1 stage reads data memory (load)</td></tr>
     <tr><td><code>E1_rd</code></td><td>input</td><td>5</td><td>RR_EX1 output</td><td>Destination register of EX1 instruction</td></tr>
-    <tr><td><code>stall</code></td><td>output</td><td>1</td><td>-</td><td>Stall signal (<code>stall_frontend</code>)</td></tr>
+    <tr><td><code>E3_pc_sel</code></td><td>input</td><td>1</td><td>Stage 7 pc_target_calc</td><td>Stage 7 branch misprediction / JALR redirect</td></tr>
+    <tr><td><code>IDRR_jump</code></td><td>input</td><td>1</td><td>ID_RR output</td><td>Jump flag in Stage 4</td></tr>
+    <tr><td><code>IDRR_uses_rs1</code></td><td>input</td><td>1</td><td>ID_RR output</td><td>JALR flag in Stage 4 (uses rs1)</td></tr>
+    <tr><td><code>IDRR_predict_taken</code></td><td>input</td><td>1</td><td>Stage 4 branch_predictor</td><td>Branch predicted taken in Stage 4</td></tr>
+    <tr><td><code>stall</code></td><td>output</td><td>1</td><td>Frontend control</td><td>Stall signal (<code>stall_frontend</code>)</td></tr>
+    <tr><td><code>flush</code></td><td>output</td><td>1</td><td>Pipeline registers</td><td>Global flush signal (<code>flush</code>)</td></tr>
+    <tr><td><code>stage4_pc_sel</code></td><td>output</td><td>1</td><td>Stage 1 pc_update</td><td>Early PC redirect selector for JAL or predicted-taken branches</td></tr>
+    <tr><td><code>stage4_flush</code></td><td>output</td><td>1</td><td>ID_RR register</td><td>Early flush signal for Stage 3/4 pipeline boundary</td></tr>
 </table>
 
 <h4>Stall Conditions</h4>
-<p>A stall is asserted when any of the following conditions are true (all require <code>rd != x0</code>):</p>
+<p>
+    Only <strong>load-use data hazards</strong> trigger pipeline stalls. ALU dependencies are resolved without stalling
+    via the forwarding network. A stall is asserted (<code>stall = 1'b1</code>) when either:
+</p>
 <ol>
-    <li><strong>RR stage dependency:</strong> Instruction in RR (Stage 4) writes to a register that the
-        instruction in Decode (Stage 3) reads. This covers the case where an instruction is only 1 stage
-        ahead and its result is not yet available anywhere for forwarding.</li>
-    <li><strong>EX1 stage dependency:</strong> Instruction in EX1 (Stage 5) writes to a register that
-        the instruction in Decode reads. This covers the 2-stage gap where the result is not yet computed.</li>
+    <li><strong>RR load-use hazard:</strong> A load instruction in RR (Stage 4) has <code>RR_rd != x0</code> and
+        matches a source register read by the Decode (Stage 3) instruction (<code>D_rs1 == RR_rd &amp;&amp; D_uses_rs1</code>
+        or <code>D_rs2 == RR_rd &amp;&amp; D_uses_rs2</code>).</li>
+    <li><strong>EX1 load-use hazard:</strong> A load instruction in EX1 (Stage 5) has <code>E1_rd != x0</code> and
+        matches a source register read by the Decode instruction.</li>
 </ol>
+
+<h4>Flush and Early Redirect Logic</h4>
+<ul>
+    <li><code>flush = E3_pc_sel;</code>: Asserts a global pipeline flush on Stage 7 branch mispredictions and JALR jumps.</li>
+    <li><code>IDRR_is_jal = IDRR_jump &amp;&amp; !IDRR_uses_rs1;</code>: Identifies early unconditional JAL jumps in Stage 4.</li>
+    <li><code>stage4_pc_sel = IDRR_predict_taken || IDRR_is_jal;</code>: Redirects PC early to target in Stage 4.</li>
+    <li><code>stage4_flush = stage4_pc_sel;</code>: Flushes transient instructions when early redirect fires.</li>
+</ul>
 
 <h4>Stall Effect</h4>
 <ul>
-    <li><code>stall_frontend</code> freezes Stages 1-3: PC holds, IMEM holds, IF_ID holds, ID_RR is flushed.</li>
-    <li>The ID_RR flush on stall (<code>flush || stall_frontend</code>) inserts a NOP bubble into the backend pipeline.</li>
-    <li>Stages 4-8 continue to advance normally during a stall.</li>
+    <li><code>stall_frontend</code> freezes Stages 1-3: PC holds, IMEM holds, IF_ID holds, and ID_RR is flushed (with NOP bubble).</li>
+    <li>Stages 4-8 continue advancing normally during a stall.</li>
 </ul>
 
 <h3 id="hazard-flowchart">12.1 Hazard Detection Flowchart</h3>
@@ -1310,9 +1371,9 @@ mem_unsigned (1b), wb_sel (2b).</p>
 graph TD
     A[Instruction Decoded in Stage 3] --> B{Does it use rs1 or rs2?}
     B -- No --> H[No Stall Required]
-    B -- Yes --> C{Is rd of RR Stage instruction != 0 & uses same register?}
+    B -- Yes --> C{Is producer in RR Stage a Load & rd matches?}
     C -- Yes --> G[Assert stall_frontend & Flush ID_RR]
-    C -- No --> D{Is rd of EX1 Stage instruction != 0 & uses same register?}
+    C -- No --> D{Is producer in EX1 Stage a Load & rd matches?}
     D -- Yes --> G
     D -- No --> E{Is producer in EX2, EX3, or WB stage?}
     E -- Yes --> F[Forward value combinational in EX1]
@@ -1407,14 +1468,14 @@ graph TD
 
 <h3>14.4 Flush Signal Distribution</h3>
 <table>
-    <tr><th>Module</th><th>Flush Input</th><th>Source</th></tr>
-    <tr><td><code>instr_mem</code></td><td><code>flush</code></td><td><code>E3_pc_sel</code></td></tr>
-    <tr><td><code>IF_ID</code></td><td><code>flush</code></td><td><code>E3_pc_sel</code></td></tr>
-    <tr><td><code>ID_RR</code></td><td><code>flush</code></td><td><code>E3_pc_sel || stall_frontend</code></td></tr>
-    <tr><td><code>RR_EX1</code></td><td><code>flush</code></td><td><code>E3_pc_sel</code></td></tr>
-    <tr><td><code>EX1_EX2</code></td><td><code>flush</code></td><td><code>E3_pc_sel</code></td></tr>
-    <tr><td><code>EX2_EX3</code></td><td><code>flush</code></td><td><code>E3_pc_sel</code></td></tr>
-    <tr><td><code>MEM_WB</code></td><td><code>flush</code></td><td><code>1'b0</code> (never flushed)</td></tr>
+    <tr><th>Module</th><th>Flush Input</th><th>Source</th><th>Description</th></tr>
+    <tr><td><code>instr_mem</code></td><td><code>flush</code></td><td><code>pipeline_control_unit (flush)</code></td><td>Flushed on Stage 7 branch mispredictions and JALR jumps</td></tr>
+    <tr><td><code>IF_ID</code></td><td><code>flush</code></td><td><code>pipeline_control_unit (flush)</code></td><td>Flushed on Stage 7 branch mispredictions and JALR jumps</td></tr>
+    <tr><td><code>ID_RR</code></td><td><code>flush</code></td><td><code>flush || stall_frontend || stage4_flush</code></td><td>Flushed on Stage 7 redirects, load-use stalls, or Stage 4 early redirects</td></tr>
+    <tr><td><code>RR_EX1</code></td><td><code>flush</code></td><td><code>pipeline_control_unit (flush)</code></td><td>Flushed on Stage 7 branch mispredictions and JALR jumps</td></tr>
+    <tr><td><code>EX1_EX2</code></td><td><code>flush</code></td><td><code>pipeline_control_unit (flush)</code></td><td>Flushed on Stage 7 branch mispredictions and JALR jumps</td></tr>
+    <tr><td><code>EX2_EX3</code></td><td><code>flush</code></td><td><code>pipeline_control_unit (flush)</code></td><td>Flushed on Stage 7 branch mispredictions and JALR jumps</td></tr>
+    <tr><td><code>MEM_WB</code></td><td><code>flush</code></td><td><code>1'b0</code></td><td>Never flushed (writeback stage commits cleanly)</td></tr>
 </table>
 
 <!-- ============================================================ -->
@@ -1425,8 +1486,9 @@ graph TD
 <h3>15.1 Module: <code>bht</code> (Branch History Table)</h3>
 <p>File: <code>rtl/core/4_reg_read/bht.sv</code></p>
 <p>
-    A PC-indexed table of 2-bit saturating counters that provides dynamic taken/not-taken
-    branch predictions. The BHT is read synchronously in Decode (Stage 3) and evaluated in Register Read (Stage 4).
+    A PC-indexed table of 2-bit saturating counters providing dynamic taken/not-taken
+    branch predictions. The BHT is instantiated within the <code>branch_predictor</code> module.
+    The table is read synchronously in Decode (Stage 3) using <code>D_pc[11:2]</code> and evaluated in Register Read (Stage 4).
     The table is updated synchronously in Stage 7 (EX3/MEM) once the actual branch outcome is known.
 </p>
 
@@ -1583,6 +1645,14 @@ stateDiagram-v2
     <tr><td>2'b00</td><td>1</td><td>Byte read, zero-extended to 32 bits</td></tr>
 </table>
 
+<h4>Read-During-Write (RDW) Bypass &amp; Enable-Gated Write Tracking</h4>
+<p>
+    To resolve Read-During-Write (RDW) collisions on the same 32-bit memory word within the same clock cycle, <code>data_mem</code> includes internal write tracking registers (<code>write_addr_reg</code>, <code>write_data_reg</code>, <code>write_size_reg</code>, <code>write_addr_low_reg</code>, <code>write_en_reg</code>, <code>read_addr_reg</code>). When <code>write_en_reg</code> is asserted and the previous write word address matches the current read word address (<code>write_addr_reg[31:2] == read_addr_reg[31:2]</code>), combinational forwarding logic overrides the BRAM output word with the active write data.
+</p>
+<p>
+    <strong>Dynamic Power Optimization (Enable Gating):</strong> Sampling of the write tracking registers is explicitly gated by <code>if (mem_read)</code>. Write tracking states are only sampled on clock edges when a valid memory read request is present. This prevents unnecessary flip-flop toggling during non-read cycles, reducing dynamic power dissipation.
+</p>
+
 <!-- ============================================================ -->
 <!-- 17. MMIO                                                      -->
 <!-- ============================================================ -->
@@ -1712,8 +1782,10 @@ stateDiagram-v2
 
 <table>
     <tr><th>Signal</th><th>Width</th><th>Source</th><th>Description</th></tr>
-    <tr><td><code>stall_frontend</code></td><td>1</td><td>hazard_detection_unit</td><td>Stalls Stages 1-3, flushes ID_RR</td></tr>
-    <tr><td><code>flush</code></td><td>1</td><td><code>E3_pc_sel</code></td><td>Flushes Stages 1-6 on taken branch/jump</td></tr>
+    <tr><td><code>stall_frontend</code></td><td>1</td><td>pipeline_control_unit</td><td>Stalls Stages 1-3, flushes ID_RR on load-use hazards</td></tr>
+    <tr><td><code>flush</code></td><td>1</td><td>pipeline_control_unit</td><td>Global flush of Stages 1-6 on Stage 7 branch misprediction / JALR (flush = E3_pc_sel)</td></tr>
+    <tr><td><code>stage4_pc_sel</code></td><td>1</td><td>pipeline_control_unit</td><td>Early PC redirect selector in Stage 4 for JAL or predicted-taken branches</td></tr>
+    <tr><td><code>stage4_flush</code></td><td>1</td><td>pipeline_control_unit</td><td>Flushes transient Stage 2-3 instructions on Stage 4 early redirects</td></tr>
     <tr><td><code>alu_op</code></td><td>4</td><td>control unit</td><td>ALU operation select (alu_package encoding)</td></tr>
     <tr><td><code>alu_src_a</code></td><td>1</td><td>control unit</td><td>0: rs1 (or forwarded), 1: PC</td></tr>
     <tr><td><code>alu_src_b</code></td><td>1</td><td>control unit</td><td>0: rs2 (or forwarded), 1: immediate</td></tr>
@@ -1730,9 +1802,10 @@ stateDiagram-v2
     <tr><td><code>uses_rs2</code></td><td>1</td><td>control unit</td><td>Instruction requires rs2 value</td></tr>
     <tr><td><code>forward_a_sel</code></td><td>2</td><td>forwarding_unit</td><td>Forwarding mux select for operand A</td></tr>
     <tr><td><code>forward_b_sel</code></td><td>2</td><td>forwarding_unit</td><td>Forwarding mux select for operand B</td></tr>
-    <tr><td><code>pc_sel</code></td><td>1</td><td>pc_target_calc</td><td>1=redirect PC to target, 0=continue sequential</td></tr>
-    <tr><td><code>IDRR_predict_taken</code></td><td>1</td><td>combinational logic (Stage 4)</td><td>1=predict taken, 0=predict not-taken (MSB of 2-bit counter)</td></tr>
-    <tr><td><code>RR_branch_target</code></td><td>32</td><td>combinational logic (Stage 4)</td><td>Early computed PC+imm target; pipelined to Stage 7</td></tr>
+    <tr><td><code>pc_sel</code></td><td>1</td><td>pc_target_calc</td><td>1=redirect PC to target in Stage 7, 0=continue sequential</td></tr>
+    <tr><td><code>IDRR_predict_taken</code></td><td>1</td><td>branch_predictor (Stage 4)</td><td>1=predict taken, 0=predict not-taken (MSB of 2-bit counter)</td></tr>
+    <tr><td><code>IDRR_branch_target</code></td><td>32</td><td>branch_predictor (Stage 4)</td><td>Early computed PC+imm target; pipelined to Stage 7 / pc_update</td></tr>
+    <tr><td><code>E3_fwd_val</code></td><td>32</td><td>fwd_sel (Stage 7)</td><td>Forwarded execution result (PC+4 or alu_result) to Stage 5 and MEM_WB</td></tr>
 </table>
 
 <!-- ============================================================ -->
@@ -1757,7 +1830,8 @@ core (top-level)
 |
 +-- regfile                [Stage 4: Register Read]
 |
-+-- bht                    [Stage 4: RR (read initiated in Stage 3, evaluated in Stage 4) - Branch History Table]
++-- branch_predictor       [Stage 4: RR - Branch Target Calculation & Direction Prediction]
+|   +-- bht                [Branch History Table (1024-entry 2-bit BRAM)]
 |
 +-- forwarding_unit        [Hazard Control: Forwarding]
 |
@@ -1775,6 +1849,8 @@ core (top-level)
 |
 +-- pc_target_calc         [Stage 7: EX3 - PC Target Finalization and BHT update trigger]
 |
++-- fwd_sel                [Stage 7: EX3 - Forwarding Selector & Pre-Writeback Mux]
+|
 +-- memory                 [Stage 7: EX3 - Memory System]
 |   +-- data_mem
 |   +-- mmio
@@ -1783,7 +1859,7 @@ core (top-level)
 |
 +-- writeback              [Stage 8: WB - Writeback Mux]
 |
-+-- hazard_detection_unit  [Hazard Control: Stall Generation]
++-- pipeline_control_unit  [Hazard Control: Stall & Flush Generation]
 </div>
 
 <h3 id="module-dependency">20.1 Module Dependency Graph</h3>
@@ -1800,7 +1876,8 @@ graph TD
     decode --> control
     core --> ID_RR
     core --> regfile
-    core --> bht
+    core --> branch_predictor
+    branch_predictor --> bht
     core --> forwarding_unit
     core --> RR_EX1
     core --> data_sel
@@ -1809,12 +1886,13 @@ graph TD
     core --> branch_eval
     core --> EX2_EX3
     core --> pc_target_calc
+    core --> fwd_sel
     core --> memory
     memory --> data_mem
     memory --> mmio
     core --> MEM_WB
     core --> writeback
-    core --> hazard_detection_unit
+    core --> pipeline_control_unit
 </div>
 
 <!-- ============================================================ -->
@@ -1851,12 +1929,12 @@ graph TD
 <h3>21.3 Stall Cycle Breakdown</h3>
 <table>
     <tr><th>Hazard Scenario</th><th>Stall Cycles</th><th>Reason</th></tr>
-    <tr><td>RAW (all): producer in RR (Stage 4), consumer in D (Stage 3)</td><td>2</td><td>Stalled until producer moves to EX2; then forwarded from EX3/WB</td></tr>
-    <tr><td>RAW (all): producer in EX1 (Stage 5), consumer in D (Stage 3)</td><td>1</td><td>Stalled until producer moves to EX2; then forwarded from EX3/WB</td></tr>
-    <tr><td>Load-use (adjacent): load in RR, consumer in D</td><td>2</td><td>Stalls for 2 cycles; data available in Stage 8</td></tr>
-    <tr><td>Load-use (1 nop): load in EX1, consumer in D</td><td>1</td><td>Stalls for 1 cycle; data available in Stage 8</td></tr>
-    <tr><td>Load-use (2 nops): load in EX2, consumer in D</td><td>0</td><td>No stall; forwarded from WB (Stage 8) to EX1 (Stage 5)</td></tr>
-    <tr><td>Load-use (3 nops): load in EX3, consumer in D</td><td>0</td><td>No stall; bypassed via regfile read-during-write</td></tr>
+    <tr><td>ALU-to-ALU (adjacent): producer in RR (Stage 4), consumer in D (Stage 3)</td><td>0</td><td>No stall; forwarded from EX2 (Stage 6) to EX1 (Stage 5)</td></tr>
+    <tr><td>ALU-to-ALU (1-instruction gap): producer in EX1 (Stage 5), consumer in D (Stage 3)</td><td>0</td><td>No stall; forwarded from EX3 (Stage 7) to EX1 (Stage 5)</td></tr>
+    <tr><td>Load-use (adjacent): load in RR (Stage 4), consumer in D (Stage 3)</td><td>2</td><td>Stalls for 2 cycles until load reaches Stage 6/7; forwarded from WB to EX1</td></tr>
+    <tr><td>Load-use (1-instruction gap): load in EX1 (Stage 5), consumer in D (Stage 3)</td><td>1</td><td>Stalls for 1 cycle until load reaches Stage 6/7; forwarded from WB to EX1</td></tr>
+    <tr><td>Load-use (2-instruction gap): load in EX2 (Stage 6), consumer in D (Stage 3)</td><td>0</td><td>No stall; forwarded from WB (Stage 8) to EX1 (Stage 5)</td></tr>
+    <tr><td>Load-use (3-instruction gap): load in EX3 (Stage 7), consumer in D (Stage 3)</td><td>0</td><td>No stall; bypassed via regfile read-during-write in Stage 4</td></tr>
 </table>
 
 <h3>21.4 Pipeline Stage Boundary Registers</h3>
@@ -2020,7 +2098,7 @@ graph TD
 <ul>
     <li><strong>BRAM (Block RAM):</strong> Dedicated, dual-port static memory arrays embedded directly inside the FPGA silicon (such as Intel's M9K blocks). Unlike logic-cell registers, BRAM provides highly efficient single-cycle read and write access, allowing implementation of large memory blocks (Instruction/Data Memory, Register File, and Branch History Table) without depleting the FPGA's general logic cells.</li>
     <li><strong>Logic Element (LE):</strong> The standard unit of logic in Intel FPGAs. A logic element contains a Look-Up Table (LUT) to implement combinational logic gates, a programmable register (D flip-flop) to store data, and dedicated carry chains for fast additions.</li>
-    <li><strong>Fmax (Maximum Frequency):</strong> The maximum speed at which a digital design can run on the target FPGA without setup timing violations. In this CPU design, Fmax is optimized to 127.29 MHz by splitting logic into 8 balanced pipeline stages.</li>
+    <li><strong>Fmax (Maximum Frequency):</strong> The maximum speed at which a digital design can run on the target FPGA without setup timing violations. In this CPU design, operating frequency is set to 125.00 MHz by splitting logic into 8 balanced pipeline stages.</li>
     <li><strong>STA (Static Timing Analysis):</strong> A method of analyzing and checking the timing of a digital circuit by computing propagation delays along all logic paths, verifying that setup and hold times are satisfied under worst-case temperature and voltage parameters.</li>
     <li><strong>SDC (Synopsys Design Constraints):</strong> A configuration file defining timing requirements, clock constraints, input/output delays, and multi-cycle paths to guide the synthesizer and place-and-route tools during FPGA compilation.</li>
     <li><strong>JTAG (Joint Test Action Group):</strong> A standard interface and protocol used to program, test, and debug hardware devices. On the DE10-Lite board, JTAG is used by the USB-Blaster cable to upload compiled bitstreams.</li>

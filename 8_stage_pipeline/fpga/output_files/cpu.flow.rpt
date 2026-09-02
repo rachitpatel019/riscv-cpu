@@ -1,5 +1,5 @@
 Flow report for cpu
-Mon Jul 27 20:47:13 2026
+Wed Sep  2 12:53:01 2026
 Quartus Prime Version 24.1std.0 Build 1077 03/04/2025 SC Lite Edition
 
 
@@ -41,15 +41,15 @@ on the Quartus Prime software download page.
 +--------------------------------------------------------------------------------------+
 ; Flow Summary                                                                         ;
 +------------------------------------+-------------------------------------------------+
-; Flow Status                        ; Successful - Mon Jul 27 20:47:13 2026           ;
+; Flow Status                        ; Successful - Wed Sep  2 12:53:00 2026           ;
 ; Quartus Prime Version              ; 24.1std.0 Build 1077 03/04/2025 SC Lite Edition ;
 ; Revision Name                      ; cpu                                             ;
 ; Top-level Entity Name              ; top                                             ;
 ; Family                             ; MAX 10                                          ;
 ; Device                             ; 10M50DAF484C7G                                  ;
 ; Timing Models                      ; Final                                           ;
-; Total logic elements               ; 2,929 / 49,760 ( 6 % )                          ;
-;     Total combinational functions  ; 2,748 / 49,760 ( 6 % )                          ;
+; Total logic elements               ; 2,895 / 49,760 ( 6 % )                          ;
+;     Total combinational functions  ; 2,726 / 49,760 ( 5 % )                          ;
 ;     Dedicated logic registers      ; 1,303 / 49,760 ( 3 % )                          ;
 ; Total registers                    ; 1303                                            ;
 ; Total pins                         ; 65 / 360 ( 18 % )                               ;
@@ -67,46 +67,53 @@ on the Quartus Prime software download page.
 +-------------------+---------------------+
 ; Option            ; Setting             ;
 +-------------------+---------------------+
-; Start date & time ; 07/27/2026 20:46:20 ;
+; Start date & time ; 09/02/2026 12:43:51 ;
 ; Main task         ; Compilation         ;
 ; Revision Name     ; cpu                 ;
 +-------------------+---------------------+
 
 
-+------------------------------------------------------------------------------------------------------------------------------+
-; Flow Non-Default Global Settings                                                                                             ;
-+--------------------------------------+----------------------------------------+---------------+-------------+----------------+
-; Assignment Name                      ; Value                                  ; Default Value ; Entity Name ; Section Id     ;
-+--------------------------------------+----------------------------------------+---------------+-------------+----------------+
-; COMPILER_SIGNATURE_ID                ; 172537035513430.178520318014740        ; --            ; --          ; --             ;
-; EDA_MAINTAIN_DESIGN_HIERARCHY        ; On                                     ; --            ; --          ; eda_simulation ;
-; EDA_MAP_ILLEGAL_CHARACTERS           ; On                                     ; --            ; --          ; eda_simulation ;
-; EDA_OUTPUT_DATA_FORMAT               ; Verilog Hdl                            ; --            ; --          ; eda_simulation ;
-; EDA_SIMULATION_TOOL                  ; Questa Intel FPGA (Verilog)            ; <None>        ; --          ; --             ;
-; EDA_TEST_BENCH_DESIGN_INSTANCE_NAME  ; dut                                    ; --            ; --          ; eda_simulation ;
-; EDA_TIME_SCALE                       ; 1 ps                                   ; --            ; --          ; eda_simulation ;
-; EDA_WRITE_NODES_FOR_POWER_ESTIMATION ; ALL_NODES                              ; --            ; --          ; eda_simulation ;
-; FITTER_EFFORT                        ; Standard Fit                           ; Auto Fit      ; --          ; --             ;
-; MAX_CORE_JUNCTION_TEMP               ; 85                                     ; --            ; --          ; --             ;
-; MIN_CORE_JUNCTION_TEMP               ; 0                                      ; --            ; --          ; --             ;
-; MUX_RESTRUCTURE                      ; Off                                    ; Auto          ; --          ; --             ;
-; NUM_PARALLEL_PROCESSORS              ; All                                    ; --            ; --          ; --             ;
-; OPTIMIZATION_MODE                    ; Aggressive Performance                 ; Balanced      ; --          ; --             ;
-; PARTITION_COLOR                      ; -- (Not supported for targeted family) ; --            ; top         ; Top            ;
-; PARTITION_FITTER_PRESERVATION_LEVEL  ; -- (Not supported for targeted family) ; --            ; top         ; Top            ;
-; PARTITION_NETLIST_TYPE               ; -- (Not supported for targeted family) ; --            ; top         ; Top            ;
-; PHYSICAL_SYNTHESIS_COMBO_LOGIC       ; On                                     ; Off           ; --          ; --             ;
-; PHYSICAL_SYNTHESIS_REGISTER_RETIMING ; On                                     ; Off           ; --          ; --             ;
-; PLACEMENT_EFFORT_MULTIPLIER          ; 4.0                                    ; 1.0           ; --          ; --             ;
-; POWER_BOARD_THERMAL_MODEL            ; None (CONSERVATIVE)                    ; --            ; --          ; --             ;
-; POWER_DEFAULT_INPUT_IO_TOGGLE_RATE   ; 12.5 %                                 ; 12.5%         ; --          ; --             ;
-; POWER_INPUT_FILE_NAME                ; power.vcd                              ; --            ; top         ; power.vcd      ;
-; POWER_PRESET_COOLING_SOLUTION        ; 23 MM HEAT SINK WITH 200 LFPM AIRFLOW  ; --            ; --          ; --             ;
-; POWER_USE_INPUT_FILES                ; On                                     ; Off           ; --          ; --             ;
-; PROJECT_OUTPUT_DIRECTORY             ; output_files                           ; --            ; --          ; --             ;
-; ROUTER_TIMING_OPTIMIZATION_LEVEL     ; MAXIMUM                                ; Normal        ; --          ; --             ;
-; TOP_LEVEL_ENTITY                     ; top                                    ; cpu           ; --          ; --             ;
-+--------------------------------------+----------------------------------------+---------------+-------------+----------------+
++--------------------------------------------------------------------------------------------------------------------------------------+
+; Flow Non-Default Global Settings                                                                                                     ;
++----------------------------------------------+----------------------------------------+---------------+-------------+----------------+
+; Assignment Name                              ; Value                                  ; Default Value ; Entity Name ; Section Id     ;
++----------------------------------------------+----------------------------------------+---------------+-------------+----------------+
+; ADV_NETLIST_OPT_SYNTH_WYSIWYG_REMAP          ; On                                     ; Off           ; --          ; --             ;
+; COMPILER_SIGNATURE_ID                        ; 248782227915091.178837103119920        ; --            ; --          ; --             ;
+; EDA_MAINTAIN_DESIGN_HIERARCHY                ; On                                     ; --            ; --          ; eda_simulation ;
+; EDA_MAP_ILLEGAL_CHARACTERS                   ; On                                     ; --            ; --          ; eda_simulation ;
+; EDA_OUTPUT_DATA_FORMAT                       ; Verilog Hdl                            ; --            ; --          ; eda_simulation ;
+; EDA_SIMULATION_TOOL                          ; Questa Intel FPGA (Verilog)            ; <None>        ; --          ; --             ;
+; EDA_TEST_BENCH_DESIGN_INSTANCE_NAME          ; dut                                    ; --            ; --          ; eda_simulation ;
+; EDA_TIME_SCALE                               ; 1 ps                                   ; --            ; --          ; eda_simulation ;
+; EDA_WRITE_NODES_FOR_POWER_ESTIMATION         ; ALL_NODES                              ; --            ; --          ; eda_simulation ;
+; FITTER_EFFORT                                ; Standard Fit                           ; Auto Fit      ; --          ; --             ;
+; MAX_CORE_JUNCTION_TEMP                       ; 85                                     ; --            ; --          ; --             ;
+; MIN_CORE_JUNCTION_TEMP                       ; 0                                      ; --            ; --          ; --             ;
+; MISC_FILE                                    ; pll_125_bb.v                           ; --            ; --          ; --             ;
+; MISC_FILE                                    ; pll_125.ppf                            ; --            ; --          ; --             ;
+; MUX_RESTRUCTURE                              ; Off                                    ; Auto          ; --          ; --             ;
+; NUM_PARALLEL_PROCESSORS                      ; All                                    ; --            ; --          ; --             ;
+; OPTIMIZATION_MODE                            ; Aggressive Performance                 ; Balanced      ; --          ; --             ;
+; PARTITION_COLOR                              ; -- (Not supported for targeted family) ; --            ; top         ; Top            ;
+; PARTITION_FITTER_PRESERVATION_LEVEL          ; -- (Not supported for targeted family) ; --            ; top         ; Top            ;
+; PARTITION_NETLIST_TYPE                       ; -- (Not supported for targeted family) ; --            ; top         ; Top            ;
+; PHYSICAL_SYNTHESIS_COMBO_LOGIC               ; On                                     ; Off           ; --          ; --             ;
+; PHYSICAL_SYNTHESIS_EFFORT                    ; Extra                                  ; Normal        ; --          ; --             ;
+; PHYSICAL_SYNTHESIS_REGISTER_DUPLICATION      ; On                                     ; Off           ; --          ; --             ;
+; PHYSICAL_SYNTHESIS_REGISTER_RETIMING         ; On                                     ; Off           ; --          ; --             ;
+; PLACEMENT_EFFORT_MULTIPLIER                  ; 4.0                                    ; 1.0           ; --          ; --             ;
+; POWER_BOARD_THERMAL_MODEL                    ; None (CONSERVATIVE)                    ; --            ; --          ; --             ;
+; POWER_DEFAULT_INPUT_IO_TOGGLE_RATE           ; 12.5 %                                 ; 12.5%         ; --          ; --             ;
+; POWER_INPUT_FILE_NAME                        ; power.vcd                              ; --            ; top         ; power.vcd      ;
+; POWER_PRESET_COOLING_SOLUTION                ; 23 MM HEAT SINK WITH 200 LFPM AIRFLOW  ; --            ; --          ; --             ;
+; POWER_USE_INPUT_FILES                        ; On                                     ; Off           ; --          ; --             ;
+; PROJECT_OUTPUT_DIRECTORY                     ; output_files                           ; --            ; --          ; --             ;
+; ROUTER_LCELL_INSERTION_AND_LOGIC_DUPLICATION ; On                                     ; Auto          ; --          ; --             ;
+; ROUTER_TIMING_OPTIMIZATION_LEVEL             ; MAXIMUM                                ; Normal        ; --          ; --             ;
+; SEED                                         ; 5                                      ; 1             ; --          ; --             ;
+; TOP_LEVEL_ENTITY                             ; top                                    ; cpu           ; --          ; --             ;
++----------------------------------------------+----------------------------------------+---------------+-------------+----------------+
 
 
 +--------------------------------------------------------------------------------------------------------------------------+
@@ -114,12 +121,13 @@ on the Quartus Prime software download page.
 +----------------------+--------------+-------------------------+---------------------+------------------------------------+
 ; Module Name          ; Elapsed Time ; Average Processors Used ; Peak Virtual Memory ; Total CPU Time (on all processors) ;
 +----------------------+--------------+-------------------------+---------------------+------------------------------------+
-; Analysis & Synthesis ; 00:00:12     ; 1.0                     ; 5026 MB             ; 00:00:22                           ;
-; Fitter               ; 00:00:30     ; 1.7                     ; 6726 MB             ; 00:01:23                           ;
-; Assembler            ; 00:00:02     ; 1.0                     ; 4843 MB             ; 00:00:02                           ;
-; Timing Analyzer      ; 00:00:03     ; 3.1                     ; 5051 MB             ; 00:00:07                           ;
-; EDA Netlist Writer   ; 00:00:00     ; 1.0                     ; 4717 MB             ; 00:00:01                           ;
-; Total                ; 00:00:47     ; --                      ; --                  ; 00:01:55                           ;
+; Analysis & Synthesis ; 00:00:37     ; 1.0                     ; 5037 MB             ; 00:00:30                           ;
+; Fitter               ; 00:00:28     ; 1.7                     ; 6726 MB             ; 00:01:15                           ;
+; Assembler            ; 00:00:03     ; 1.0                     ; 4843 MB             ; 00:00:02                           ;
+; Timing Analyzer      ; 00:00:04     ; 2.6                     ; 5051 MB             ; 00:00:07                           ;
+; EDA Netlist Writer   ; 00:00:01     ; 1.0                     ; 4718 MB             ; 00:00:01                           ;
+; Power Analyzer       ; 00:00:07     ; 1.6                     ; 5101 MB             ; 00:00:12                           ;
+; Total                ; 00:01:20     ; --                      ; --                  ; 00:02:07                           ;
 +----------------------+--------------+-------------------------+---------------------+------------------------------------+
 
 
@@ -133,6 +141,7 @@ on the Quartus Prime software download page.
 ; Assembler            ; Rachit_Laptop    ; Windows 10 ; 10.0       ; x86_64         ;
 ; Timing Analyzer      ; Rachit_Laptop    ; Windows 10 ; 10.0       ; x86_64         ;
 ; EDA Netlist Writer   ; Rachit_Laptop    ; Windows 10 ; 10.0       ; x86_64         ;
+; Power Analyzer       ; Rachit_Laptop    ; Windows 10 ; 10.0       ; x86_64         ;
 +----------------------+------------------+------------+------------+----------------+
 
 
@@ -144,6 +153,7 @@ quartus_fit --read_settings_files=off --write_settings_files=off cpu -c cpu
 quartus_asm --read_settings_files=off --write_settings_files=off cpu -c cpu
 quartus_sta cpu -c cpu
 quartus_eda --read_settings_files=off --write_settings_files=off cpu -c cpu
+quartus_pow cpu
 
 
 

@@ -1,6 +1,5 @@
 /*
 Register file defining 32 32-bit registers.
-Uses replicated BRAM arrays to support two read ports and one write port synchronously.
 */
 
 module regfile (
@@ -17,13 +16,17 @@ module regfile (
     input logic write_enable
 );
 
-// Replicated memory arrays configured as block RAM to allow simultaneous dual-port reads.
+/*
+BRAM memory has 2 ports, but the register file must support 2 reads and 1 write
+in a single cycle. Replicated memory arrays are configured as BRAM to allow
+simultaneous dual-port reads.
+*/
 (* ramstyle = "M9K" *) logic [31:0] registers_a [31:0] = '{default: 32'b0};
 (* ramstyle = "M9K" *) logic [31:0] registers_b [31:0] = '{default: 32'b0};
 
 logic [31:0] write_data_actual;
 
-// Enforces that register 0 remains hardwired to zero by filtering the write data.
+// Enforces that register 0 remains hardwired to zero as per RISC-V ISA.
 assign write_data_actual = (write_address == 5'b0) ? 32'b0 : write_data;
 
 // Synchronously updates both replicated arrays with the write data on the active clock edge.

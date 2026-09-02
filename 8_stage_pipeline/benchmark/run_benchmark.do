@@ -24,6 +24,7 @@ vlog -work work ../rtl/core/3_decode/imm_gen.sv
 vlog -work work ../rtl/core/3_decode/ID_RR.sv
 vlog -work work ../rtl/core/4_reg_read/regfile.sv
 vlog -work work ../rtl/core/4_reg_read/bht.sv
+vlog -work work ../rtl/core/4_reg_read/branch_predictor.sv
 vlog -work work ../rtl/core/4_reg_read/RR_EX1.sv
 vlog -work work ../rtl/core/5_ex1/data_sel.sv
 vlog -work work ../rtl/core/5_ex1/EX1_EX2.sv
@@ -31,13 +32,14 @@ vlog -work work ../rtl/core/6_ex2/alu.sv
 vlog -work work ../rtl/core/6_ex2/branch_eval.sv
 vlog -work work ../rtl/core/6_ex2/EX2_EX3.sv
 vlog -work work ../rtl/core/7_ex3_mem/pc_target_calc.sv
+vlog -work work ../rtl/core/7_ex3_mem/fwd_sel.sv
 vlog -work work ../rtl/core/7_ex3_mem/MEM_WB.sv
 vlog -work work ../rtl/core/7_ex3_mem/data_mem.sv
 vlog -work work ../rtl/core/7_ex3_mem/mmio.sv
 vlog -work work ../rtl/core/7_ex3_mem/memory.sv
 vlog -work work ../rtl/core/8_wb/writeback.sv
 vlog -work work ../rtl/core/hazard_control/forwarding_unit.sv
-vlog -work work ../rtl/core/hazard_control/hazard_detection_unit.sv
+vlog -work work ../rtl/core/hazard_control/pipeline_control_unit.sv
 vlog -work work ../rtl/core/core.sv
 
 # Compile custom benchmark testbench

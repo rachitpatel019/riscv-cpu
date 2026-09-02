@@ -28,18 +28,22 @@ set required_files {
     "../rtl/core/4_reg_read/regfile.sv"
     "../rtl/core/4_reg_read/bht.sv"
     "../rtl/core/4_reg_read/RR_EX1.sv"
+    "../rtl/core/4_reg_read/branch_predictor.sv"
     "../rtl/core/5_ex1/data_sel.sv"
     "../rtl/core/5_ex1/EX1_EX2.sv"
     "../rtl/core/6_ex2/alu.sv"
     "../rtl/core/6_ex2/branch_eval.sv"
     "../rtl/core/6_ex2/EX2_EX3.sv"
     "../rtl/core/7_ex3_mem/pc_target_calc.sv"
+    "../rtl/core/7_ex3_mem/fwd_sel.sv"
     "../rtl/core/7_ex3_mem/MEM_WB.sv"
     "../rtl/core/7_ex3_mem/data_mem.sv"
+    "../rtl/core/7_ex3_mem/mmio.sv"
+    "../rtl/core/7_ex3_mem/memory.sv"
     "../rtl/core/8_wb/writeback.sv"
     "../rtl/core/hazard_control/forwarding_unit.sv"
-    "../rtl/core/hazard_control/hazard_detection_unit.sv"
-    "PLL.v"
+    "../rtl/core/hazard_control/pipeline_control_unit.sv"
+    "pll_125.v"
     "top.sv"
     "program.hex"
     "cpu.sdc"
@@ -95,18 +99,27 @@ set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/core/6_ex2/EX2_EX3.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/core/7_ex3_mem/pc_target_calc.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/core/7_ex3_mem/MEM_WB.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/core/7_ex3_mem/data_mem.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/core/7_ex3_mem/mmio.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/core/7_ex3_mem/memory.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/core/8_wb/writeback.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/core/hazard_control/forwarding_unit.sv
-set_global_assignment -name SYSTEMVERILOG_FILE ../rtl/core/hazard_control/hazard_detection_unit.sv
 
 # Other
-set_global_assignment -name VERILOG_FILE PLL.v
+set_global_assignment -name VERILOG_FILE pll_125.v
 set_global_assignment -name SYSTEMVERILOG_FILE top.sv
 set_global_assignment -name HEX_FILE program.hex
 set_global_assignment -name SDC_FILE cpu.sdc
 
 # Constraints & Optimization
 set_global_assignment -name OPTIMIZATION_MODE "AGGRESSIVE PERFORMANCE"
+set_global_assignment -name PHYSICAL_SYNTHESIS_COMBO_LOGIC ON
+set_global_assignment -name PHYSICAL_SYNTHESIS_REGISTER_RETIMING ON
+set_global_assignment -name PHYSICAL_SYNTHESIS_REGISTER_DUPLICATION ON
+set_global_assignment -name PHYSICAL_SYNTHESIS_EFFORT EXTRA
+set_global_assignment -name ROUTER_TIMING_OPTIMIZATION_LEVEL MAXIMUM
+set_global_assignment -name PLACEMENT_EFFORT_MULTIPLIER 4.0
+set_global_assignment -name ROUTER_LCELL_INSERTION_AND_LOGIC_DUPLICATION ON
+set_global_assignment -name ADV_NETLIST_OPT_SYNTH_WYSIWYG_REMAP ON
 
 # Run Compilation
 puts "Running Quartus compilation flow..."
