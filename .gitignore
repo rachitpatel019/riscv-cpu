@@ -10,6 +10,7 @@ Archive/5_stage_pipeline/fpga/output_files
 /8_stage_pipeline/fpga/cpu.qws
 /8_stage_pipeline/fpga/db
 /8_stage_pipeline/fpga/incremental_db
+/8_stage_pipeline/fpga/output_files
 /8_stage_pipeline/sim/logs
 /8_stage_pipeline/sim/scripts/work
 

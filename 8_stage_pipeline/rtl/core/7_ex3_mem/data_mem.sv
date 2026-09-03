@@ -68,11 +68,13 @@ end
 
 // Synchronous read port storing read data and memory control state.
 always_ff @(posedge clk) begin
-    current_word <= memory[read_address[31:2]];
-    addr_low <= read_address[1:0];
-    read_active <= mem_read;
-    size_reg <= read_mem_size;
-    unsigned_reg <= mem_unsigned;
+    if (mem_read) begin
+        current_word <= memory[read_address[31:2]];
+        addr_low <= read_address[1:0];
+        read_active <= mem_read;
+        size_reg <= read_mem_size;
+        unsigned_reg <= mem_unsigned;
+    end
 end
 
 // Write tracking registers to sample write control signals on clock edge.

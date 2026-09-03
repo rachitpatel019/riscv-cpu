@@ -49,7 +49,7 @@ module top (
 
     // Core instantiation
     core cpu_core (
-        .clk(clk),
+        .clk(clk_125),
         .reset(reset),
         .mmio_keys(KEY),
         .mmio_switches(SW),

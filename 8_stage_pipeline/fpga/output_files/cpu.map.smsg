@@ -1,1 +1,0 @@
-Warning (10268): Verilog HDL information at ras.sv(39): always construct contains both blocking and non-blocking assignments File: C:/Rachit/RISC-V_CPU/riscv-cpu/8_stage_pipeline/rtl/core/4_reg_read/ras.sv Line: 39
