@@ -1,5 +1,6 @@
 `timescale 1ns / 1ps
 
+// Testbench for testing the dual-read single-write register file module.
 module tb_regfile;
 int tests_total;
 int tests_passed;
@@ -8,20 +9,31 @@ logic watchdog_trigger;
 
 localparam CLK_PERIOD = 10;
 
+// Clock signal definition.
 logic clk;
+
+// Read interface signal definitions.
 logic [4:0] read_address1;
 logic [4:0] read_address2;
+logic read_enable_1;
+logic read_enable_2;
+
+// Write interface signal definitions.
 logic [4:0] write_address;
 logic [31:0] write_data;
 logic write_enable;
 
+// Read output signal definitions.
 logic [31:0] read_data1;
 logic [31:0] read_data2;
 
+// DUT instantiation.
 regfile dut (.*);
 
+// Clock generation logic.
 always #(CLK_PERIOD / 2) clk = ~clk;
 
+// UVM reporting helper tasks.
 task automatic report_info(string id, string msg);
     $display("[UVM_INFO]  %s @ %0t: %s", id, $time, msg);
 endtask
@@ -37,6 +49,7 @@ task automatic report_fatal(string id, string msg);
     $finish;
 endtask
 
+// Drivers for register file write and read stimulus.
 task automatic drive_write(input logic [4:0] addr, input logic [31:0] data, input logic en);
     @(negedge clk);
     write_address = addr;
@@ -44,12 +57,15 @@ task automatic drive_write(input logic [4:0] addr, input logic [31:0] data, inpu
     write_enable = en;
 endtask
 
-task automatic drive_read(input logic [4:0] addr1, input logic [4:0] addr2);
+task automatic drive_read(input logic [4:0] addr1, input logic [4:0] addr2, input logic en1 = 1'b1, input logic en2 = 1'b1);
     @(negedge clk);
     read_address1 = addr1;
     read_address2 = addr2;
+    read_enable_1 = en1;
+    read_enable_2 = en2;
 endtask
 
+// Self-checking read result verification task.
 task automatic check_read(input logic [31:0] exp1, input logic [31:0] exp2);
     @(posedge clk);
     @(posedge clk);
@@ -63,6 +79,7 @@ task automatic check_read(input logic [31:0] exp1, input logic [31:0] exp2);
     end
 endtask
 
+// Simulation timeout watchdog process.
 initial begin
     watchdog_trigger = 0;
     fork
@@ -78,10 +95,13 @@ initial begin
     $finish;
 end
 
+// Main test execution sequence.
 initial begin
     clk = 0;
     read_address1 = 0;
     read_address2 = 0;
+    read_enable_1 = 0;
+    read_enable_2 = 0;
     write_address = 0;
     write_data = 0;
     write_enable = 0;
@@ -109,6 +129,11 @@ initial begin
     write_enable = 1;
     read_address1 = 5'd5;
     read_address2 = 5'd1;
+    read_enable_1 = 1;
+    read_enable_2 = 1;
+    check_read(32'hFEED_FACE, 32'hAAAA_BBBB);
+
+    drive_read(5'd2, 5'd3, 0, 0);
     check_read(32'hFEED_FACE, 32'hAAAA_BBBB);
 
     report_info("TB", "All tests complete.");

@@ -290,6 +290,8 @@ regfile stage4_regfile (
     .clk(clk),
     .read_address1(IDRR_rs1),
     .read_address2(IDRR_rs2),
+    .read_enable_1(IDRR_uses_rs1),
+    .read_enable_2(IDRR_uses_rs2),
     .read_data1(E1_rs1_data),
     .read_data2(E1_rs2_data),
     .write_address(W_rd),

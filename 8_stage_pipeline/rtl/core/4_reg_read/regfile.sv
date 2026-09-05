@@ -7,6 +7,8 @@ module regfile (
 
     input logic [4:0] read_address1,
     input logic [4:0] read_address2,
+    input logic read_enable_1,
+    input logic read_enable_2,
 
     output logic [31:0] read_data1,
     output logic [31:0] read_data2,
@@ -39,21 +41,25 @@ end
 
 // Reads data from the first memory array, forwarding write data if a read-during-write collision occurs.
 always_ff @(posedge clk) begin
-    if (write_enable && (write_address == read_address1) && (write_address != 5'b0)) begin
-        read_data1 <= write_data_actual;
-    end
-    else begin
-        read_data1 <= registers_a[read_address1];
+    if (read_enable_1) begin
+        if (write_enable && (write_address == read_address1) && (write_address != 5'b0)) begin
+            read_data1 <= write_data_actual;
+        end
+        else begin
+            read_data1 <= registers_a[read_address1];
+        end
     end
 end
 
 // Reads data from the second memory array, forwarding write data if a read-during-write collision occurs.
 always_ff @(posedge clk) begin
-    if (write_enable && (write_address == read_address2) && (write_address != 5'b0)) begin
-        read_data2 <= write_data_actual;
-    end
-    else begin
-        read_data2 <= registers_b[read_address2];
+    if (read_enable_2) begin
+        if (write_enable && (write_address == read_address2) && (write_address != 5'b0)) begin
+            read_data2 <= write_data_actual;
+        end
+        else begin
+            read_data2 <= registers_b[read_address2];
+        end
     end
 end
 
