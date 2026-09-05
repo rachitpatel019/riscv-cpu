@@ -38,7 +38,8 @@ def cleanup_temp_files():
         RTL_SIG,
         SPIKE_TRACE,
         SPIKE_SIG,
-        SIM_TRANSCRIPT
+        SIM_TRANSCRIPT,
+        os.path.join(SCRIPT_DIR, "filelist.f")
     ]
     for f in temp_files:
         if os.path.exists(f):
@@ -46,6 +47,9 @@ def cleanup_temp_files():
                 os.remove(f)
             except Exception:
                 pass
+
+import struct
+from concurrent.futures import ThreadPoolExecutor
 
 # Regex to match commit log lines for register writes
 # Example: core   0: 3 0x80000000 (0x00000093) x1  0x00000000
@@ -72,8 +76,50 @@ def run_wsl_command(args, check=True):
         raise subprocess.CalledProcessError(res.returncode, cmd, res.stdout, res.stderr)
     return res
 
+def get_elf_symbols_fast(elf_path):
+    """Pure Python ELF symbol parser to avoid slow WSL process spawns."""
+    try:
+        with open(elf_path, 'rb') as f:
+            data = f.read()
+        if data[:4] != b'\x7fELF':
+            return {}
+        is_64 = (data[4] == 2)
+        endian = '<' if data[5] == 1 else '>'
+        
+        if not is_64:
+            e_shoff = struct.unpack_from(endian + 'I', data, 32)[0]
+            e_shentsize = struct.unpack_from(endian + 'H', data, 46)[0]
+            e_shnum = struct.unpack_from(endian + 'H', data, 48)[0]
+            
+            sections = []
+            for i in range(e_shnum):
+                off = e_shoff + i * e_shentsize
+                sh_name, sh_type, _, sh_addr, sh_offset, sh_size, sh_link, _, _, _ = struct.unpack_from(endian + '10I', data, off)
+                sections.append({'type': sh_type, 'offset': sh_offset, 'size': sh_size, 'link': sh_link})
+            
+            symbols = {}
+            for sec in sections:
+                if sec['type'] == 2:  # SHT_SYMTAB
+                    strtab_sec = sections[sec['link']]
+                    strtab = data[strtab_sec['offset']:strtab_sec['offset'] + strtab_sec['size']]
+                    sym_data = data[sec['offset']:sec['offset'] + sec['size']]
+                    for j in range(0, len(sym_data), 16):
+                        st_name, st_value, st_size, st_info, st_other, st_shndx = struct.unpack_from(endian + '3IBBH', sym_data, j)
+                        if st_name < len(strtab):
+                            end = strtab.find(b'\x00', st_name)
+                            name = strtab[st_name:end].decode('latin1', errors='ignore')
+                            if name:
+                                symbols[name] = st_value
+            return symbols
+    except Exception:
+        pass
+    return {}
+
 def get_elf_symbols(elf_path):
-    """Extract symbol addresses from ELF using nm in WSL."""
+    """Extract symbol addresses from ELF using fast parser with fallback to WSL nm."""
+    symbols = get_elf_symbols_fast(elf_path)
+    if "tohost" in symbols and "begin_signature" in symbols and "end_signature" in symbols:
+        return symbols
     wsl_elf = to_wsl_path(elf_path)
     res = run_wsl_command(["riscv64-unknown-elf-nm", wsl_elf])
     
@@ -85,106 +131,47 @@ def get_elf_symbols(elf_path):
             symbols[name] = int(addr_str, 16)
     return symbols
 
+def parse_trace_lines(lines):
+    """Parse retired PC and register updates from trace lines."""
+    trace = []
+    for line in lines:
+        match = trace_pattern.search(line)
+        if match:
+            pc = int(match.group(1), 16)
+            rd = int(match.group(2))
+            data = int(match.group(3), 16)
+            trace.append((pc, rd, data))
+    return trace
+
 def parse_trace_file(trace_path):
     """Parse retired PC and register updates from trace file."""
-    trace = []
+    if not os.path.exists(trace_path):
+        return []
     with open(trace_path, "r") as f:
-        for line in f:
-            match = trace_pattern.search(line)
-            if match:
-                pc = int(match.group(1), 16)
-                rd = int(match.group(2))
-                data = int(match.group(3), 16)
-                trace.append((pc, rd, data))
-    return trace
+        return parse_trace_lines(f)
+
+def parse_signature_lines(lines):
+    """Parse signature lines into a list of 32-bit hex values."""
+    sig = []
+    for line in lines:
+        val = line.strip()
+        if len(val) == 32:
+            for i in range(24, -1, -8):
+                sig.append(val[i:i+8].lower())
+        elif len(val) == 8:
+            sig.append(val.lower())
+    return sig
 
 def parse_signature_file(sig_path):
     """Parse signature file into a list of 32-bit hex values."""
-    sig = []
     if not os.path.exists(sig_path):
-        return sig
+        return []
     with open(sig_path, "r") as f:
-        for line in f:
-            val = line.strip()
-            # Handle continuous hex strings (e.g. from Spike: 4 words per line)
-            if len(val) == 32:
-                # Spike prints 16-byte blocks as big-endian strings (highest address on left,
-                # lowest on right). We parse right-to-left to match ascending address order.
-                for i in range(24, -1, -8):
-                    sig.append(val[i:i+8].lower())
-            elif len(val) == 8:
-                sig.append(val.lower())
-    return sig
+        return parse_signature_lines(f)
 
-def run_test(test_file):
-    """Execute differential test for a single test case using pre-compiled artifacts."""
-    global RUNNING_TEST_IDX, TOTAL_TEST_COUNT
-    RUNNING_TEST_IDX += 1
-    
-    test_basename = os.path.basename(test_file)
-    test_name = os.path.splitext(test_basename)[0]
-    print(f"\n==================================================")
-    if TOTAL_TEST_COUNT > 0:
-        print(f"[RUNNING] Test {RUNNING_TEST_IDX}/{TOTAL_TEST_COUNT}: {test_basename}")
-    else:
-        print(f"[RUNNING] Test: {test_basename}")
-    print(f"==================================================")
-    
-    # 1. Locate pre-compiled build artifacts
-    build_subdir = os.path.join(SCRIPT_DIR, "build", test_name)
-    src_elf = os.path.join(build_subdir, "test.elf")
-    src_prog = os.path.join(build_subdir, "program.hex")
-    src_data = os.path.join(build_subdir, "data.hex")
-    
-    if not (os.path.exists(src_prog) and os.path.exists(src_data)):
-        print(f"[ERROR] Pre-compiled hex artifacts not found for {test_name} under {build_subdir}!")
-        print("Please run 'generate_hex.py' first to compile the test cases.")
-        return False
-        
-    # 2. Copy artifacts to local folder for simulation
-    print("[INFO] Loading pre-compiled artifacts...")
-    try:
-        shutil.copy2(src_prog, PROGRAM_HEX)
-        shutil.copy2(src_data, DATA_HEX)
-        if os.path.exists(src_elf):
-            shutil.copy2(src_elf, ELF_FILE)
-        else:
-            # Compile on-the-fly to ELF_FILE since generate_hex.py cleans up .elf files
-            print("[INFO] ELF file not found in build. Compiling on-the-fly...")
-            wsl_src = to_wsl_path(test_file)
-            wsl_elf = to_wsl_path(ELF_FILE)
-            wsl_linker = to_wsl_path(LINKER_LD)
-            wsl_env = to_wsl_path(ENV_DIR)
-            compile_cmd = [
-                "riscv64-unknown-elf-gcc", "-march=rv32i", "-mabi=ilp32", "-nostdlib",
-                "-T" + wsl_linker, "-I" + wsl_env, wsl_src, "-o", wsl_elf
-            ]
-            run_wsl_command(compile_cmd)
-    except Exception as e:
-        print(f"[ERROR] Failed to load/compile artifacts: {e}")
-        return False
-
-    # 3. Extract symbol addresses of tohost, begin_signature, and end_signature
-    print("[INFO] Extracting symbol table...")
-    wsl_elf = to_wsl_path(ELF_FILE)
-    try:
-        symbols = get_elf_symbols(ELF_FILE)
-        tohost_addr = symbols["tohost"]
-        sig_begin = symbols["begin_signature"]
-        sig_end = symbols["end_signature"]
-        # Align end_signature to next 16-byte boundary to match Spike's 128-bit block alignment
-        sig_end = (sig_end + 15) & ~15
-    except KeyError as e:
-        print(f"[ERROR] Required symbol {e} not found in ELF symbol table!")
-        return False
-
-    print(f"  tohost: 0x{tohost_addr:08x}")
-    print(f"  begin_signature: 0x{sig_begin:08x}")
-    print(f"  end_signature: 0x{sig_end:08x}")
-
-    # 6. Compile and Launch RTL Simulation using ModelSim on Windows
+def compile_rtl():
+    """Compile RTL and testbench once before running regression."""
     print("[INFO] Compiling RTL and testbench with vlog...")
-    # Create work library if it does not exist
     work_dir = os.path.join(SCRIPT_DIR, "work")
     if not os.path.exists(work_dir):
         subprocess.run(["vlib", "work"], cwd=SCRIPT_DIR, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -221,68 +208,133 @@ def run_test(test_file):
         "tb_diff.sv"
     ]
     
-    vlog_cmd = ["vlog", "-work", "work"] + vlog_files
+    filelist_path = os.path.join(SCRIPT_DIR, "filelist.f")
+    with open(filelist_path, "w") as f:
+        f.write("\n".join(vlog_files) + "\n")
+    
+    vlog_cmd = ["vlog", "-work", "work", "-f", "filelist.f"]
     res_vlog = subprocess.run(vlog_cmd, cwd=SCRIPT_DIR, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     if res_vlog.returncode != 0:
         print("[ERROR] Compilation with vlog failed!")
         print(res_vlog.stdout)
         print(res_vlog.stderr)
         return False
+    return True
 
-    print("[INFO] Launching ModelSim simulation...")
-    # Clean old RTL logs
+def run_test(test_file):
+    """Execute differential test for a single test case using pre-compiled artifacts."""
+    global RUNNING_TEST_IDX, TOTAL_TEST_COUNT
+    RUNNING_TEST_IDX += 1
+    
+    test_basename = os.path.basename(test_file)
+    test_name = os.path.splitext(test_basename)[0]
+    print(f"\n==================================================")
+    if TOTAL_TEST_COUNT > 0:
+        print(f"[RUNNING] Test {RUNNING_TEST_IDX}/{TOTAL_TEST_COUNT}: {test_basename}")
+    else:
+        print(f"[RUNNING] Test: {test_basename}")
+    print(f"==================================================")
+    
+    # 1. Locate pre-compiled build artifacts
+    build_subdir = os.path.join(SCRIPT_DIR, "build", test_name)
+    src_elf = os.path.join(build_subdir, "test.elf")
+    src_prog = os.path.join(build_subdir, "program.hex")
+    src_data = os.path.join(build_subdir, "data.hex")
+    
+    if not (os.path.exists(src_prog) and os.path.exists(src_data)):
+        print(f"[ERROR] Pre-compiled hex artifacts not found for {test_name} under {build_subdir}!")
+        print("Please run 'generate_hex.py' first to compile the test cases.")
+        return False
+        
+    # 2. Copy artifacts to local folder for simulation
+    try:
+        shutil.copyfile(src_prog, PROGRAM_HEX)
+        shutil.copyfile(src_data, DATA_HEX)
+        if not os.path.exists(src_elf):
+            # Compile on-the-fly to src_elf
+            wsl_src = to_wsl_path(test_file)
+            wsl_elf = to_wsl_path(src_elf)
+            wsl_linker = to_wsl_path(LINKER_LD)
+            wsl_env = to_wsl_path(ENV_DIR)
+            compile_cmd = [
+                "riscv64-unknown-elf-gcc", "-march=rv32i", "-mabi=ilp32", "-nostdlib",
+                "-T" + wsl_linker, "-I" + wsl_env, wsl_src, "-o", wsl_elf
+            ]
+            run_wsl_command(compile_cmd)
+    except Exception as e:
+        print(f"[ERROR] Failed to load/compile artifacts: {e}")
+        return False
+
+    # 3. Extract symbol addresses of tohost, begin_signature, and end_signature
+    try:
+        symbols = get_elf_symbols(src_elf)
+        tohost_addr = symbols["tohost"]
+        sig_begin = symbols["begin_signature"]
+        sig_end = symbols["end_signature"]
+        # Align end_signature to next 16-byte boundary to match Spike's 128-bit block alignment
+        sig_end = (sig_end + 15) & ~15
+    except KeyError as e:
+        print(f"[ERROR] Required symbol {e} not found in ELF symbol table!")
+        return False
+
+    print(f"  tohost: 0x{tohost_addr:08x}")
+    print(f"  begin_signature: 0x{sig_begin:08x}")
+    print(f"  end_signature: 0x{sig_end:08x}")
+
+    # 4. Launch ModelSim and Spike concurrently to eliminate 9P file system lag
     for path in [RTL_TRACE, RTL_SIG]:
         if os.path.exists(path):
             os.remove(path)
-            
-    vsim_args = [
-        "vsim", "-c", "-onfinish", "exit", "-voptargs=+acc", "work.tb_diff",
-        f"+SIGNATURE_BEGIN={sig_begin:x}", f"+SIGNATURE_END={sig_end:x}", f"+TOHOST_ADDR={tohost_addr:x}",
-        "-do", "run -all; quit -f"
-    ]
-    
-    res = subprocess.run(vsim_args, cwd=SCRIPT_DIR, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-    if res.returncode != 0 or not os.path.exists(RTL_TRACE):
+
+    wsl_elf = to_wsl_path(src_elf)
+
+    def run_modelsim():
+        vsim_args = [
+            "vsim", "-c", "-onfinish", "exit", "-voptargs=+acc", "work.tb_diff",
+            f"+SIGNATURE_BEGIN={sig_begin:x}", f"+SIGNATURE_END={sig_end:x}", f"+TOHOST_ADDR={tohost_addr:x}",
+            "-do", "run -all; quit -f"
+        ]
+        return subprocess.run(vsim_args, cwd=SCRIPT_DIR, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+
+    def run_spike():
+        # Stream trace and signature via Linux RAM disk (/dev/shm) to eliminate 9P DrvFs slow file I/O
+        spike_cmd = [
+            "bash", "-c",
+            f'spike -l --log-commits --isa=rv32i +signature=/dev/shm/spike_sig.txt "{wsl_elf}" 2> /dev/shm/spike_trace.txt && cat /dev/shm/spike_trace.txt && echo "---SIGNATURE_BOUNDARY---" && cat /dev/shm/spike_sig.txt && rm -f /dev/shm/spike_trace.txt /dev/shm/spike_sig.txt'
+        ]
+        return run_wsl_command(spike_cmd, check=False)
+
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        f_vsim = executor.submit(run_modelsim)
+        f_spike = executor.submit(run_spike)
+        res_vsim = f_vsim.result()
+        res_spike = f_spike.result()
+
+    if res_vsim.returncode != 0 or not os.path.exists(RTL_TRACE):
         print("[ERROR] ModelSim execution failed or trace file not generated!")
         print("Stdout:")
-        print(res.stdout)
+        print(res_vsim.stdout)
         print("Stderr:")
-        print(res.stderr)
+        print(res_vsim.stderr)
         return False
 
-    # 7. Launch Spike Simulation inside WSL
-    print("[INFO] Launching Spike ISA simulation...")
-    # Clean old Spike logs
-    for path in [SPIKE_TRACE, SPIKE_SIG]:
-        if os.path.exists(path):
-            os.remove(path)
-            
-    wsl_spike_sig = to_wsl_path(SPIKE_SIG)
-    wsl_spike_trace = to_wsl_path(SPIKE_TRACE)
-    
-    # We pipe stderr (which holds the commit log) to spike_trace.txt
-    spike_cmd = [
-        "bash", "-c",
-        f"spike -l --log-commits --isa=rv32i +signature={wsl_spike_sig} {wsl_elf} 2> {wsl_spike_trace}"
-    ]
-    try:
-        run_wsl_command(spike_cmd)
-    except subprocess.CalledProcessError:
+    if res_spike.returncode != 0:
+        print("[ERROR] Spike simulation failed!")
+        print(res_spike.stderr)
         return False
 
-    # 8. Compare Step-by-Step Retired Instruction Traces
+    # 5. Compare Step-by-Step Retired Instruction Traces
     print("[INFO] Performing step-by-step trace comparison...")
-    if not os.path.exists(RTL_TRACE) or not os.path.exists(SPIKE_TRACE):
-        print("[ERROR] Trace file(s) missing!")
-        return False
-        
     rtl_trace = parse_trace_file(RTL_TRACE)
-    spike_trace = parse_trace_file(SPIKE_TRACE)
-    
+
+    parts = res_spike.stdout.split("---SIGNATURE_BOUNDARY---")
+    spike_trace = parse_trace_lines(parts[0].splitlines())
+    spike_sig = parse_signature_lines(parts[1].splitlines()) if len(parts) > 1 else []
+
     # Filter out bootloader instructions (PC < 0x80000000)
     spike_trace = [inst for inst in spike_trace if inst[0] >= 0x80000000]
     rtl_trace = [inst for inst in rtl_trace if inst[0] >= 0x80000000]
-    
+
     mismatch = False
     max_len = max(len(rtl_trace), len(spike_trace))
     for i in range(max_len):
@@ -313,15 +365,14 @@ def run_test(test_file):
     else:
         print(f"[SUCCESS] Step-by-step Trace Match! ({len(rtl_trace)} instructions verified)")
 
-    # 9. Compare Final Signature Memory Traces
+    # 6. Compare Final Signature Memory Traces
     print("[INFO] Comparing final signature buffers...")
     rtl_sig = parse_signature_file(RTL_SIG)
-    spike_sig = parse_signature_file(SPIKE_SIG)
-    
+
     if len(rtl_sig) != len(spike_sig):
         print(f"[FAIL] Signature size mismatch: RTL has {len(rtl_sig)} words, Spike has {len(spike_sig)} words.")
         return False
-        
+
     sig_mismatch = False
     for i in range(len(rtl_sig)):
         if rtl_sig[i] != spike_sig[i]:
@@ -361,6 +412,10 @@ def main():
 
     print(f"Found {len(test_files)} assembly test cases.")
     
+    # Compile RTL once before running regression
+    if not compile_rtl():
+        sys.exit(1)
+        
     global TOTAL_TEST_COUNT
     TOTAL_TEST_COUNT = len(test_files)
     

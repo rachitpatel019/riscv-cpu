@@ -93,11 +93,11 @@ initial begin
     drive(32'h00a00093); check(1, 0, ALU_ADD, 0, 1, 1, 0, 0, 2'b00, 0, 2'b00, 0, 0, 3'b000);
     drive(32'h00412083); check(1, 0, ALU_ADD, 0, 1, 1, 1, 0, 2'b10, 0, 2'b01, 0, 0, 3'b010);
     drive(32'h0020a223); check(1, 1, ALU_ADD, 0, 1, 0, 0, 1, 2'b10, 0, 2'b00, 0, 0, 3'b010);
-    drive(32'h00208463); check(1, 1, ALU_SUB, 0, 0, 0, 0, 0, 2'b00, 0, 2'b00, 1, 0, 3'b000);
+    drive(32'h00208463); check(1, 1, ALU_PASS, 0, 0, 0, 0, 0, 2'b00, 0, 2'b00, 1, 0, 3'b000);
     drive(32'h004000ef); check(0, 0, ALU_ADD, 1, 1, 1, 0, 0, 2'b00, 0, 2'b10, 0, 1, 3'b000);
     drive(32'h010000b7); check(0, 0, ALU_PASS, 0, 1, 1, 0, 0, 2'b00, 0, 2'b00, 0, 0, 3'b000);
     drive(32'h01000097); check(0, 0, ALU_ADD, 1, 1, 1, 0, 0, 2'b00, 0, 2'b00, 0, 0, 3'b000);
-    drive(32'h00000000); check(0, 0, ALU_ADD, 0, 0, 0, 0, 0, 2'b00, 0, 2'b00, 0, 0, 3'b000);
+    drive(32'h00000000); check(0, 0, ALU_PASS, 0, 0, 0, 0, 0, 2'b00, 0, 2'b00, 0, 0, 3'b000);
 
     // Drive LBU instruction to toggle mem_unsigned to 1 for 100% net coverage
     drive(32'h00414083); check(1, 0, ALU_ADD, 0, 1, 1, 1, 0, 2'b00, 1, 2'b01, 0, 0, 3'b100);

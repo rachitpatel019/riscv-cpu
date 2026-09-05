@@ -214,13 +214,13 @@ initial begin
     check_all(5'd10, 5'd9, 5'd16, 32'h400, 32'd16, 1'b1, 1'b1, ALU_ADD, 1'b0, 1'b1, 1'b0, 1'b0, 1'b1, 2'b10, 1'b0, 2'b00, 1'b0, 1'b0, 3'b010);
 
     drive(32'h500, 32'h00c58063); // beq x11, x12, 64
-    check_all(5'd11, 5'd12, 5'd0, 32'h500, 32'h0, 1'b1, 1'b1, ALU_SUB, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, 2'b00, 1'b0, 2'b00, 1'b1, 1'b0, 3'b000);
+    check_all(5'd11, 5'd12, 5'd0, 32'h500, 32'h0, 1'b1, 1'b1, ALU_PASS, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, 2'b00, 1'b0, 2'b00, 1'b1, 1'b0, 3'b000);
 
     drive(32'h504, 32'hfe0690e3); // bne x13, x14, -128
-    check_all(5'd13, 5'd0, 5'd1, 32'h504, 32'hffffffe0, 1'b1, 1'b1, ALU_SUB, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, 2'b01, 1'b0, 2'b00, 1'b1, 1'b0, 3'b001);
+    check_all(5'd13, 5'd0, 5'd1, 32'h504, 32'hffffffe0, 1'b1, 1'b1, ALU_PASS, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, 2'b01, 1'b0, 2'b00, 1'b1, 1'b0, 3'b001);
 
     drive(32'h508, 32'h0107c063); // blt x15, x16, 256
-    check_all(5'd15, 5'd16, 5'd0, 32'h508, 32'h0, 1'b1, 1'b1, ALU_SLT, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, 2'b00, 1'b1, 2'b00, 1'b1, 1'b0, 3'b100);
+    check_all(5'd15, 5'd16, 5'd0, 32'h508, 32'h0, 1'b1, 1'b1, ALU_PASS, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, 2'b00, 1'b1, 2'b00, 1'b1, 1'b0, 3'b100);
 
     // New additional test cases to improve coverage for LUI/AUIPC/JAL/JALR
     drive(32'h600, 32'h123452b7); // lui x5, 0x12345

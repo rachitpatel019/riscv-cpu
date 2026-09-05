@@ -4,7 +4,6 @@ Calculates the target program counter for branch and jump instructions.
 
 module pc_target_calc (
     input logic [31:0] pc,
-    input logic [31:0] pc_plus_4,
     input logic [31:0] operand_a,
     input logic [31:0] operand_b,
     input logic branch,
@@ -32,15 +31,13 @@ always_comb begin
     pc_sel = jump || mispredict;
 
     if (jump) begin
-        // Aligns JALR and branch targets to 4-byte boundaries.
-        pc_target = alu_result & 32'hFFFFFFFC;
+        pc_target = {alu_result[31:2], 2'b0};
     end
     else if (mispredict) begin
         if (actual_taken) begin
-            // Aligns JALR and branch targets to 4-byte boundaries.
-            pc_target = branch_target_in & 32'hFFFFFFFC;
+            pc_target = {branch_target_in[31:2], 2'b0};
         end else begin
-            pc_target = pc_plus_4;
+            pc_target = pc + 32'd4;
         end
     end
     else begin

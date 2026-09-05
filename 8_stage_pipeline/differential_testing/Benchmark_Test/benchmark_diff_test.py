@@ -23,7 +23,8 @@ def cleanup_temp_files():
         DATA_HEX,
         RTL_TRACE,
         SPIKE_TRACE,
-        SIM_TRANSCRIPT
+        SIM_TRANSCRIPT,
+        os.path.join(SCRIPT_DIR, "filelist.f")
     ]
     for f in temp_files:
         if os.path.exists(f):
@@ -36,6 +37,9 @@ def cleanup_temp_files():
 trace_pattern = re.compile(
     r"core\s+\d+:\s+3\s+0x([0-9a-fA-F]+)\s+\(0x[0-9a-fA-F]+\)\s+x(\d+)\s+0x([0-9a-fA-F]+)"
 )
+
+import struct
+from concurrent.futures import ThreadPoolExecutor
 
 def to_wsl_path(win_path):
     """Convert Windows path to WSL path mapping."""
@@ -56,8 +60,50 @@ def run_wsl_command(args, check=True):
         raise subprocess.CalledProcessError(res.returncode, cmd, res.stdout, res.stderr)
     return res
 
+def get_elf_symbols_fast(elf_path):
+    """Pure Python ELF symbol parser to avoid slow WSL process spawns."""
+    try:
+        with open(elf_path, 'rb') as f:
+            data = f.read()
+        if data[:4] != b'\x7fELF':
+            return {}
+        is_64 = (data[4] == 2)
+        endian = '<' if data[5] == 1 else '>'
+        
+        if not is_64:
+            e_shoff = struct.unpack_from(endian + 'I', data, 32)[0]
+            e_shentsize = struct.unpack_from(endian + 'H', data, 46)[0]
+            e_shnum = struct.unpack_from(endian + 'H', data, 48)[0]
+            
+            sections = []
+            for i in range(e_shnum):
+                off = e_shoff + i * e_shentsize
+                sh_name, sh_type, _, sh_addr, sh_offset, sh_size, sh_link, _, _, _ = struct.unpack_from(endian + '10I', data, off)
+                sections.append({'type': sh_type, 'offset': sh_offset, 'size': sh_size, 'link': sh_link})
+            
+            symbols = {}
+            for sec in sections:
+                if sec['type'] == 2:  # SHT_SYMTAB
+                    strtab_sec = sections[sec['link']]
+                    strtab = data[strtab_sec['offset']:strtab_sec['offset'] + strtab_sec['size']]
+                    sym_data = data[sec['offset']:sec['offset'] + sec['size']]
+                    for j in range(0, len(sym_data), 16):
+                        st_name, st_value, st_size, st_info, st_other, st_shndx = struct.unpack_from(endian + '3IBBH', sym_data, j)
+                        if st_name < len(strtab):
+                            end = strtab.find(b'\x00', st_name)
+                            name = strtab[st_name:end].decode('latin1', errors='ignore')
+                            if name:
+                                symbols[name] = st_value
+            return symbols
+    except Exception:
+        pass
+    return {}
+
 def get_elf_symbols(elf_path):
-    """Extract symbol addresses from ELF using nm in WSL."""
+    """Extract symbol addresses from ELF using pure-python parser with fallback to WSL nm."""
+    symbols = get_elf_symbols_fast(elf_path)
+    if "tohost" in symbols:
+        return symbols
     wsl_elf = to_wsl_path(elf_path)
     res = run_wsl_command(["riscv64-unknown-elf-nm", wsl_elf])
     
@@ -69,20 +115,24 @@ def get_elf_symbols(elf_path):
             symbols[name] = int(addr_str, 16)
     return symbols
 
+def parse_trace_lines(lines):
+    """Parse retired PC and register updates from a list of trace lines."""
+    trace = []
+    for line in lines:
+        match = trace_pattern.search(line)
+        if match:
+            pc = int(match.group(1), 16)
+            rd = int(match.group(2))
+            data = int(match.group(3), 16)
+            trace.append((pc, rd, data))
+    return trace
+
 def parse_trace_file(trace_path):
     """Parse retired PC and register updates from trace file."""
-    trace = []
     if not os.path.exists(trace_path):
-        return trace
+        return []
     with open(trace_path, "r") as f:
-        for line in f:
-            match = trace_pattern.search(line)
-            if match:
-                pc = int(match.group(1), 16)
-                rd = int(match.group(2))
-                data = int(match.group(3), 16)
-                trace.append((pc, rd, data))
-    return trace
+        return parse_trace_lines(f)
 
 def main():
     parser = argparse.ArgumentParser(description="Benchmark Differential Testing Framework")
@@ -151,16 +201,15 @@ def main():
         print(f"[ERROR] Binary size {len(data)} exceeds 256KB target buffer!")
         sys.exit(1)
 
-    # Split into instruction (first 128KB) and data (next 128KB) hex files
+    # Split into instruction (first 128KB) and data (next 128KB) hex files using fast bulk join
+    prog_words = [f"{int.from_bytes(data[i:i+4], 'little'):08x}" for i in range(0, 128 * 1024, 4)]
+    data_words = [f"{int.from_bytes(data[i:i+4], 'little'):08x}" for i in range(128 * 1024, 256 * 1024, 4)]
+
     with open(PROGRAM_HEX, "w") as f:
-        for i in range(0, 128 * 1024, 4):
-            word = int.from_bytes(data[i:i+4], byteorder='little')
-            f.write(f"{word:08x}\n")
+        f.write("\n".join(prog_words) + "\n")
 
     with open(DATA_HEX, "w") as f:
-        for i in range(128 * 1024, 256 * 1024, 4):
-            word = int.from_bytes(data[i:i+4], byteorder='little')
-            f.write(f"{word:08x}\n")
+        f.write("\n".join(data_words) + "\n")
 
     # 3. Extract tohost address symbol from ELF
     print("[INFO] Extracting tohost address symbol...")
@@ -173,7 +222,7 @@ def main():
 
     print(f"  tohost: 0x{tohost_addr:08x}")
 
-    # 4. Compile RTL and testbench with vlog
+    # 4. Compile RTL and testbench with vlog using a filelist
     print("[INFO] Compiling RTL and testbench with vlog...")
     work_dir = os.path.join(SCRIPT_DIR, "work")
     if not os.path.exists(work_dir):
@@ -211,7 +260,11 @@ def main():
         "tb_benchmark.sv"
     ]
 
-    vlog_cmd = ["vlog", "-work", "work"] + vlog_files
+    filelist_path = os.path.join(SCRIPT_DIR, "filelist.f")
+    with open(filelist_path, "w") as f:
+        f.write("\n".join(vlog_files) + "\n")
+
+    vlog_cmd = ["vlog", "-work", "work", "-f", "filelist.f"]
     res_vlog = subprocess.run(vlog_cmd, cwd=SCRIPT_DIR, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     if res_vlog.returncode != 0:
         print("[ERROR] Compilation with vlog failed!")
@@ -219,17 +272,35 @@ def main():
         print(res_vlog.stderr)
         sys.exit(1)
 
-    # 5. Launch ModelSim simulation
-    print("[INFO] Launching ModelSim simulation...")
+    # 5. Launch ModelSim and Spike concurrently to eliminate 9P file copying lag
+    print("[INFO] Launching ModelSim RTL and Spike ISA simulations concurrently...")
     if os.path.exists(RTL_TRACE):
         os.remove(RTL_TRACE)
+    if os.path.exists(SPIKE_TRACE):
+        os.remove(SPIKE_TRACE)
 
-    vsim_args = [
-        "vsim", "-c", "-onfinish", "exit", "-voptargs=+acc", "work.tb_benchmark",
-        f"+TOHOST_ADDR={tohost_addr:x}",
-        "-do", "run -all; quit -f"
-    ]
-    res_vsim = subprocess.run(vsim_args, cwd=SCRIPT_DIR, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    def run_modelsim():
+        vsim_args = [
+            "vsim", "-c", "-onfinish", "exit", "-voptargs=+acc", "work.tb_benchmark",
+            f"+TOHOST_ADDR={tohost_addr:x}",
+            "-do", "run -all; quit -f"
+        ]
+        return subprocess.run(vsim_args, cwd=SCRIPT_DIR, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+
+    def run_spike():
+        # Stream commit trace directly from WSL RAM disk (/dev/shm) to eliminate DrvFs slow 9P file writes
+        spike_cmd = [
+            "bash", "-c",
+            f"timeout 60s spike -l --log-commits --isa=rv32i --pc=0x80000000 '{wsl_elf}' < /dev/null 2> /dev/shm/trace.txt && cat /dev/shm/trace.txt && rm -f /dev/shm/trace.txt"
+        ]
+        return run_wsl_command(spike_cmd, check=False)
+
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        f_vsim = executor.submit(run_modelsim)
+        f_spike = executor.submit(run_spike)
+        res_vsim = f_vsim.result()
+        res_spike = f_spike.result()
+
     if res_vsim.returncode != 0 or not os.path.exists(RTL_TRACE):
         print("[ERROR] ModelSim simulation failed!")
         print("Stdout:")
@@ -238,26 +309,20 @@ def main():
         print(res_vsim.stderr)
         sys.exit(1)
 
-    # 6. Launch Spike ISA simulation (with timeout safety watchdog)
-    print("[INFO] Launching Spike ISA simulation...")
-    if os.path.exists(SPIKE_TRACE):
-        os.remove(SPIKE_TRACE)
-
-    wsl_spike_trace = to_wsl_path(SPIKE_TRACE)
-    spike_cmd = [
-        "bash", "-c",
-        f"timeout 60s spike -l --log-commits --isa=rv32i --pc=0x80000000 '{wsl_elf}' < /dev/null 2> /tmp/spike_trace.txt && cp /tmp/spike_trace.txt '{wsl_spike_trace}' && rm /tmp/spike_trace.txt"
-    ]
-    res_spike = run_wsl_command(spike_cmd, check=False)
     if res_spike.returncode not in [0, 124, 143]:
         print(f"[ERROR] Spike simulation failed with return code {res_spike.returncode}!")
         print(res_spike.stderr)
         sys.exit(1)
 
-    # 7. Parse and compare retired instruction traces
+    # Save spike trace to file if requested
+    if args.keep:
+        with open(SPIKE_TRACE, "w") as f:
+            f.write(res_spike.stdout)
+
+    # 6. Parse and compare retired instruction traces
     print("[INFO] Parsing and comparing traces...")
     rtl_trace = parse_trace_file(RTL_TRACE)
-    spike_trace = parse_trace_file(SPIKE_TRACE)
+    spike_trace = parse_trace_lines(res_spike.stdout.splitlines())
 
     if not rtl_trace:
         print("[ERROR] RTL trace file is empty or missing register write data!")

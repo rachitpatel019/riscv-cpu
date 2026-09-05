@@ -17,7 +17,6 @@ logic stage4_pc_sel;
 logic [31:0] stage4_pc_target;
 
 logic [31:0] pc;
-logic [31:0] pc_plus_4;
 
 pc_update dut (.*);
 
@@ -66,12 +65,12 @@ endtask
 task automatic check(input logic [31:0] expected_pc);
     @(posedge clk);
     #1;
-    a_pc_update: assert (pc === expected_pc && pc_plus_4 === expected_pc + 32'd4) begin
+    a_pc_update: assert (pc === expected_pc) begin
         tests_passed++;
         tests_total++;
     end else begin
-        report_error("CHECK", $sformatf("MISMATCH: Expected=%h, Actual=%h, Expected_PC+4=%h, Actual_PC+4=%h", 
-            expected_pc, pc, expected_pc + 32'd4, pc_plus_4));
+        report_error("CHECK", $sformatf("MISMATCH: Expected=%h, Actual=%h", 
+            expected_pc, pc));
     end
 endtask
 

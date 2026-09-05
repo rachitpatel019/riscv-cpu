@@ -35,11 +35,19 @@ module tb_top;
         KEY = 2'b11; // Active-low buttons unpressed
         SW = 10'b0;  // All switches off
 
-        // Run simulation long enough to lock the PLL, release reset,
-        // and run 500 clock cycles of 125 MHz clock (500 * 8ns = 4000ns)
-        #6000;
+        // Run simulation until the last instruction is executed
+        wait (LEDR == 10'h3FF);
+        wait (LEDR == 10'h000);
+        repeat (100) @(posedge MAX10_CLK1_50);
         
         $display("[TB] Gate-level simulation completed successfully.");
+        $finish;
+    end
+
+    // Watchdog timer to prevent simulation hang
+    initial begin
+        #500_000_000;
+        $display("[TB ERROR] Simulation timeout!");
         $finish;
     end
 endmodule

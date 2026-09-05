@@ -11,21 +11,18 @@ module instr_mem (
     input logic flush,
 
     input logic [31:0] pc,
-    input logic [31:0] pc_plus_4,
 
     output logic [31:0] pc_out,
-    output logic [31:0] pc_plus_4_out,
     output logic [31:0] instruction
 );
 
-localparam MEM_DEPTH = 16384;
+localparam MEM_DEPTH = 4096;
 
 // Models target FPGA block RAM (e.g. M9K) pre-initialized with executable program code.
 (* ramstyle = "M9K" *) logic [31:0] instruction_memory [0:MEM_DEPTH-1];
 
 logic [31:0] instr_reg;
 logic [31:0] pc_reg;
-logic [31:0] pc_plus_4_reg;
 
 logic flush_reg;
 
@@ -39,7 +36,6 @@ always_ff @(posedge clk) begin
     if (!stall) begin
         instr_reg <= instruction_memory[pc[31:2]];
         pc_reg <= pc;
-        pc_plus_4_reg <= pc_plus_4;
     end
 end
 
@@ -61,6 +57,5 @@ end
 // when a flush condition was latched, injecting a bubble into downstream pipeline stages.
 assign instruction = (flush_reg) ? 32'h00000013 : instr_reg;
 assign pc_out = (flush_reg) ? 32'b0 : pc_reg;
-assign pc_plus_4_out = (flush_reg) ? 32'b0 : pc_plus_4_reg;
 
 endmodule

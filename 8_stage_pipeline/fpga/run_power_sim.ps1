@@ -2,6 +2,10 @@
 # Gate-level simulation runner for CPU power analysis.
 # Generates a power.vcd file from the 8-stage balanced pipeline post-compilation gate-level netlist.
 
+param (
+    [string]$SimDuration = "10000ns"
+)
+
 # Set execution directory to this script's path
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $originalDir = Get-Location
@@ -44,6 +48,9 @@ if (Test-Path $iniSource) {
     Copy-Item -Path $iniSource -Destination $iniDest -Force | Out-Null
 }
 
+# Determine run command based on SimDuration parameter
+$runCmd = if ($SimDuration -eq "all") { "run -all" } else { "run $SimDuration" }
+
 # Create the ModelSim run script (power_sim.do) dynamically
 $doFilePath = Join-Path $scriptDir "power_sim.do"
 $doContent = @"
@@ -66,22 +73,24 @@ vlog -work work simulation/questa/cpu.vo
 vlog -work work tb_top.sv
 
 # Load simulation with visibility access and Altera/Intel simulation libraries
-vsim -voptargs="+acc" -L fiftyfivenm_ver -L altera_ver -L altera_mf_ver -L 220model_ver -onfinish exit work.tb_top
+# Suppress benign MAX 10 hard ADC primitive port warnings (2685, 3722)
+vsim -suppress 2685,3722 -voptargs="+acc" -L fiftyfivenm_ver -L altera_ver -L altera_mf_ver -L 220model_ver -onfinish exit work.tb_top
 
-# Set up VCD dumping
+# Set up VCD dumping at time 0 so initial signal states are defined (Unknown % = 0.0%)
 vcd file power.vcd
 vcd add -r /tb_top/dut/*
 
-# Run simulation
-run -all
+# Run simulation for representative active workload
+$runCmd
 
-# Exit ModelSim
+# Flush VCD buffer and exit ModelSim
+vcd flush
 quit -f
 "@
 
 Set-Content -Path $doFilePath -Value $doContent -Encoding Ascii
 
-Write-Host "Starting ModelSim gate-level simulation..." -ForegroundColor Cyan
+Write-Host "Starting ModelSim gate-level simulation (Sampling: $SimDuration from time 0)..." -ForegroundColor Cyan
 
 # Run vsim in batch mode
 # Using -l vsim.log to capture compilation details in case of errors

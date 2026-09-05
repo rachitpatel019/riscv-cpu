@@ -123,8 +123,6 @@ end
 
 // Combinational block determining ALU operation codes based on opcodes and function fields.
 always_comb begin
-    alu_op = ALU_ADD;
-
     case (opcode)
         OP_R: begin
             case (f3)
@@ -171,22 +169,6 @@ always_comb begin
             alu_op = ALU_ADD;
         end
 
-        OP_B: begin
-            case (f3)
-                3'b000: alu_op = ALU_SUB;
-                3'b001: alu_op = ALU_SUB;
-                3'b100: alu_op = ALU_SLT;
-                3'b101: alu_op = ALU_SLT;
-                3'b110: alu_op = ALU_SLTU;
-                3'b111: alu_op = ALU_SLTU;
-                default: alu_op = ALU_SUB;
-            endcase
-        end
-
-        OP_U_LUI: begin
-            alu_op = ALU_PASS;
-        end
-
         OP_U_AUIPC: begin
             alu_op = ALU_ADD;
         end
@@ -195,7 +177,7 @@ always_comb begin
             alu_op = ALU_ADD;
         end
 
-        default: ;
+        default: alu_op = ALU_PASS;
     endcase
 end
 

@@ -35,12 +35,14 @@ top dut (
     .HEX5(HEX5)
 );
 
-// Main simulation execution and watchdog timer
+// Main simulation execution and completion monitoring
 initial begin
     MAX10_CLK1_50 = 0;
     KEY = 2'b11;
     SW = 10'b0;
-    #6000;
+    wait (LEDR == 10'h3FF);
+    wait (LEDR == 10'h000);
+    repeat (100) @(posedge MAX10_CLK1_50);
     $display("[TB] Gate-level simulation completed successfully.");
     $finish;
 end

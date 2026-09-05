@@ -93,19 +93,21 @@ foreach stage $stages {
     }
 }
 
-log "\n------------------------------------------------------------"
+log "\n------------------------------------------------------------------------------------------------------------------------"
 log "  Top 10 Most Critical Paths (Worst Slack)"
-log "------------------------------------------------------------"
-log [format "%-7s | %-10s | %-50s" "Slack" "Data Dly" "Destination Node"]
-log "------------------------------------------------------------"
+log "------------------------------------------------------------------------------------------------------------------------"
+log [format "%-8s | %-8s | %-8s | %-45s -> %-45s" "Slack" "Data Dly" "Skew" "Source Node" "Destination Node"]
+log "------------------------------------------------------------------------------------------------------------------------"
 
 set critical_paths [get_timing_paths -npaths 10 -setup]
 foreach_in_collection path $critical_paths {
     set slack [get_path_info $path -slack]
     set delay [get_path_info $path -data_delay]
+    set skew [get_path_info $path -clock_skew]
+    set from_node [get_node_info -name [get_path_info $path -from]]
     set to_node [get_node_info -name [get_path_info $path -to]]
     
-    log [format "%-7s | %-10s | %-50s" "${slack}ns" "${delay}ns" $to_node]
+    log [format "%-8s | %-8s | %-8s | %-45s -> %-45s" "${slack}ns" "${delay}ns" "${skew}ns" $from_node $to_node]
 }
 
 log "------------------------------------------------------------"

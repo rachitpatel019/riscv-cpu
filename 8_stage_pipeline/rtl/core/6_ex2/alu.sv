@@ -29,6 +29,8 @@ logic sltu_res;
 
 // Evaluation of arithmetic and logical operations.
 assign add_res = A + B;
+// 2 adders for memory address generation because memory reads
+// happen in stage 6 and memory writes happen in stage 7
 assign adder_result = add_res;
 assign sub_res = A - B;
 assign and_res = A & B;

@@ -69,11 +69,13 @@ end
 
 // Synchronous read registers storing read address offsets and memory control states.
 always_ff @(posedge clk) begin
-    current_word <= memory[masked_read_addr];
-    addr_low <= read_address[1:0];
+    if (mem_read) begin
+        current_word <= memory[masked_read_addr];
+        addr_low <= read_address[1:0];
+        size_reg <= read_mem_size;
+        unsigned_reg <= mem_unsigned;
+    end
     read_active <= mem_read;
-    size_reg <= read_mem_size;
-    unsigned_reg <= mem_unsigned;
 end
 
 // Write-during-read bypass/forwarding logic to handle RDW collisions on same clock edge.

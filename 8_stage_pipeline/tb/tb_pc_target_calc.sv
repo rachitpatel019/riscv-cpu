@@ -7,7 +7,6 @@ int tests_failed;
 logic watchdog_trigger;
 
 logic [31:0] pc;
-logic [31:0] pc_plus_4;
 logic [31:0] operand_a;
 logic [31:0] operand_b;
 logic branch;
@@ -40,13 +39,17 @@ task automatic report_fatal(string id, string msg);
 endtask
 
 task automatic drive(
-    input logic [31:0] i_pc, input logic [31:0] i_op_a, input logic [31:0] i_op_b,
-    input logic i_branch, input logic i_jump, input logic [2:0] i_br_type,
-    input logic [31:0] i_imm, input logic [31:0] i_alu_res,
+    input logic [31:0] i_pc,
+    input logic [31:0] i_op_a,
+    input logic [31:0] i_op_b,
+    input logic i_branch,
+    input logic i_jump,
+    input logic [2:0] i_br_type,
+    input logic [31:0] i_imm,
+    input logic [31:0] i_alu_res,
     input logic i_predicted_taken = 0
 );
     pc = i_pc;
-    pc_plus_4 = i_pc + 4;
     operand_a = i_op_a;
     operand_b = i_op_b;
     branch = i_branch;
@@ -54,19 +57,17 @@ task automatic drive(
     branch_type = i_br_type;
     imm = i_imm;
     alu_result = i_alu_res;
-    
     case (i_br_type)
-        3'b000: condition_met_in = i_op_a == i_op_b;
-        3'b001: condition_met_in = i_op_a != i_op_b;
-        3'b100: condition_met_in = $signed(i_op_a) < $signed(i_op_b);
-        3'b101: condition_met_in = $signed(i_op_a) >= $signed(i_op_b);
-        3'b110: condition_met_in = i_op_a < i_op_b;
-        3'b111: condition_met_in = i_op_a >= i_op_b;
+        3'b000: condition_met_in = (i_op_a == i_op_b);
+        3'b001: condition_met_in = (i_op_a != i_op_b);
+        3'b100: condition_met_in = ($signed(i_op_a) < $signed(i_op_b));
+        3'b101: condition_met_in = ($signed(i_op_a) >= $signed(i_op_b));
+        3'b110: condition_met_in = (i_op_a < i_op_b);
+        3'b111: condition_met_in = (i_op_a >= i_op_b);
         default: condition_met_in = 0;
     endcase
     branch_target_in = i_pc + i_imm;
     predicted_taken_in = i_predicted_taken;
-
     #1;
 endtask
 
@@ -75,11 +76,12 @@ task automatic check(input logic exp_sel, input logic [31:0] exp_target);
         tests_passed++;
         tests_total++;
     end else begin
-        report_error("CHECK", $sformatf("MISMATCH: ExpSel=%b, ActSel=%b, ExpTarget=%h, ActTarget=%h, PredictedTaken=%b, CondMet=%b", 
+        report_error("CHECK", $sformatf("MISMATCH: ExpSel=%b, ActSel=%b, ExpTarget=%h, ActTarget=%h, PredictedTaken=%b, CondMet=%b",
             exp_sel, pc_sel, exp_target, pc_target, predicted_taken_in, condition_met_in));
     end
 endtask
 
+// Watchdog timer to prevent simulation deadlocks.
 initial begin
     watchdog_trigger = 0;
     fork
@@ -101,36 +103,69 @@ initial begin
     tests_failed = 0;
     report_info("TB", "Starting pc_target_calc tests.");
 
-    drive(32'h100, 32'h5, 32'h5, 1, 0, 3'b000, 32'h8, 0, 0); check(1, 32'h108); // branch taken, predicted not taken -> mispredict
-    drive(32'h100, 32'h5, 32'h5, 1, 0, 3'b000, 32'h8, 0, 1); check(0, 32'h0);   // branch taken, predicted taken -> no mispredict
-    drive(32'h100, 32'h5, 32'h6, 1, 0, 3'b000, 32'h8, 0, 0); check(0, 32'h0);   // branch not taken, predicted not taken -> no mispredict
-    drive(32'h100, 32'h5, 32'h6, 1, 0, 3'b000, 32'h8, 0, 1); check(1, 32'h104); // branch not taken, predicted taken -> mispredict (PC+4)
+    // Sequential non-branch non-jump instructions.
+    drive(32'h100, 32'h5, 32'h5, 0, 0, 3'b000, 32'h8, 32'h200, 0);
+    check(0, 32'h0);
 
-    drive(32'h100, 0, 0, 0, 1, 0, 0, 32'h200, 0); check(1, 32'h200);
+    // Branch equal (BEQ) prediction and misprediction evaluation.
+    drive(32'h100, 32'h5, 32'h5, 1, 0, 3'b000, 32'h8, 0, 0);
+    check(1, 32'h108);
+    drive(32'h100, 32'h5, 32'h5, 1, 0, 3'b000, 32'h8, 0, 1);
+    check(0, 32'h0);
+    drive(32'h100, 32'h5, 32'h6, 1, 0, 3'b000, 32'h8, 0, 0);
+    check(0, 32'h0);
+    drive(32'h100, 32'h5, 32'h6, 1, 0, 3'b000, 32'h8, 0, 1);
+    check(1, 32'h104);
 
-    drive(32'h100, 32'h5, 32'h5, 1, 1, 3'b000, 32'h8, 32'h200, 0); check(1, 32'h200);
+    // Unconditional jump and simultaneous jump-branch priority checks.
+    drive(32'h100, 0, 0, 0, 1, 0, 0, 32'h200, 0);
+    check(1, 32'h200);
+    drive(32'h100, 32'h5, 32'h5, 1, 1, 3'b000, 32'h8, 32'h200, 0);
+    check(1, 32'h200);
+    drive(32'h100, 32'h5, 32'h5, 1, 0, 3'b000, 32'hFFFFFFF8, 0, 0);
+    check(1, 32'hF8);
 
-    drive(32'h100, 32'h5, 32'h5, 1, 0, 3'b000, 32'hFFFFFFF8, 0, 0); check(1, 32'hF8);
+    // Branch not equal (BNE) signed and unsigned comparison checks.
+    drive(32'h100, 32'h5, 32'h6, 1, 0, 3'b001, 32'h10, 0, 0);
+    check(1, 32'h110);
+    drive(32'h100, 32'h5, 32'h5, 1, 0, 3'b001, 32'h10, 0, 1);
+    check(1, 32'h104);
 
-    // New additional test cases to improve coverage for other branch types
-    drive(32'h100, 32'h5, 32'h6, 1, 0, 3'b001, 32'h10, 0, 0); check(1, 32'h110); // BNE comparison (taken)
-    drive(32'h100, 32'h5, 32'h5, 1, 0, 3'b001, 32'h10, 0, 1); check(1, 32'h104); // BNE comparison (not taken, predicted taken -> mispredict)
-    drive(32'h100, -32'd5, 32'd5, 1, 0, 3'b100, 32'h14, 0, 0); check(1, 32'h114); // BLT (taken)
-    drive(32'h100, 32'd5, -32'd5, 1, 0, 3'b100, 32'h14, 0, 0); check(0, 32'h0); // BLT (not taken)
-    drive(32'h100, 32'd5, -32'd5, 1, 0, 3'b101, 32'h18, 0, 0); check(1, 32'h118); // BGE (taken)
-    drive(32'h100, -32'd5, 32'd5, 1, 0, 3'b101, 32'h18, 0, 1); check(1, 32'h104); // BGE (not taken, predicted taken -> mispredict)
-    drive(32'h100, 32'd5, 32'd10, 1, 0, 3'b110, 32'h1c, 0, 0); check(1, 32'h11c); // BLTU (taken)
-    drive(32'h100, 32'hFFFFFFFF, 32'd10, 1, 0, 3'b110, 32'h1c, 0, 0); check(0, 32'h0); // BLTU (not taken)
-    drive(32'h100, 32'hFFFFFFFF, 32'd10, 1, 0, 3'b111, 32'h20, 0, 0); check(1, 32'h120); // BGEU (taken)
-    drive(32'h100, 32'd5, 32'd10, 1, 0, 3'b111, 32'h20, 0, 1); check(1, 32'h104); // BGEU (not taken, predicted taken -> mispredict)
-    
-    // Default branch type
-    drive(32'h100, 32'd5, 32'd5, 1, 0, 3'b010, 32'h24, 0, 0); check(0, 32'h0);
+    // Branch less than (BLT) signed comparisons.
+    drive(32'h100, -32'd5, 32'd5, 1, 0, 3'b100, 32'h14, 0, 0);
+    check(1, 32'h114);
+    drive(32'h100, 32'd5, -32'd5, 1, 0, 3'b100, 32'h14, 0, 0);
+    check(0, 32'h0);
 
-    // Alignment logic checks
-    drive(32'h100, 0, 0, 0, 1, 0, 0, 32'h203, 0); check(1, 32'h200); // alu_result alignment
-    drive(32'h100, 32'h5, 32'h5, 1, 1, 3'b000, 32'h8, 32'h207, 0); check(1, 32'h204); // priority jump
-    drive(32'h100, 32'h5, 32'h5, 1, 0, 3'b000, 32'hFFFFFFF9, 0, 0); check(1, 32'hF8); // branch target alignment
+    // Branch greater than or equal (BGE) signed comparisons.
+    drive(32'h100, 32'd5, -32'd5, 1, 0, 3'b101, 32'h18, 0, 0);
+    check(1, 32'h118);
+    drive(32'h100, -32'd5, 32'd5, 1, 0, 3'b101, 32'h18, 0, 1);
+    check(1, 32'h104);
+
+    // Branch less than unsigned (BLTU) comparisons.
+    drive(32'h100, 32'd5, 32'd10, 1, 0, 3'b110, 32'h1c, 0, 0);
+    check(1, 32'h11c);
+    drive(32'h100, 32'hFFFFFFFF, 32'd10, 1, 0, 3'b110, 32'h1c, 0, 0);
+    check(0, 32'h0);
+
+    // Branch greater than or equal unsigned (BGEU) comparisons.
+    drive(32'h100, 32'hFFFFFFFF, 32'd10, 1, 0, 3'b111, 32'h20, 0, 0);
+    check(1, 32'h120);
+    drive(32'h100, 32'd5, 32'd10, 1, 0, 3'b111, 32'h20, 0, 1);
+    check(1, 32'h104);
+
+    // Undefined branch opcode handling.
+    drive(32'h100, 32'd5, 32'd5, 1, 0, 3'b010, 32'h24, 0, 0);
+    check(0, 32'h0);
+
+    // Target address alignment verification clearing bottom two bits.
+    drive(32'h100, 0, 0, 0, 1, 0, 0, 32'h203, 0);
+    check(1, 32'h200);
+    drive(32'h100, 32'h5, 32'h5, 1, 1, 3'b000, 32'h8, 32'h207, 0);
+    check(1, 32'h204);
+    drive(32'h100, 32'h5, 32'h5, 1, 0, 3'b000, 32'hFFFFFFF9, 0, 0);
+    check(1, 32'hF8);
 
     report_info("TB", "All tests complete.");
     $display("--- pc_target_calc Test Summary ---");

@@ -13,9 +13,7 @@ logic reset;
 logic stall;
 logic flush;
 logic [31:0] pc;
-logic [31:0] pc_plus_4;
 logic [31:0] pc_out;
-logic [31:0] pc_plus_4_out;
 logic [31:0] instruction;
 
 instr_mem dut (.*);
@@ -54,23 +52,20 @@ task automatic drive(
     stall = i_stall;
     flush = i_flush;
     pc = i_pc;
-    pc_plus_4 = i_pc + 4;
 endtask
 
 task automatic check(
     input logic [31:0] expected_pc,
     input logic [31:0] expected_instr
 );
-    logic [31:0] expected_pc_plus_4;
-    expected_pc_plus_4 = (expected_pc == 0 && expected_instr == 32'h00000013) ? 32'h0 : (expected_pc + 4);
     @(posedge clk);
     #1;
-    a_instr_mem: assert (pc_out === expected_pc && instruction === expected_instr && pc_plus_4_out === expected_pc_plus_4) begin
+    a_instr_mem: assert (pc_out === expected_pc && instruction === expected_instr) begin
         tests_passed++;
         tests_total++;
     end else begin
-        report_error("CHECK", $sformatf("MISMATCH: Expected PC=%h, Actual PC=%h, Expected Instr=%h, Actual Instr=%h, Actual PC+4=%h", 
-            expected_pc, pc_out, expected_instr, instruction, pc_plus_4_out));
+        report_error("CHECK", $sformatf("MISMATCH: Expected PC=%h, Actual PC=%h, Expected Instr=%h, Actual Instr=%h", 
+            expected_pc, pc_out, expected_instr, instruction));
     end
 endtask
 

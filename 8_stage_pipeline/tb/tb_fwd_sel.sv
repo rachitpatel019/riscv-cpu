@@ -12,7 +12,7 @@ int tests_failed;
 logic watchdog_trigger;
 
 logic [1:0] wb_sel;
-logic [31:0] pc_plus_4;
+logic [31:0] pc;
 logic [31:0] alu_result;
 
 logic [31:0] fwd_val;
@@ -60,7 +60,7 @@ initial begin
     tests_failed = 0;
     report_info("TB", "Starting fwd_sel tests.");
 
-    pc_plus_4 = 32'h0000_0104;
+    pc = 32'h0000_0100;
     alu_result = 32'h0000_ABCD;
 
     // Test Case 1: Select ALU result (wb_sel == 2'b00)
